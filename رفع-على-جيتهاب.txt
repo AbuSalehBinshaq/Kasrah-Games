@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════
+  طريقة رفع المشروع على GitHub (بدون أوامر)
+═══════════════════════════════════════════════════
+
+الطريقة الأسهل: استخدام GitHub Desktop
+─────────────────────────────────────────
+
+1. حمّل GitHub Desktop من:
+   https://desktop.github.com
+
+2. ثبت البرنامج وسجّل دخول بحسابك:
+   Username: AbuSalehBinshaq
+
+3. بعد تسجيل الدخول:
+   - اضغط File → Add Local Repository
+   - اختر المجلد:
+     C:\Users\user\Downloads\Kasrah-Games-Updated\home\ubuntu\project
+   - اضغط "Add"
+
+4. في نافذة GitHub Desktop:
+   - اكتب رسالة: "Initial commit - Kasrah Games"
+   - اضغط "Commit to main"
+
+5. اضغط "Publish repository" في الأعلى
+   - تأكد أن الاسم: Kasrah-Games
+   - تأكد أن Owner: AbuSalehBinshaq
+   - اضغط "Publish Repository"
+
+6. انتهى! ✅
+   المشروع الآن على:
+   https://github.com/AbuSalehBinshaq/Kasrah-Games
+
+─────────────────────────────────────────
+
+بعد الرفع - التحديثات المستقبلية:
+─────────────────────────────────────────
+
+1. عدّل أي ملف في المشروع
+2. افتح GitHub Desktop
+3. ستظهر التغييرات تلقائياً
+4. اكتب رسالة Commit
+5. اضغط "Commit to main"
+6. اضغط "Push origin" في الأعلى
+
+─────────────────────────────────────────
+
+الطريقة البديلة: استخدام الملفات المساعدة
+─────────────────────────────────────────
+
+إذا كان Git مثبتاً لديك:
+
+1. انقر نقراً مزدوجاً على:
+   upload-to-github.bat
+   
+   أو
+
+2. انقر بزر الماوس الأيمن على:
+   upload-to-github.ps1
+   → Run with PowerShell
+
+3. اتبع التعليمات على الشاشة
+
+ملاحظة: سيطلب منك اسم المستخدم وكلمة المرور
+- Username: AbuSalehBinshaq
+- Password: استخدم Personal Access Token
+  (من: https://github.com/settings/tokens)
+
+═══════════════════════════════════════════════════
+

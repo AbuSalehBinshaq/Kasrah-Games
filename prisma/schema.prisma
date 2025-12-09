@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  username      String         @unique
+  password      String
+  name          String?
+  avatar        String?
+  role          Role           @default(USER)
+  isVerified    Boolean        @default(false)
+  bio           String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lastLoginAt   DateTime?
+  
+  ratings       Rating[]
+  playSessions  PlaySession[]
+  bookmarks     Bookmark[]
+  
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Game {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  title         String
+  description   String
+  shortDescription String
+  developer     String
+  publisher     String?
+  releaseDate   DateTime?
+  thumbnail     String
+  coverImage    String?
+  gameUrl       String
+  gameType      GameType       @default(HTML5)
+  technologies  String[]
+  tags          String[]       @default([])
+  requirements  Json?
+  ageRating     String?
+  isFeatured    Boolean        @default(false)
+  isPublished   Boolean        @default(true)
+  views         Int            @default(0)
+  playCount     Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  categories    GameCategory[]
+  ratings       Rating[]
+  playSessions  PlaySession[]
+  bookmarks     Bookmark[]
+  
+  @@map("games")
+}
+
+enum GameType {
+  HTML5
+  WebGL
+  Unity
+  Flash
+  Other
+}
+
+model Category {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  description   String?
+  icon          String?
+  color         String?
+  order         Int            @default(0)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  games         GameCategory[]
+  
+  @@map("categories")
+}
+
+model GameCategory {
+  id         String   @id @default(cuid())
+  gameId     String
+  categoryId String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([gameId, categoryId])
+  @@map("game_categories")
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  isLike      Boolean  // true = like, false = dislike
+  userId      String
+  gameId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, gameId])
+  @@map("ratings")
+}
+
+model PlaySession {
+  id          String   @id @default(cuid())
+  userId      String
+  gameId      String
+  duration    Int      // in seconds
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  @@map("play_sessions")
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String
+  gameId      String
+  folder      String?  @default("favorites")
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, gameId, folder])
+  @@map("bookmarks")
+}
+
+model Settings {
+  id                      String   @id @default("site-settings")
+  siteName                String   @default("Kasrah Games")
+  siteDescription         String   @default("Play the best HTML5 and WebGL games online")
+  siteLogo                String?
+  siteFavicon             String?
+  siteUrl                 String?
+  contactEmail            String?
+  socialFacebook          String?
+  socialTwitter           String?
+  socialInstagram         String?
+  socialYoutube           String?
+  maintenanceMode         Boolean  @default(false)
+  maintenanceMessage      String?
+  allowRegistration       Boolean  @default(true)
+  requireEmailVerification Boolean @default(false)
+  gamesPerPage            Int      @default(12)
+  enableRatings           Boolean  @default(true)
+  enableComments          Boolean  @default(true)
+  enableBookmarks         Boolean  @default(true)
+  showStatistics          Boolean  @default(true)
+  enableAnalytics         Boolean  @default(false)
+  analyticsCode           String?
+  seoMetaTitle            String?
+  seoMetaDescription      String?
+  seoMetaKeywords         String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  @@map("settings")
+}

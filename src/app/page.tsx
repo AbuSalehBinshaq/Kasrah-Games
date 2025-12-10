@@ -1,12 +1,12 @@
-import HeroSection from '@/components/home/HeroSection';
 import FeaturedGames from '@/components/home/FeaturedGames';
+import ContinueGames from '@/components/home/ContinueGames';
+import FavoritesGames from '@/components/home/FavoritesGames';
 import PopularGames from '@/components/home/PopularGames';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
-import RecentReviews from '@/components/home/RecentReviews';
 
 export default function HomePage() {
   return (
-    <>
+    <main className="space-y-12 pb-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -26,11 +26,13 @@ export default function HomePage() {
         }}
       />
 
-      <HeroSection />
-      <FeaturedGames />
-      <CategoryShowcase />
-      <PopularGames />
-      <RecentReviews />
-    </>
+      <div className="space-y-10 px-4 md:px-8">
+        <FeaturedGames />
+        <ContinueGames />
+        <PopularGames />
+        <CategoryShowcase />
+        <FavoritesGames />
+      </div>
+    </main>
   );
 }

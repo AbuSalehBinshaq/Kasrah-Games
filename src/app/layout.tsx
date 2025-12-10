@@ -6,6 +6,11 @@ import Footer from '@/components/common/Footer';
 import SEO from '@/components/common/SEO';
 import MaintenanceWrapper from '@/components/common/MaintenanceWrapper';
 import { getSettings } from '@/lib/settings';
+import dynamic from 'next/dynamic';
+
+const MobileNav = dynamic(() => import('@/components/common/MobileNav'), {
+  ssr: false,
+});
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -100,8 +105,10 @@ export default async function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-gradient-to-b from-gray-50 to-gray-100`}>
         <MaintenanceWrapper>
-          {children}
+          <div className="pb-24">{children}</div>
         </MaintenanceWrapper>
+
+        <MobileNav />
       </body>
     </html>
   );

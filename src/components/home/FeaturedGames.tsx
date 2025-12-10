@@ -31,14 +31,17 @@ export default function FeaturedGames() {
 
   if (loading) {
     return (
-      <section className="py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-3xl font-bold text-gray-900">Featured Games</h2>
-          <div className="h-10 w-24 animate-pulse rounded-lg bg-gray-200"></div>
+      <section className="py-8 md:py-12">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
+          <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-200"></div>
         </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-64 animate-pulse rounded-xl bg-gray-200"></div>
+            <div
+              key={i}
+              className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"
+            ></div>
           ))}
         </div>
       </section>
@@ -46,15 +49,15 @@ export default function FeaturedGames() {
   }
 
   return (
-    <section className="py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-gray-900">Featured Games</h2>
+    <section className="py-8 md:py-12">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
         <Link
           href="/games?featured=true"
-          className="flex items-center space-x-2 text-primary-600 hover:text-primary-700"
+          className="flex items-center space-x-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          <span>View All Featured</span>
-          <ArrowRight className="h-5 w-5" />
+          <span>See all</span>
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
@@ -65,9 +68,14 @@ export default function FeaturedGames() {
           <p className="text-gray-600">Check back soon for featured games!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
           {games.map((game: any) => (
-            <GameCard key={game.id} game={game} viewMode="grid" />
+            <div
+              key={game.id}
+              className=""
+            >
+              <GameCard game={game} viewMode="grid" compact hideDescription />
+            </div>
           ))}
         </div>
       )}

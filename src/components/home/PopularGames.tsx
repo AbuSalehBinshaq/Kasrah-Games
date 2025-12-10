@@ -31,16 +31,14 @@ export default function PopularGames() {
 
   if (loading) {
     return (
-      <section className="py-12">
-        <div className="mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200"></div>
-            <div className="h-8 w-48 animate-pulse rounded bg-gray-200"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <section className="py-8 md:py-12">
+        <div className="mb-6 h-10 w-48 animate-pulse rounded bg-gray-200"></div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-64 animate-pulse rounded-xl bg-gray-200"></div>
+            <div
+              key={i}
+              className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"
+            ></div>
           ))}
         </div>
       </section>
@@ -48,22 +46,17 @@ export default function PopularGames() {
   }
 
   return (
-    <section className="py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="rounded-full bg-gradient-to-r from-orange-500 to-red-500 p-3">
-            <TrendingUp className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Popular Games</h2>
-            <p className="text-gray-600">Most played games this week</p>
-          </div>
+    <section className="py-8 md:py-12">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
+          <p className="text-sm text-gray-600">Based on what players love</p>
         </div>
         <Link
           href="/games?sort=popular"
-          className="rounded-lg bg-gradient-to-r from-orange-500 to-red-500 px-6 py-2 font-semibold text-white hover:from-orange-600 hover:to-red-600"
+          className="rounded-full border border-primary-200 px-4 py-2 text-sm font-semibold text-primary-600 hover:bg-primary-50"
         >
-          View All
+          See all
         </Link>
       </div>
 
@@ -74,9 +67,14 @@ export default function PopularGames() {
           <p className="text-gray-600">Be the first to play!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
           {games.map((game: any) => (
-            <GameCard key={game.id} game={game} viewMode="grid" />
+            <div
+              key={game.id}
+              className=""
+            >
+              <GameCard game={game} viewMode="grid" compact hideDescription />
+            </div>
           ))}
         </div>
       )}

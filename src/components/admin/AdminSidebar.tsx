@@ -10,6 +10,7 @@ import {
   Star,
   Settings,
   LogOut,
+  Megaphone,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -23,6 +24,7 @@ export default function AdminSidebar() {
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/categories', label: 'Categories', icon: Tag },
     { href: '/admin/featured', label: 'Featured', icon: Star },
+    { href: '/admin/ads', label: 'Ads', icon: Megaphone },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 

@@ -175,3 +175,45 @@ model Settings {
   
   @@map("settings")
 }
+
+model Ad {
+  id            String   @id @default(cuid())
+  title         String
+  type          AdType   @default(CUSTOM)
+  position      AdPosition @default(SIDEBAR)
+  isActive      Boolean  @default(true)
+  
+  // For CUSTOM ads (image + link)
+  imageUrl      String?
+  clickUrl      String?
+  
+  // For CODE ads (custom JS/HTML)
+  code          String?
+  
+  // Statistics
+  impressions  Int      @default(0)
+  clicks       Int      @default(0)
+  
+  // Additional settings
+  startDate     DateTime?
+  endDate       DateTime?
+  targetUrl     String?  // For tracking
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("ads")
+}
+
+enum AdType {
+  CUSTOM  // Image + Link
+  CODE    // Custom JS/HTML code
+}
+
+enum AdPosition {
+  HEADER
+  SIDEBAR
+  FOOTER
+  IN_CONTENT
+  POPUP
+}

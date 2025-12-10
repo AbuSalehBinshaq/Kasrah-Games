@@ -159,11 +159,11 @@ export default function AdminFeaturedPage() {
                         <h4 className="font-medium text-gray-900">{game.title}</h4>
                         <p className="text-sm text-gray-900">{game.developer}</p>
                         <div className="mt-1 flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">{game.playCount} plays</span>
+                          <span className="text-xs text-gray-500">{game.playCount || 0} plays</span>
                           <span className="text-xs text-gray-500">•</span>
                           <span className="flex items-center text-xs text-yellow-600">
                             <Star className="mr-1 h-3 w-3" />
-                            {game.avgRating.toFixed(1)}
+                            {game.avgRating != null ? game.avgRating.toFixed(1) : '0.0'}
                           </span>
                         </div>
                       </div>

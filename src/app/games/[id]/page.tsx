@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import LikeDislike from '@/components/common/LikeDislike';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import AdDisplay from '@/components/common/AdDisplay';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import { formatDate } from '@/lib/utils';
@@ -561,6 +562,9 @@ export default function GameDetailPage() {
           </div>
 
           <div className="space-y-6">
+            {/* Sidebar Ad */}
+            <AdDisplay position="SIDEBAR" />
+            
             {game.requirements && (
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h3 className="mb-3 text-lg font-semibold text-slate-900">Requirements</h3>

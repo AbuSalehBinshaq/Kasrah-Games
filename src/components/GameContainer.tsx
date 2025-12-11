@@ -55,7 +55,11 @@ export default function GameContainer({
     if (isMobile && !isMobileFullscreen) {
       const timer = setTimeout(() => {
         setIsMobileFullscreen(true);
-        enterFullscreen();
+        // Don't call enterFullscreen() for iOS - just use CSS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (!isIOS) {
+          enterFullscreen();
+        }
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -69,38 +73,21 @@ export default function GameContainer({
       const footer = document.querySelector('footer');
       const mobileNav = document.querySelector('[data-mobile-nav]');
       const body = document.body;
-      const mainContent = document.querySelector('main');
-      const rootDiv = document.querySelector('.bg-gray-50');
       
       if (header) (header as HTMLElement).style.display = 'none';
       if (footer) (footer as HTMLElement).style.display = 'none';
       if (mobileNav) (mobileNav as HTMLElement).style.display = 'none';
-      if (mainContent) (mainContent as HTMLElement).style.display = 'none';
-      if (rootDiv && rootDiv !== containerRef.current?.closest('.bg-gray-50')) {
-        (rootDiv as HTMLElement).style.display = 'none';
-      }
       
+      // Prevent scrolling and set body to black
       body.style.overflow = 'hidden';
       body.style.background = '#000';
-      body.style.padding = '0';
-      body.style.margin = '0';
-      body.style.position = 'fixed';
-      body.style.width = '100%';
-      body.style.height = '100%';
       
       return () => {
         if (header) (header as HTMLElement).style.display = '';
         if (footer) (footer as HTMLElement).style.display = '';
         if (mobileNav) (mobileNav as HTMLElement).style.display = '';
-        if (mainContent) (mainContent as HTMLElement).style.display = '';
-        if (rootDiv) (rootDiv as HTMLElement).style.display = '';
         body.style.overflow = '';
         body.style.background = '';
-        body.style.padding = '';
-        body.style.margin = '';
-        body.style.position = '';
-        body.style.width = '';
-        body.style.height = '';
       };
     }
   }, [isMobile, isMobileFullscreen]);
@@ -108,7 +95,11 @@ export default function GameContainer({
   const handleMobileFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(true);
-      enterFullscreen();
+      // Only use Fullscreen API on non-iOS devices
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (!isIOS) {
+        enterFullscreen();
+      }
     } else {
       enterFullscreen();
     }
@@ -117,7 +108,10 @@ export default function GameContainer({
   const handleExitMobileFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
-      exitFullscreen();
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (!isIOS) {
+        exitFullscreen();
+      }
     } else {
       exitFullscreen();
     }
@@ -236,58 +230,38 @@ export default function GameContainer({
 
       {/* Mobile view */}
       <div className="md:hidden">
-        <div
-          ref={containerRef}
-          className={`game-container-mobile relative bg-black ${
-            isMobileFullscreen 
-              ? 'fixed inset-0 z-[9999]' 
-              : 'rounded-xl border border-gray-200 aspect-video w-full overflow-hidden'
-          }`}
-          style={isMobileFullscreen ? { 
-            width: '100vw', 
-            height: '100vh',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            position: 'fixed',
-            margin: 0,
-            padding: 0
-          } : {}}
-        >
-          <div 
-            className={isMobileFullscreen ? 'absolute inset-0' : 'h-full w-full'}
-            style={isMobileFullscreen ? {
-              width: '100vw',
-              height: '100vh',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            } : {}}
+        {isMobileFullscreen ? (
+          <div
+            ref={containerRef}
+            className="game-container-mobile-fullscreen"
           >
             {children}
-          </div>
-
-          {/* Exit button - only visible in mobile fullscreen */}
-          {isMobileFullscreen && (
+            
+            {/* Exit button */}
             <button
               onClick={handleExitMobileFullscreen}
-              className="absolute top-3 right-3 z-[10000] rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80 shadow-lg"
+              className="mobile-exit-button"
             >
               Exit
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div
+            ref={containerRef}
+            className="game-container-mobile relative bg-black rounded-xl border border-gray-200 aspect-video w-full overflow-hidden"
+          >
+            {children}
+          </div>
+        )}
       </div>
 
       <style jsx global>{`
+        /* Desktop fullscreen styles */
         .game-container:fullscreen,
         .game-container:-webkit-full-screen,
         .game-container:-moz-full-screen {
-          width: 100%;
-          height: 100%;
+          width: 100vw;
+          height: 100vh;
           background: black;
         }
         .game-container:fullscreen > *,
@@ -303,66 +277,64 @@ export default function GameContainer({
           height: 100%;
         }
         
-        .game-container-mobile iframe {
-          width: 100% !important;
-          height: 100% !important;
-          border: none !important;
-          display: block !important;
-          position: absolute;
+        /* Mobile fullscreen styles - CSS only, no Fullscreen API needed */
+        .game-container-mobile-fullscreen {
+          position: fixed;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
+          width: 100vw;
+          height: 100vh;
+          height: 100dvh; /* Dynamic viewport height for mobile browsers */
+          background: #000;
+          z-index: 9999;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
         }
         
+        .game-container-mobile-fullscreen iframe,
+        .game-container-mobile-fullscreen canvas,
+        .game-container-mobile-fullscreen video {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100% !important;
+          height: 100% !important;
+          border: none !important;
+          display: block !important;
+        }
+        
+        .mobile-exit-button {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          z-index: 10000;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(8px);
+          color: white;
+          border: none;
+          border-radius: 9999px;
+          padding: 6px 12px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mobile-exit-button:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Regular mobile container */
+        .game-container-mobile iframe,
         .game-container-mobile canvas,
         .game-container-mobile video {
-          width: 100%;
-          height: 100%;
-          border: none;
-          display: block;
-        }
-        
-        @media (max-width: 767px) {
-          .game-container-mobile {
-            position: relative;
-          }
-          
-          .game-container-mobile.fixed,
-          .game-container-mobile[style*="fixed"] {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          
-          .game-container-mobile.fixed > div,
-          .game-container-mobile[style*="fixed"] > div {
-            width: 100vw !important;
-            height: 100vh !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-          }
-          
-          .game-container-mobile.fixed iframe,
-          .game-container-mobile[style*="fixed"] iframe {
-            width: 100vw !important;
-            height: 100vh !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-          }
+          width: 100% !important;
+          height: 100% !important;
+          border: none !important;
+          display: block !important;
         }
       `}</style>
     </>

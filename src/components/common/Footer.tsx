@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Gamepad2, Mail, Shield, Heart, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
+import AdDisplay from './AdDisplay';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,6 +12,12 @@ export default function Footer() {
 
   return (
     <footer className="mt-auto border-t border-gray-200 bg-white">
+      {/* Footer Ad */}
+      <div className="w-full bg-gray-50 py-4">
+        <div className="container mx-auto px-4">
+          <AdDisplay position="FOOTER" className="flex justify-center" />
+        </div>
+      </div>
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}

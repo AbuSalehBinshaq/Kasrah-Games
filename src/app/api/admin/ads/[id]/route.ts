@@ -49,6 +49,7 @@ export async function PUT(
       title,
       type,
       position,
+      size,
       imageUrl,
       clickUrl,
       code,
@@ -62,6 +63,7 @@ export async function PUT(
     if (title !== undefined) updateData.title = title;
     if (type !== undefined) updateData.type = type;
     if (position !== undefined) updateData.position = position;
+    if (size !== undefined) updateData.size = size;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;

@@ -51,16 +51,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Auth route redirection (if already logged in)
-  if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
-    const token = request.cookies.get('token');
-
-    if (token) {
-      // Redirect to home if already logged in
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-  }
-
   return response;
 }
 

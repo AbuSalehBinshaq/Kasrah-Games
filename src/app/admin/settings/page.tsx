@@ -32,6 +32,10 @@ interface SiteSettings {
   enableComments: boolean;
   enableBookmarks: boolean;
   showStatistics: boolean;
+  primaryColor?: string | null;
+  primaryColorHover?: string | null;
+  backgroundFrom?: string | null;
+  backgroundTo?: string | null;
   enableAnalytics: boolean;
   analyticsCode?: string | null;
   seoMetaTitle?: string | null;
@@ -295,6 +299,92 @@ export default function AdminSettingsPage() {
                   onChange={(e) => updateSetting('socialYoutube', e.target.value || null)}
                   placeholder="https://youtube.com/yourchannel"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Theme Colors */}
+          <div className="rounded-xl bg-white p-6 shadow">
+            <div className="mb-6 flex items-center space-x-2">
+              <Settings className="h-5 w-5 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Theme Colors</h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="primaryColor">Primary Color</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="primaryColor"
+                    type="color"
+                    value={settings.primaryColor || '#7c3aed'}
+                    onChange={(e) => updateSetting('primaryColor', e.target.value)}
+                    className="h-10 w-16 cursor-pointer p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={settings.primaryColor || '#7c3aed'}
+                    onChange={(e) => updateSetting('primaryColor', e.target.value)}
+                    placeholder="#7c3aed"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="primaryColorHover">Primary Hover</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="primaryColorHover"
+                    type="color"
+                    value={settings.primaryColorHover || '#6d28d9'}
+                    onChange={(e) => updateSetting('primaryColorHover', e.target.value)}
+                    className="h-10 w-16 cursor-pointer p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={settings.primaryColorHover || '#6d28d9'}
+                    onChange={(e) => updateSetting('primaryColorHover', e.target.value)}
+                    placeholder="#6d28d9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="backgroundFrom">Background From</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="backgroundFrom"
+                    type="color"
+                    value={settings.backgroundFrom || '#f8fafc'}
+                    onChange={(e) => updateSetting('backgroundFrom', e.target.value)}
+                    className="h-10 w-16 cursor-pointer p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={settings.backgroundFrom || '#f8fafc'}
+                    onChange={(e) => updateSetting('backgroundFrom', e.target.value)}
+                    placeholder="#f8fafc"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="backgroundTo">Background To</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="backgroundTo"
+                    type="color"
+                    value={settings.backgroundTo || '#eef2ff'}
+                    onChange={(e) => updateSetting('backgroundTo', e.target.value)}
+                    className="h-10 w-16 cursor-pointer p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={settings.backgroundTo || '#eef2ff'}
+                    onChange={(e) => updateSetting('backgroundTo', e.target.value)}
+                    placeholder="#eef2ff"
+                  />
+                </div>
               </div>
             </div>
           </div>

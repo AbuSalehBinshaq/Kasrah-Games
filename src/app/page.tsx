@@ -3,6 +3,7 @@ import ContinueGames from '@/components/home/ContinueGames';
 import FavoritesGames from '@/components/home/FavoritesGames';
 import PopularGames from '@/components/home/PopularGames';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
+import AdDisplay from '@/components/common/AdDisplay';
 
 export default function HomePage() {
   return (
@@ -27,9 +28,20 @@ export default function HomePage() {
       />
 
       <div className="space-y-10 px-4 md:px-8">
+        {/* In-Content Ad */}
+        <div className="flex justify-center">
+          <AdDisplay position="IN_CONTENT" />
+        </div>
+        
         <FeaturedGames />
         <ContinueGames />
         <PopularGames />
+        
+        {/* In-Content Ad */}
+        <div className="flex justify-center">
+          <AdDisplay position="IN_CONTENT" />
+        </div>
+        
         <CategoryShowcase />
         <FavoritesGames />
       </div>

@@ -165,6 +165,10 @@ model Settings {
   enableComments          Boolean  @default(true)
   enableBookmarks         Boolean  @default(true)
   showStatistics          Boolean  @default(true)
+  primaryColor            String   @default("#7c3aed")
+  primaryColorHover       String   @default("#6d28d9")
+  backgroundFrom          String   @default("#f8fafc")
+  backgroundTo            String   @default("#eef2ff")
   enableAnalytics         Boolean  @default(false)
   analyticsCode           String?
   seoMetaTitle            String?
@@ -181,6 +185,7 @@ model Ad {
   title         String
   type          AdType   @default(CUSTOM)
   position      AdPosition @default(SIDEBAR)
+  size          AdSize   @default(MEDIUM)
   isActive      Boolean  @default(true)
   
   // For CUSTOM ads (image + link)
@@ -216,4 +221,12 @@ enum AdPosition {
   FOOTER
   IN_CONTENT
   POPUP
+}
+
+enum AdSize {
+  SMALL       // 300x100
+  MEDIUM      // 300x250
+  LARGE       // 728x90
+  FULL_WIDTH  // 100% width
+  CUSTOM      // Custom dimensions
 }

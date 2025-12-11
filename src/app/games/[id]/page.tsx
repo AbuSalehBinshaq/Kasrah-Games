@@ -6,16 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   AlertCircle,
-  Calendar,
-  Clock,
   Eye,
-  Gamepad2,
-  Maximize2,
-  Minimize2,
   Play,
-  Share2,
-  Sparkles,
-  Star,
   ThumbsUp,
   Users,
 } from 'lucide-react';
@@ -24,7 +16,6 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import AdDisplay from '@/components/common/AdDisplay';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
-import { formatDate } from '@/lib/utils';
 import GameCard from '@/components/common/GameCard';
 import GameContainer from '@/components/GameContainer';
 import type { Game } from '@/types';
@@ -280,199 +271,107 @@ export default function GameDetailPage() {
         </div>
 
         {!isPlaying && (
-          <div className="space-y-6">
-            {/* Hero */}
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="grid gap-6 p-6 lg:grid-cols-5 lg:p-8">
-                <div className="space-y-4 lg:col-span-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {game.categoryNames.map((category) => (
-                      <span key={category} className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                        {category}
-                      </span>
-                    ))}
-                    {(game.tags || []).map((tag) => (
-                      <Link
-                        key={tag}
-                        href={`/games?tag=${encodeURIComponent(tag)}`}
-                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 hover:bg-slate-50"
-                      >
-                        #{tag}
-                      </Link>
-                    ))}
-                    {game.ageRating && (
-                      <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-900">
-                        {game.ageRating}
-                      </span>
-                    )}
-                  </div>
+          <div className="space-y-8">
+            {/* Hero aligned with reference design */}
+            <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
+              <div className="absolute inset-0">
+                <Image
+                  src={game.coverImage || game.thumbnail}
+                  alt={game.title}
+                  fill
+                  className="object-cover blur-[2px] opacity-60"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-slate-900/90" />
+              </div>
 
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="h-5 w-5 text-amber-500" />
-                    <h1 className="text-3xl font-black leading-tight text-slate-900 lg:text-4xl">
-                      {game.title}
-                    </h1>
-                  </div>
-                  <p className="text-base text-slate-700 lg:text-lg">{game.shortDescription}</p>
-
-                  {showStats && (
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="rounded-xl border border-gray-200 bg-slate-50 p-3">
-                        <div className="flex items-center justify-between text-xs text-slate-500">
-                          <span>Rating</span>
-                          <ThumbsUp className="h-4 w-4" />
-                        </div>
-                        <div className="mt-1 text-xl font-bold text-slate-900">{game.likePercentage}%</div>
-                        <div className="text-[11px] text-slate-500">{game.totalRatings} votes</div>
-                      </div>
-                      <div className="rounded-xl border border-gray-200 bg-slate-50 p-3">
-                        <div className="flex items-center justify-between text-xs text-slate-500">
-                          <span>Online</span>
-                          <Users className="h-4 w-4" />
-                        </div>
-                        <div className="mt-1 text-xl font-bold text-slate-900">{game.onlineCount || 0}</div>
-                        <div className="text-[11px] text-slate-500">live now</div>
-                      </div>
-                      <div className="rounded-xl border border-gray-200 bg-slate-50 p-3">
-                        <div className="flex items-center justify-between text-xs text-slate-500">
-                          <span>Visits</span>
-                          <Eye className="h-4 w-4" />
-                        </div>
-                        <div className="mt-1 text-xl font-bold text-slate-900">{game.views.toLocaleString()}</div>
-                        <div className="text-[11px] text-slate-500">all time</div>
-                      </div>
+              <div className="relative flex flex-col items-center gap-6 px-6 py-10 md:px-10 lg:px-14">
+                <div className="flex flex-col items-center gap-6">
+                  <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-2xl">
+                    <div className="relative h-40 w-64 md:h-48 md:w-80">
+                      <Image
+                        src={game.thumbnail}
+                        alt={game.title}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
                     </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={handlePlayGame}
-                      className="flex items-center space-x-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800"
-                    >
-                      <Play className="h-5 w-5" />
-                      <span>Play Now</span>
-                    </button>
-                    <button
-                      onClick={handleFavorite}
-                      disabled={isFavoriting}
-                      className={`flex items-center space-x-2 rounded-full border px-5 py-3 text-sm font-semibold ${
-                        isFavorited
-                          ? 'border-slate-400 bg-slate-800 text-white'
-                          : 'border-slate-300 text-slate-900 hover:bg-slate-50 bg-white'
-                      }`}
-                    >
-                      <Star className="h-5 w-5" />
-                      <span>{isFavorited ? 'Favorited' : isFavoriting ? 'Saving...' : 'Favorite'}</span>
-                    </button>
-                    <button
-                      onClick={() => alert('Share feature coming soon!')}
-                      className="flex items-center space-x-2 rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
-                    >
-                      <Share2 className="h-5 w-5" />
-                      <span>Share</span>
-                    </button>
                   </div>
+
+                  <div className="text-center">
+                    <h1 className="text-3xl font-bold md:text-4xl">{game.title}</h1>
+                  </div>
+
+                  <button
+                    onClick={handlePlayGame}
+                    className="rounded-full bg-[var(--color-primary)] px-10 py-3 text-lg font-semibold text-white shadow-lg transition hover:bg-[var(--color-primary-hover)] md:block"
+                  >
+                    Play Now
+                  </button>
                 </div>
 
-                <div className="lg:col-span-2">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-gray-200 bg-slate-100">
-                    <Image
-                      src={game.thumbnail}
-                      alt={game.title}
-                      fill
-                        className="object-cover transition-transform duration-300 hover:scale-[1.02]"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4">
-                    <div className="w-full space-y-2">
-                      <p className="text-sm text-white">Ready to play?</p>
-                      <button
-                        onClick={handlePlayGame}
-                        className="flex w-full items-center justify-center space-x-2 rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-600"
-                      >
-                        <Play className="h-5 w-5" />
-                        <span>Play Now</span>
-                      </button>
+                <div className="flex w-full items-center justify-between gap-2 rounded-2xl bg-black/40 px-4 py-3 text-sm md:px-6">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold">
+                      {game.title.slice(0, 1).toUpperCase()}
                     </div>
+                    <span className="font-semibold">{game.title}</span>
+                  </div>
+
+                  <div className="flex flex-1 flex-wrap items-center justify-end gap-3 text-white/90">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span className="font-semibold">{(game.likes ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
+                      <Eye className="h-4 w-4" />
+                      <span className="font-semibold">{(game.views ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
+                      <Users className="h-4 w-4" />
+                      <span className="font-semibold">{(game.onlineCount ?? 0).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Info + live stats */}
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h3 className="mb-4 text-lg font-bold text-slate-900">Game Information</h3>
-                <div className="space-y-3 text-sm text-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Gamepad2 className="h-4 w-4 text-slate-500" />
-                      Developer
-                    </span>
-                    <span className="font-semibold text-slate-900">{game.developer}</span>
-                  </div>
-                  {game.publisher && (
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-slate-600">
-                        <Gamepad2 className="h-4 w-4 text-slate-500" />
-                        Publisher
-                      </span>
-                      <span className="font-semibold text-slate-900">{game.publisher}</span>
-                    </div>
-                  )}
-                  {game.releaseDate && (
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-slate-600">
-                        <Calendar className="h-4 w-4 text-slate-500" />
-                        Release
-                      </span>
-                      <span className="font-semibold text-slate-900">{formatDate(game.releaseDate)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Clock className="h-4 w-4 text-slate-500" />
-                      Game Type
-                    </span>
-                    <span className="font-semibold text-slate-900">{game.gameType}</span>
-                  </div>
+            {/* Description + stats below hero */}
+            <div className="grid gap-5 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <h2 className="mb-3 text-xl font-bold text-slate-900">About this game</h2>
+                  <p className="leading-relaxed text-slate-700">{game.description || game.shortDescription}</p>
                 </div>
-                {game.technologies?.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    <p className="text-sm text-slate-600">Technologies</p>
-                    <div className="flex flex-wrap gap-2">
-                      {game.technologies.map((tech) => (
-                        <span key={tech} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {showStats && (
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <h3 className="mb-3 text-lg font-bold text-slate-900">Live Stats</h3>
-                  <div className="space-y-3 text-sm text-slate-700">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-slate-600">
-                        <Users className="h-4 w-4 text-slate-500" />
-                        Online
-                      </span>
-                      <span className="font-semibold text-slate-900">{game.onlineCount || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-slate-600">
-                        <Eye className="h-4 w-4 text-slate-500" />
-                        Visits
-                      </span>
-                      <span className="font-semibold text-slate-900">{game.views.toLocaleString()}</span>
-                    </div>
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-3 text-lg font-bold text-slate-900">Stats</h3>
+                <div className="space-y-3 text-sm text-slate-700">
+                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
+                    <span className="flex items-center gap-2 text-slate-600">
+                      <ThumbsUp className="h-4 w-4 text-slate-500" />
+                      Likes
+                    </span>
+                    <span className="font-semibold text-slate-900">{(game.likes ?? 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
+                    <span className="flex items-center gap-2 text-slate-600">
+                      <Users className="h-4 w-4 text-slate-500" />
+                      Online
+                    </span>
+                    <span className="font-semibold text-slate-900">{(game.onlineCount ?? 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
+                    <span className="flex items-center gap-2 text-slate-600">
+                      <Eye className="h-4 w-4 text-slate-500" />
+                      Visits
+                    </span>
+                    <span className="font-semibold text-slate-900">{(game.views ?? 0).toLocaleString()}</span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}

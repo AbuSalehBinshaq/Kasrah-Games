@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import SearchBar from './SearchBar';
 import Navigation from './Navigation';
+import AdDisplay from './AdDisplay';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +19,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+      {/* Header Ad */}
+      <div className="w-full bg-gray-50 py-2">
+        <div className="container mx-auto px-4">
+          <AdDisplay position="HEADER" className="flex justify-center" />
+        </div>
+      </div>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

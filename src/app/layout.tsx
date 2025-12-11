@@ -5,6 +5,8 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import SEO from '@/components/common/SEO';
 import MaintenanceWrapper from '@/components/common/MaintenanceWrapper';
+import ThemeProvider from '@/components/common/ThemeProvider';
+import AdDisplay from '@/components/common/AdDisplay';
 import { getSettings } from '@/lib/settings';
 import dynamic from 'next/dynamic';
 
@@ -103,12 +105,17 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} min-h-screen bg-gradient-to-b from-gray-50 to-gray-100`}>
-        <MaintenanceWrapper>
-          <div className="pb-24">{children}</div>
-        </MaintenanceWrapper>
+      <body className={`${inter.className} min-h-screen`}>
+        <ThemeProvider>
+          <MaintenanceWrapper>
+            <div className="pb-24">{children}</div>
+          </MaintenanceWrapper>
 
-        <MobileNav />
+          <MobileNav />
+          
+          {/* Popup Ads */}
+          <AdDisplay position="POPUP" />
+        </ThemeProvider>
       </body>
     </html>
   );

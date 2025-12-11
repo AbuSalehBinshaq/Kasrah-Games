@@ -18,6 +18,10 @@ export interface SiteSettings {
   enableComments: boolean;
   enableBookmarks: boolean;
   showStatistics: boolean;
+  primaryColor?: string | null;
+  primaryColorHover?: string | null;
+  backgroundFrom?: string | null;
+  backgroundTo?: string | null;
   enableAnalytics?: boolean;
   analyticsCode?: string | null;
   seoMetaTitle?: string | null;
@@ -43,6 +47,10 @@ const defaultSettings: SiteSettings = {
   enableComments: true,
   enableBookmarks: true,
   showStatistics: true,
+  primaryColor: '#7c3aed',
+  primaryColorHover: '#6d28d9',
+  backgroundFrom: '#f8fafc',
+  backgroundTo: '#eef2ff',
   seoMetaTitle: null,
   seoMetaDescription: null,
   seoMetaKeywords: null,
@@ -76,6 +84,10 @@ export async function getSettings(): Promise<SiteSettings> {
       enableComments: settings.enableComments,
       enableBookmarks: settings.enableBookmarks,
       showStatistics: settings.showStatistics,
+      primaryColor: settings.primaryColor,
+      primaryColorHover: settings.primaryColorHover,
+      backgroundFrom: settings.backgroundFrom,
+      backgroundTo: settings.backgroundTo,
       enableAnalytics: settings.enableAnalytics,
       analyticsCode: settings.analyticsCode,
       seoMetaTitle: settings.seoMetaTitle,

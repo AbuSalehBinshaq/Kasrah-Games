@@ -20,6 +20,10 @@ interface SiteSettings {
   enableComments: boolean;
   enableBookmarks: boolean;
   showStatistics: boolean;
+  primaryColor?: string | null;
+  primaryColorHover?: string | null;
+  backgroundFrom?: string | null;
+  backgroundTo?: string | null;
   seoMetaTitle?: string | null;
   seoMetaDescription?: string | null;
   seoMetaKeywords?: string | null;
@@ -43,6 +47,10 @@ const defaultSettings: SiteSettings = {
   enableComments: true,
   enableBookmarks: true,
   showStatistics: true,
+  primaryColor: '#7c3aed',
+  primaryColorHover: '#6d28d9',
+  backgroundFrom: '#f8fafc',
+  backgroundTo: '#eef2ff',
   seoMetaTitle: null,
   seoMetaDescription: null,
   seoMetaKeywords: null,

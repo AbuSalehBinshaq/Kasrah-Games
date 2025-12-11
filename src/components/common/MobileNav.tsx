@@ -15,7 +15,7 @@ export default function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed left-1/2 bottom-4 z-50 w-[92%] max-w-md -translate-x-1/2 rounded-2xl border border-white/50 bg-white/90 px-3 py-2 shadow-2xl backdrop-blur-md md:hidden">
+    <nav data-mobile-nav className="fixed left-1/2 bottom-4 z-50 w-[92%] max-w-md -translate-x-1/2 rounded-2xl border border-white/50 bg-white/90 px-3 py-2 shadow-2xl backdrop-blur-md md:hidden">
       <div className="flex items-center justify-between text-gray-700">
         {links.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href || (href !== '/' && pathname.startsWith(href.split('?')[0]));

@@ -24,6 +24,7 @@ interface Ad {
   title: string;
   type: 'CUSTOM' | 'CODE';
   position: 'HEADER' | 'SIDEBAR' | 'FOOTER' | 'IN_CONTENT' | 'POPUP';
+  size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'FULL_WIDTH' | 'CUSTOM';
   isActive: boolean;
   imageUrl?: string | null;
   clickUrl?: string | null;
@@ -49,6 +50,7 @@ export default function AdminAdsPage() {
     title: '',
     type: 'CUSTOM' as 'CUSTOM' | 'CODE',
     position: 'SIDEBAR' as Ad['position'],
+    size: 'MEDIUM' as Ad['size'],
     imageUrl: '',
     clickUrl: '',
     code: '',
@@ -201,6 +203,7 @@ export default function AdminAdsPage() {
       title: '',
       type: 'CUSTOM',
       position: 'SIDEBAR',
+      size: 'MEDIUM',
       imageUrl: '',
       clickUrl: '',
       code: '',
@@ -218,6 +221,7 @@ export default function AdminAdsPage() {
       title: ad.title,
       type: ad.type,
       position: ad.position,
+      size: ad.size || 'MEDIUM',
       imageUrl: ad.imageUrl || '',
       clickUrl: ad.clickUrl || '',
       code: ad.code || '',
@@ -491,7 +495,7 @@ export default function AdminAdsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Type *
@@ -534,6 +538,30 @@ export default function AdminAdsPage() {
                       <option value="FOOTER" style={{ color: '#111827' }}>Footer</option>
                       <option value="IN_CONTENT" style={{ color: '#111827' }}>In Content</option>
                       <option value="POPUP" style={{ color: '#111827' }}>Popup</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Size *
+                    </label>
+                    <select
+                      value={formData.size}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          size: e.target.value as Ad['size'],
+                        })
+                      }
+                      className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                      style={{ color: '#111827' }}
+                      required
+                    >
+                      <option value="SMALL" style={{ color: '#111827' }}>Small (300x100)</option>
+                      <option value="MEDIUM" style={{ color: '#111827' }}>Medium (300x250)</option>
+                      <option value="LARGE" style={{ color: '#111827' }}>Large (728x90)</option>
+                      <option value="FULL_WIDTH" style={{ color: '#111827' }}>Full Width</option>
+                      <option value="CUSTOM" style={{ color: '#111827' }}>Custom</option>
                     </select>
                   </div>
                 </div>

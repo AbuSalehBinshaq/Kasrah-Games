@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState, RefObject } from 'react';
 
 type FullscreenElement = HTMLElement & {
@@ -43,14 +41,18 @@ export function useFullscreen(targetRef: RefObject<HTMLElement>) {
       element.msRequestFullscreen;
 
     if (request) {
-      await request.call(element);
-      // Try to lock orientation to landscape when supported (mobile).
-      if (typeof screen !== 'undefined' && (screen as any).orientation?.lock) {
-        try {
-          await (screen as any).orientation.lock('landscape');
-        } catch {
-          /* ignore if not allowed */
+      try {
+        await request.call(element);
+        // Try to lock orientation to landscape when supported (mobile).
+        if (typeof screen !== 'undefined' && (screen as any).orientation?.lock) {
+          try {
+            await (screen as any).orientation.lock('landscape');
+          } catch {
+            /* ignore if not allowed */
+          }
         }
+      } catch (error) {
+        console.error('Fullscreen request failed:', error);
       }
     }
   };
@@ -63,7 +65,11 @@ export function useFullscreen(targetRef: RefObject<HTMLElement>) {
       doc.mozCancelFullScreen ||
       doc.msExitFullscreen;
     if (exit) {
-      await exit.call(doc);
+      try {
+        await exit.call(doc);
+      } catch (error) {
+        console.error('Exit fullscreen failed:', error);
+      }
     }
   };
 
@@ -88,4 +94,3 @@ export function useFullscreen(targetRef: RefObject<HTMLElement>) {
 
   return { isFullscreen, enterFullscreen, exitFullscreen };
 }
-

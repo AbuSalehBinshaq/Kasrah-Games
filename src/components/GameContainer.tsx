@@ -56,7 +56,7 @@ export default function GameContainer({
       const timer = setTimeout(() => {
         setIsMobileFullscreen(true);
         // Don't call enterFullscreen() for iOS - just use CSS
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         if (!isIOS) {
           enterFullscreen();
         }
@@ -96,7 +96,7 @@ export default function GameContainer({
     if (isMobile) {
       setIsMobileFullscreen(true);
       // Only use Fullscreen API on non-iOS devices
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (!isIOS) {
         enterFullscreen();
       }
@@ -108,7 +108,7 @@ export default function GameContainer({
   const handleExitMobileFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (!isIOS) {
         exitFullscreen();
       }

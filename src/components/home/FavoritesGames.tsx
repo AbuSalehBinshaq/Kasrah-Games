@@ -56,8 +56,8 @@ export default function FavoritesGames() {
       }));
 
       const sorted = normalized
-        .filter((g) => g.id && g.slug)
-        .sort((a, b) => {
+        .filter((g: FavoriteGame) => g.id && g.slug)
+        .sort((a: FavoriteGame, b: FavoriteGame) => {
           const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return bTime - aTime;

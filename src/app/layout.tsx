@@ -24,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const keywords = settings.seoMetaKeywords?.split(',').map(k => k.trim()) || ['online games', 'HTML5 games', 'WebGL games', 'free games', 'browser games'];
 
   return {
+    metadataBase: new URL(siteUrl),
     title: {
       default: settings.seoMetaTitle || `${siteName} - Play Free Online Games`,
       template: `%s | ${siteName}`,

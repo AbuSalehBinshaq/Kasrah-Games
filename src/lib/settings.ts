@@ -57,6 +57,11 @@ const defaultSettings: SiteSettings = {
 };
 
 export async function getSettings(): Promise<SiteSettings> {
+  // Check if DATABASE_URL is available before attempting database connection
+  if (!process.env.DATABASE_URL) {
+    return defaultSettings;
+  }
+
   try {
     const settings = await prisma.settings.findUnique({
       where: { id: 'site-settings' },
@@ -95,7 +100,11 @@ export async function getSettings(): Promise<SiteSettings> {
       seoMetaKeywords: settings.seoMetaKeywords,
     };
   } catch (error) {
-    console.error('Failed to fetch settings:', error);
+    // Silently return default settings if database is not available
+    // This allows the app to build and run even without database connection
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Failed to fetch settings from database, using defaults:', error instanceof Error ? error.message : 'Unknown error');
+    }
     return defaultSettings;
   }
 }

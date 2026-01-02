@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, UserPlus, Mail, User, Shield, Calendar, Edit, Trash2 } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import AdminSidebar from '@/components/admin/AdminSidebar';

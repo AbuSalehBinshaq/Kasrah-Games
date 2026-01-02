@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { Gamepad2, Home, Search, AlertCircle } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function NotFound() {
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">

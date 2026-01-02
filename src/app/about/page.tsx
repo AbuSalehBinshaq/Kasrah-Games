@@ -1,5 +1,7 @@
 import { Gamepad2, Users, Shield, Zap } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto">

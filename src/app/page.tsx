@@ -5,6 +5,8 @@ import PopularGames from '@/components/home/PopularGames';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import AdDisplay from '@/components/common/AdDisplay';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <main className="space-y-12 pb-24">

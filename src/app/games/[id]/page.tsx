@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import {

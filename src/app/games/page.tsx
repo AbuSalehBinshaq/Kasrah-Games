@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
 import { Filter, Grid, List, Search } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 import SearchBar from '@/components/common/SearchBar';

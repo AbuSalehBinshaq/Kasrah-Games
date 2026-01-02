@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
@@ -11,9 +12,19 @@ interface MaintenanceWrapperProps {
 }
 
 export default function MaintenanceWrapper({ children }: MaintenanceWrapperProps) {
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
   const { settings } = useSettings();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render maintenance check during SSR/prerendering
+  if (!mounted) {
+    return <>{children}</>;
+  }
 
   // Check if current route should be accessible during maintenance
   const isAuthRoute = pathname?.startsWith('/auth');

@@ -1,12 +1,19 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSettings } from '@/hooks/useSettings';
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { settings } = useSettings();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || typeof document === 'undefined') return;
+    
     // Update CSS variables when settings change
     const root = document.documentElement;
     
@@ -21,10 +28,10 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     root.style.setProperty('--color-bg-to', bgTo);
 
     // Update body background gradient
-    document.body.style.background = `linear-gradient(to bottom, ${bgFrom}, ${bgTo})`;
-    
-    console.log('🎨 Theme updated:', { primaryColor, primaryHover, bgFrom, bgTo });
-  }, [settings.primaryColor, settings.primaryColorHover, settings.backgroundFrom, settings.backgroundTo]);
+    if (document.body) {
+      document.body.style.background = `linear-gradient(to bottom, ${bgFrom}, ${bgTo})`;
+    }
+  }, [mounted, settings.primaryColor, settings.primaryColorHover, settings.backgroundFrom, settings.backgroundTo]);
 
   return <>{children}</>;
 }

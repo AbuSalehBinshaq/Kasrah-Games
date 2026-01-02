@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+
+export const dynamic = 'force-dynamic';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { ArrowLeft } from 'lucide-react';

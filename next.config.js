@@ -49,7 +49,9 @@ const nextConfig = {
         },
         {
           key: 'Access-Control-Allow-Origin',
-          value: 'https://kasrahgames.example',
+          value: process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}` 
+            : (process.env.NEXT_PUBLIC_SITE_URL || '*'),
         },
         {
           key: 'Access-Control-Allow-Methods',

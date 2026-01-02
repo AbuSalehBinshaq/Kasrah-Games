@@ -40,10 +40,6 @@ export default function SEO({
       <meta name="robots" content="index, follow" />
       <link rel="canonical" href={siteUrl} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      
-      {/* hreflang for i18n support */}
-      <link rel="alternate" href={siteUrl} hrefLang="en" />
-      <link rel="alternate" href={`${siteUrl}/ar`} hrefLang="ar" />
     </>
   );
 }

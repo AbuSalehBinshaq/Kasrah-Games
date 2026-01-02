@@ -1,16 +1,32 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
 import SEO from '@/components/common/SEO';
-import MaintenanceWrapper from '@/components/common/MaintenanceWrapper';
-import ThemeProvider from '@/components/common/ThemeProvider';
-import AdDisplay from '@/components/common/AdDisplay';
 import { getSettings } from '@/lib/settings';
 import dynamic from 'next/dynamic';
 
+// Import all Client Components with dynamic import and ssr: false to prevent prerendering issues
 const MobileNav = dynamic(() => import('@/components/common/MobileNav'), {
+  ssr: false,
+});
+
+const Header = dynamic(() => import('@/components/common/Header'), {
+  ssr: false,
+});
+
+const Footer = dynamic(() => import('@/components/common/Footer'), {
+  ssr: false,
+});
+
+const MaintenanceWrapper = dynamic(() => import('@/components/common/MaintenanceWrapper'), {
+  ssr: false,
+});
+
+const ThemeProvider = dynamic(() => import('@/components/common/ThemeProvider'), {
+  ssr: false,
+});
+
+const AdDisplay = dynamic(() => import('@/components/common/AdDisplay'), {
   ssr: false,
 });
 

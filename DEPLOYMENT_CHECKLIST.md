@@ -37,6 +37,17 @@
 3. إضافة Build Command: `npm run build` (يحتوي على prisma generate)
 4. Deploy
 
+### على Render:
+1. ربط المشروع بـ GitHub/GitLab
+2. إضافة Environment Variables في Settings
+3. **Build Command الموصى به**: `npm install && npm run build`
+   - ملاحظة: لا حاجة لـ `npm run prisma:generate` منفصل
+   - `postinstall` script سيولد Prisma Client تلقائياً بعد `npm install`
+   - `build` script يحتوي على `prisma generate` كإجراء احتياطي
+4. **Start Command**: `npm start`
+5. **PostgreSQL**: إنشاء قاعدة بيانات منفصلة وتحديد `DATABASE_URL`
+6. **Migrations**: سيتم تشغيلها تلقائياً عند أول تشغيل (أو يدوياً: `npm run prisma:migrate`)
+
 ### على خادم خاص:
 ```bash
 # 1. رفع الملفات
@@ -96,9 +107,14 @@ npm run prisma:generate
 ## 📝 ملاحظات مهمة
 
 1. **Prisma Client**: يتم توليده تلقائياً عند `npm install` (postinstall script)
-2. **Build Command**: يحتوي على `prisma generate` تلقائياً
-3. **CORS**: يتم إعداده تلقائياً بناءً على `NEXT_PUBLIC_SITE_URL` أو `VERCEL_URL`
-4. **Database**: تأكد من تشغيل migrations قبل النشر
+2. **Build Command**: يحتوي على `prisma generate` تلقائياً كإجراء احتياطي
+3. **ترتيب أوامر Prisma**:
+   - `postinstall`: `prisma generate` - يتم تشغيله تلقائياً بعد `npm install`
+   - `build`: `prisma generate && next build` - يضمن أن Prisma Client محدث قبل البناء
+   - **على Render**: استخدم `npm install && npm run build` (بدون `prisma:generate` منفصل)
+4. **Sitemap**: يعمل حتى بدون قاعدة بيانات (يعرض الصفحات الثابتة فقط)
+5. **CORS**: يتم إعداده تلقائياً بناءً على `NEXT_PUBLIC_SITE_URL` أو `VERCEL_URL`
+6. **Database**: تأكد من تشغيل migrations قبل النشر
 
 ---
 

@@ -2,26 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
 
-    // Fetch all published games
-    const games = await prisma.game.findMany({
-      where: { isPublished: true },
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
-    });
+  // Check if DATABASE_URL is available before attempting database queries
+  // This prevents build failures when database is not connected during static generation
+  const hasDatabase = !!process.env.DATABASE_URL;
 
-    // Fetch all categories
-    const categories = await prisma.category.findMany({
-      where: { isActive: true },
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
-    });
+  let games: Array<{ slug: string; updatedAt: Date }> = [];
+  let categories: Array<{ slug: string; updatedAt: Date }> = [];
+
+  if (hasDatabase) {
+    try {
+      // Fetch all published games
+      games = await prisma.game.findMany({
+        where: { isPublished: true },
+        select: {
+          slug: true,
+          updatedAt: true,
+        },
+      });
+
+      // Fetch all categories
+      categories = await prisma.category.findMany({
+        where: { isActive: true },
+        select: {
+          slug: true,
+          updatedAt: true,
+        },
+      });
+    } catch (error) {
+      // If database query fails, log error but continue with empty arrays
+      // This allows sitemap generation to proceed with static pages only
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Sitemap: Failed to fetch games/categories from database:', error instanceof Error ? error.message : 'Unknown error');
+      }
+      // Continue with empty arrays - sitemap will only include static pages
+    }
+  }
 
     // Static pages
     const staticPages = [
@@ -64,6 +81,7 @@ export async function GET(request: NextRequest) {
   `).join('')}
 </urlset>`;
 
+  try {
     return new NextResponse(sitemap, {
       headers: {
         'Content-Type': 'application/xml',
@@ -71,10 +89,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Sitemap generation error:', error);
+    // Fallback minimal sitemap if XML generation fails
+    console.error('Sitemap XML generation error:', error);
 
-    // Fallback minimal sitemap
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
     const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>

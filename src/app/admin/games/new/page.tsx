@@ -1,10 +1,10 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { useAuth } from '@/hooks/useAuth';
-
-export const dynamic = 'force-dynamic';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { ArrowLeft } from 'lucide-react';
 import GameForm from '@/components/admin/GameForm'; // Will create this next

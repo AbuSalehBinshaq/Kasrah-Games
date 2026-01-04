@@ -1,10 +1,10 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
 import { UserPlus, User, Mail, Lock, AlertCircle } from 'lucide-react';
 import RegisterForm from '@/components/auth/RegisterForm';
 

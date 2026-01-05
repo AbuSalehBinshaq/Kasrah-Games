@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
 
   // Check if DATABASE_URL is available before attempting database queries
   // This prevents build failures when database is not connected during static generation

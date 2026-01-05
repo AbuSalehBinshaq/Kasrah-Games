@@ -36,7 +36,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
-  const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
+  const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
   const siteName = settings.siteName || 'Kasrah Games';
   const description = settings.seoMetaDescription || settings.siteDescription || 'A web games platform hosting playable HTML5 and WebGL games with categories, ratings, and user playlists.';
   const keywords = settings.seoMetaKeywords?.split(',').map(k => k.trim()) || ['online games', 'HTML5 games', 'WebGL games', 'free games', 'browser games'];
@@ -97,10 +97,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSettings();
-  const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example';
+  const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
 
   return (
-    <html lang="en" dir="ltr">
+    <html lang="ar" dir="rtl">
       <head>
         <SEO 
           title={settings.seoMetaTitle || `${settings.siteName} - Play Free Online Games`}

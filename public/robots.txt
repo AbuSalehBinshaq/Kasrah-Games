@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
 
-Sitemap: https://kasrahgames.example/sitemap.xml
+Sitemap: https://kasrah-games.onrender.com/api/sitemap.xml

@@ -34,7 +34,7 @@ const defaultSettings: SiteSettings = {
   siteDescription: 'Play the best HTML5 and WebGL games online',
   siteLogo: null,
   siteFavicon: null,
-  siteUrl: null,
+  siteUrl: 'https://kasrah-games.onrender.com',
   contactEmail: null,
   socialFacebook: null,
   socialTwitter: null,

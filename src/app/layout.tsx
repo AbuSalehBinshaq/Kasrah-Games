@@ -100,7 +100,7 @@ export default async function RootLayout({
   const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
 
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <head>
         <SEO 
           title={settings.seoMetaTitle || `${settings.siteName} - Play Free Online Games`}

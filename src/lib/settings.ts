@@ -57,8 +57,8 @@ const defaultSettings: SiteSettings = {
 };
 
 export async function getSettings(): Promise<SiteSettings> {
-  // Check if DATABASE_URL is available before attempting database connection
-  if (!process.env.DATABASE_URL) {
+  // During build time or if DATABASE_URL is missing, return default settings
+  if (!process.env.DATABASE_URL || process.env.NEXT_PHASE === 'phase-production-build') {
     return defaultSettings;
   }
 

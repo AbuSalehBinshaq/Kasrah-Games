@@ -3,30 +3,32 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import SEO from '@/components/common/SEO';
 import { getSettings } from '@/lib/settings';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
+
+export const dynamic = 'force-dynamic';
 
 // Import all Client Components with dynamic import and ssr: false to prevent prerendering issues
-const MobileNav = dynamic(() => import('@/components/common/MobileNav'), {
+const MobileNav = nextDynamic(() => import('@/components/common/MobileNav'), {
   ssr: false,
 });
 
-const Header = dynamic(() => import('@/components/common/Header'), {
+const Header = nextDynamic(() => import('@/components/common/Header'), {
   ssr: false,
 });
 
-const Footer = dynamic(() => import('@/components/common/Footer'), {
+const Footer = nextDynamic(() => import('@/components/common/Footer'), {
   ssr: false,
 });
 
-const MaintenanceWrapper = dynamic(() => import('@/components/common/MaintenanceWrapper'), {
+const MaintenanceWrapper = nextDynamic(() => import('@/components/common/MaintenanceWrapper'), {
   ssr: false,
 });
 
-const ThemeProvider = dynamic(() => import('@/components/common/ThemeProvider'), {
+const ThemeProvider = nextDynamic(() => import('@/components/common/ThemeProvider'), {
   ssr: false,
 });
 
-const AdDisplay = dynamic(() => import('@/components/common/AdDisplay'), {
+const AdDisplay = nextDynamic(() => import('@/components/common/AdDisplay'), {
   ssr: false,
 });
 

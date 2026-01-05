@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  // During build time, return default settings immediately to avoid Prisma errors
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({
+      siteName: 'Kasrah Games',
+      siteDescription: 'Play the best HTML5 and WebGL games online',
+      maintenanceMode: false,
+      gamesPerPage: 12,
+      enableRatings: true,
+      enableComments: true,
+      enableBookmarks: true,
+      showStatistics: true,
+      primaryColor: '#7c3aed',
+      primaryColorHover: '#6d28d9',
+      backgroundFrom: '#f8fafc',
+      backgroundTo: '#eef2ff',
+    });
+  }
+
   try {
     // Get settings (public endpoint, no auth required)
     let settings = await prisma.settings.findUnique({

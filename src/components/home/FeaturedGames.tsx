@@ -69,12 +69,18 @@ export default function FeaturedGames() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {games.map((game: any) => (
+          {games.map((game: any, index: number) => (
             <div
               key={game.id}
               className=""
             >
-              <GameCard game={game} viewMode="grid" compact hideDescription />
+              <GameCard 
+                game={game} 
+                viewMode="grid" 
+                compact 
+                hideDescription 
+                priority={index < 4} // Load first 4 images with priority
+              />
             </div>
           ))}
         </div>

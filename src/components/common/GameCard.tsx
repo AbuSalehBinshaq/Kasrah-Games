@@ -24,9 +24,10 @@ interface GameCardProps {
   viewMode: 'grid' | 'list';
   compact?: boolean;
   hideDescription?: boolean;
+  priority?: boolean; // Added priority prop for LCP images
 }
 
-export default function GameCard({ game, viewMode, compact = false, hideDescription = false }: GameCardProps) {
+export default function GameCard({ game, viewMode, compact = false, hideDescription = false, priority = false }: GameCardProps) {
   const [imageError, setImageError] = useState(false);
   const { settings, loading: settingsLoading } = useSettings();
   
@@ -48,8 +49,9 @@ export default function GameCard({ game, viewMode, compact = false, hideDescript
                 alt={game.title}
                 fill
                 className="object-cover"
-                quality={90}
+                quality={75} // Reduced quality for faster loading
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={priority}
                 onError={() => setImageError(true)}
               />
             )}
@@ -116,8 +118,9 @@ export default function GameCard({ game, viewMode, compact = false, hideDescript
               alt={game.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              quality={90}
+              quality={75} // Reduced quality for faster loading
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={priority}
               onError={() => setImageError(true)}
             />
           )}

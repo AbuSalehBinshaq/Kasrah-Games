@@ -11,9 +11,11 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
     ],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    // Optimized device sizes to prevent generating unnecessarily large images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    // Increased Cache TTL for better performance (24 hours)
+    minimumCacheTTL: 86400,
   },
   headers: async () => [
     {
@@ -61,6 +63,16 @@ const nextConfig = {
         {
           key: 'Access-Control-Allow-Headers',
           value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
+        },
+      ],
+    },
+    // Cache static assets more aggressively
+    {
+      source: '/images/(.*)',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'public, max-age=31536000, immutable',
         },
       ],
     },

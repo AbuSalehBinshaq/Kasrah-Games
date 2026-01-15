@@ -15,7 +15,7 @@ export default function FeaturedGames() {
 
   async function fetchFeaturedGames() {
     try {
-      const response = await fetch('/api/games?featured=true&limit=6');
+      const response = await fetch('/api/games?featured=true&limit=20');
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
@@ -37,7 +37,7 @@ export default function FeaturedGames() {
           <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-200"></div>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[...Array(20)].map((_, i) => (
             <div
               key={i}
               className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"

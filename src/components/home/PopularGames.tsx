@@ -15,7 +15,7 @@ export default function PopularGames() {
 
   async function fetchPopularGames() {
     try {
-      const response = await fetch('/api/games?sort=popular&limit=6');
+      const response = await fetch('/api/games?sort=popular&limit=20');
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
@@ -34,7 +34,7 @@ export default function PopularGames() {
       <section className="py-8 md:py-12">
         <div className="mb-6 h-10 w-48 animate-pulse rounded bg-gray-200"></div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[...Array(20)].map((_, i) => (
             <div
               key={i}
               className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"

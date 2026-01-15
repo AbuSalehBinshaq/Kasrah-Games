@@ -1,40 +1,82 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { TrendingUp, Play } from 'lucide-react';
+import { Play, Loader2 } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 
 export default function PopularGames() {
-  const [games, setGames] = useState([]);
+  const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const limit = 12;
+  
+  // مرجع للعنصر الذي سنراقبه في نهاية القائمة
+  const observerTarget = useRef(null);
 
-  useEffect(() => {
-    fetchPopularGames();
-  }, []);
+  const fetchPopularGames = useCallback(async (pageNum: number, isInitial: boolean = false) => {
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
 
-  async function fetchPopularGames() {
     try {
-      const response = await fetch('/api/games?sort=popular&limit=20');
+      const response = await fetch(`/api/games?sort=popular&limit=${limit}&page=${pageNum}`);
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
       const data = await response.json();
-      setGames(data.games || []);
+      
+      if (isInitial) {
+        setGames(data.games || []);
+      } else {
+        setGames(prev => [...prev, ...(data.games || [])]);
+      }
+      
+      setHasNextPage(data.pagination?.hasNextPage || false);
+      setPage(pageNum);
     } catch (error) {
       console.error('Failed to fetch popular games:', error);
-      setGames([]); // Set empty array on error
+      if (isInitial) setGames([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }
+  }, []);
+
+  // التحميل الأولي
+  useEffect(() => {
+    fetchPopularGames(1, true);
+  }, [fetchPopularGames]);
+
+  // إعداد Intersection Observer لمراقبة التمرير
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          fetchPopularGames(page + 1);
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' } // يبدأ التحميل قبل الوصول للنهاية بـ 100 بكسل
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasNextPage, loadingMore, loading, page, fetchPopularGames]);
 
   if (loading) {
     return (
       <section className="py-8 md:py-12">
         <div className="mb-6 h-10 w-48 animate-pulse rounded bg-gray-200"></div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(limit)].map((_, i) => (
             <div
               key={i}
               className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"
@@ -67,16 +109,25 @@ export default function PopularGames() {
           <p className="text-gray-600">Be the first to play!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {games.map((game: any) => (
-            <div
-              key={game.id}
-              className=""
-            >
-              <GameCard game={game} viewMode="grid" compact hideDescription />
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
+            {games.map((game: any) => (
+              <div key={game.id}>
+                <GameCard game={game} viewMode="grid" compact hideDescription />
+              </div>
+            ))}
+          </div>
+
+          {/* العنصر المراقب للتحميل اللانهائي */}
+          <div ref={observerTarget} className="mt-10 flex h-20 justify-center items-center">
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-primary-600 font-medium">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>Loading more games...</span>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </section>
   );

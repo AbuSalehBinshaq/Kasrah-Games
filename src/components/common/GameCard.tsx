@@ -58,9 +58,11 @@ export default function GameCard({
                 alt={game.title}
                 fill
                 className="object-cover"
-                quality={75}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                quality={60}
+                sizes="(max-width: 768px) 50vw, 200px"
                 priority={priority}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOfU99y6gAAAABJRU5ErkJggg=="
                 onError={() => setImageError(true)}
               />
             )}
@@ -122,9 +124,11 @@ export default function GameCard({
               alt={game.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"
-              quality={85}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              quality={60}
+              sizes="(max-width: 640px) 50vw, 250px"
               priority={priority}
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOfU99y6gAAAABJRU5ErkJggg=="
               onError={() => setImageError(true)}
             />
           )}

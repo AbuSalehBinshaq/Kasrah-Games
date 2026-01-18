@@ -93,7 +93,7 @@ export default function FeaturedGames() {
                   viewMode="grid" 
                   hideDescription={true}
                   aspectRatio="video"
-                  priority={index < 2}
+                  priority={index < 4}
                 />
               </div>
             ))}

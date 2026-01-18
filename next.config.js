@@ -5,17 +5,17 @@ const nextConfig = {
   swcMinify: true,
   // Enable image optimization for better quality/perf (AVIF/WebP).
   images: {
-    unoptimized: false,
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
     ],
     // Optimized device sizes to prevent generating unnecessarily large images
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Increased Cache TTL for better performance (24 hours)
-    minimumCacheTTL: 86400,
+    deviceSizes: [320, 420, 640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Increased Cache TTL for better performance (1 year)
+    minimumCacheTTL: 31536000,
   },
   headers: async () => [
     {

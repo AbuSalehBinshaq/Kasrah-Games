@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 
 type ContinueGame = {
@@ -23,9 +24,23 @@ type ContinueGame = {
 export default function ContinueGames() {
   const [games, setGames] = useState<ContinueGame[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [showArrows, setShowArrows] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const arrowTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     fetchContinueGames();
+    
+    // Detect desktop
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   async function fetchContinueGames() {
@@ -69,6 +84,37 @@ export default function ContinueGames() {
     }
   }
 
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 120;
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+      scrollContainerRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (isDesktop) {
+      setShowArrows(true);
+      if (arrowTimeoutRef.current) clearTimeout(arrowTimeoutRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDesktop) {
+      arrowTimeoutRef.current = setTimeout(() => {
+        setShowArrows(false);
+      }, 2000);
+    }
+  };
+
   if (!loading && (!games || games.length === 0)) {
     return null;
   }
@@ -80,9 +126,9 @@ export default function ContinueGames() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Continue</h2>
           <span className="text-primary-600 font-semibold text-lg">→</span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-square animate-pulse rounded-2xl bg-gray-200"></div>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="aspect-square w-24 flex-shrink-0 animate-pulse rounded-2xl bg-gray-200"></div>
           ))}
         </div>
       </section>
@@ -96,17 +142,64 @@ export default function ContinueGames() {
         <span className="text-primary-600 font-semibold text-lg">→</span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-        {games.map((game) => (
-          <GameCard 
-            key={game.id} 
-            game={game as any} 
-            viewMode="grid" 
-            hideDescription={true}
-            aspectRatio="square"
-            showOnlineCount={true}
-          />
-        ))}
+      <div 
+        className="relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Mobile Swipe */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex gap-3 overflow-x-auto pb-2 scroll-smooth md:overflow-x-hidden"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {games.map((game) => (
+            <div key={game.id} className="w-24 flex-shrink-0 md:hidden">
+              <GameCard 
+                game={game as any} 
+                viewMode="grid" 
+                hideDescription={true}
+                aspectRatio="square"
+                showOnlineCount={true}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {games.map((game) => (
+            <GameCard 
+              key={game.id} 
+              game={game as any} 
+              viewMode="grid" 
+              hideDescription={true}
+              aspectRatio="square"
+              showOnlineCount={true}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Buttons - Desktop Only */}
+        {isDesktop && canScrollLeft && showArrows && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all opacity-100"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-5 w-5 text-gray-900" />
+          </button>
+        )}
+        {isDesktop && canScrollRight && showArrows && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all opacity-100"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </button>
+        )}
       </div>
     </section>
   );

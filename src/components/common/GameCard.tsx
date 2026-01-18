@@ -27,7 +27,7 @@ interface GameCardProps {
   priority?: boolean;
   aspectRatio?: 'video' | 'square';
   showOnlineCount?: boolean;
-  hideRating?: boolean;
+  hideRatingText?: boolean;
 }
 
 export default function GameCard({ 
@@ -38,7 +38,7 @@ export default function GameCard({
   priority = false,
   aspectRatio = 'video',
   showOnlineCount = false,
-  hideRating = false
+  hideRatingText = false
 }: GameCardProps) {
   const [imageError, setImageError] = useState(false);
   const { settings, loading: settingsLoading } = useSettings();
@@ -140,7 +140,7 @@ export default function GameCard({
           
           {showStats && (
             <div className="flex items-center gap-2 mt-1">
-              {!hideRating && (
+              {!hideRatingText && (
                 <>
                   <ThumbsUp className="h-4 w-4 text-gray-600" />
                   <span className="text-xs font-semibold text-gray-700">{game.likePercentage}%</span>

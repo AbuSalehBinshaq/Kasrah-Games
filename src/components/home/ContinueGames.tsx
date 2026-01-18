@@ -162,7 +162,7 @@ export default function ContinueGames() {
                 hideDescription={true}
                 aspectRatio="square"
                 showOnlineCount={true}
-                hideRating={true}
+                hideRatingText={false}
               />
             </div>
           ))}
@@ -178,7 +178,7 @@ export default function ContinueGames() {
               hideDescription={true}
               aspectRatio="square"
               showOnlineCount={true}
-              hideRating={true}
+              hideRatingText={false}
             />
           ))}
         </div>

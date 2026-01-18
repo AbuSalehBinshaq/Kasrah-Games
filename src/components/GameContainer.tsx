@@ -16,6 +16,8 @@ type GameContainerProps = {
   onFavorite?: () => Promise<void> | void;
   isFavorited?: boolean;
   isFavoriting?: boolean;
+  onExitFullscreen?: () => void;
+  isPaused?: boolean;
 };
 
 export default function GameContainer({
@@ -30,13 +32,14 @@ export default function GameContainer({
   onFavorite,
   isFavorited = false,
   isFavoriting = false,
+  onExitFullscreen,
+  isPaused = false,
 }: GameContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showBar, setShowBar] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
-  const [showContinuePlaying, setShowContinuePlaying] = useState(false);
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
 
   useEffect(() => {
@@ -51,9 +54,20 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Reset mobile fullscreen when paused
+  useEffect(() => {
+    if (isPaused && isMobileFullscreen) {
+      setIsMobileFullscreen(false);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (!isIOS) {
+        exitFullscreen();
+      }
+    }
+  }, [isPaused, isMobileFullscreen, exitFullscreen]);
+
   // Auto enter mobile fullscreen when component mounts (after Play button is clicked)
   useEffect(() => {
-    if (isMobile && !isMobileFullscreen) {
+    if (isMobile && !isMobileFullscreen && !isPaused) {
       const timer = setTimeout(() => {
         setIsMobileFullscreen(true);
         // Don't call enterFullscreen() for iOS - just use CSS
@@ -65,7 +79,7 @@ export default function GameContainer({
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile]);
+  }, [isMobile, isPaused]);
 
   useEffect(() => {
     if (isMobile && isMobileFullscreen) {
@@ -108,22 +122,16 @@ export default function GameContainer({
 
   const handleExitMobileFullscreen = () => {
     if (isMobile) {
-      // Show continue playing overlay instead of exiting immediately
-      setShowContinuePlaying(true);
+      setIsMobileFullscreen(false);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (!isIOS) {
+        exitFullscreen();
+      }
+      // Notify parent component that fullscreen was exited
+      if (onExitFullscreen) {
+        onExitFullscreen();
+      }
     } else {
-      exitFullscreen();
-    }
-  };
-
-  const handleContinuePlaying = () => {
-    setShowContinuePlaying(false);
-  };
-
-  const handleConfirmExit = () => {
-    setShowContinuePlaying(false);
-    setIsMobileFullscreen(false);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (!isIOS) {
       exitFullscreen();
     }
   };
@@ -241,7 +249,7 @@ export default function GameContainer({
 
       {/* Mobile view */}
       <div className="md:hidden">
-        {isMobileFullscreen ? (
+        {isMobileFullscreen && !isPaused ? (
           <div
             ref={containerRef}
             className="game-container-mobile-fullscreen"
@@ -255,35 +263,12 @@ export default function GameContainer({
             >
               Exit
             </button>
-
-            {/* Continue Playing Overlay */}
-            {showContinuePlaying && (
-              <div className="continue-playing-overlay">
-                <div className="continue-playing-content">
-                  <h3 className="continue-playing-title">Continue Playing?</h3>
-                  <p className="continue-playing-text">Do you want to continue playing or exit the game?</p>
-                  <div className="continue-playing-buttons">
-                    <button
-                      onClick={handleContinuePlaying}
-                      className="continue-playing-btn continue-btn"
-                    >
-                      Continue Playing
-                    </button>
-                    <button
-                      onClick={handleConfirmExit}
-                      className="continue-playing-btn exit-btn"
-                    >
-                      Exit
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div
             ref={containerRef}
             className="game-container-mobile relative bg-black rounded-xl border border-gray-200 aspect-video w-full overflow-hidden"
+            style={{ display: isPaused ? 'none' : 'block' }}
           >
             {children}
           </div>
@@ -360,88 +345,6 @@ export default function GameContainer({
         
         .mobile-exit-button:hover {
           background: rgba(0, 0, 0, 0.8);
-        }
-        
-        /* Continue Playing Overlay */
-        .continue-playing-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(8px);
-          z-index: 10001;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-        
-        .continue-playing-content {
-          background: white;
-          border-radius: 16px;
-          padding: 24px;
-          max-width: 320px;
-          width: 100%;
-          text-align: center;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .continue-playing-title {
-          font-size: 20px;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 12px;
-        }
-        
-        .continue-playing-text {
-          font-size: 14px;
-          color: #64748b;
-          margin-bottom: 24px;
-          line-height: 1.5;
-        }
-        
-        .continue-playing-buttons {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        
-        .continue-playing-btn {
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        
-        .continue-btn {
-          background: #3b82f6;
-          color: white;
-        }
-        
-        .continue-btn:hover {
-          background: #2563eb;
-        }
-        
-        .continue-btn:active {
-          transform: scale(0.98);
-        }
-        
-        .exit-btn {
-          background: #ef4444;
-          color: white;
-        }
-        
-        .exit-btn:hover {
-          background: #dc2626;
-        }
-        
-        .exit-btn:active {
-          transform: scale(0.98);
         }
         
         /* Regular mobile container */

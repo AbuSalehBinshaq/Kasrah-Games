@@ -104,16 +104,16 @@ export default function GameCard({
     );
   }
 
-  // Grid View - Match the actual website design
+  // Grid View - Minimal design (image only + text)
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
 
   return (
     <Link href={`/games/${game.slug}`}>
-      <div className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow">
-        {/* Image Container */}
-        <div className={`relative w-full ${aspectClass} overflow-hidden bg-gray-100`}>
+      <div className="group flex flex-col">
+        {/* Image Container - No background, no shadow, no border */}
+        <div className={`relative w-full ${aspectClass} overflow-hidden rounded-2xl`}>
           {imageError ? (
-            <div className="flex h-full w-full items-center justify-center bg-gray-200">
+            <div className="flex h-full w-full items-center justify-center bg-gray-200 rounded-2xl">
               <Play className="h-12 w-12 text-gray-400" />
             </div>
           ) : (
@@ -121,7 +121,7 @@ export default function GameCard({
               src={game.thumbnail || '/images/placeholder-game.svg'}
               alt={game.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"
               quality={85}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={priority}
@@ -130,14 +130,14 @@ export default function GameCard({
           )}
         </div>
 
-        {/* Content */}
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="font-bold text-gray-900 line-clamp-2 mb-3 text-sm">
+        {/* Text Content - Below image */}
+        <div className="mt-2">
+          <h3 className="font-bold text-gray-900 line-clamp-2 text-sm">
             {game.title}
           </h3>
           
           {showStats && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-1">
               <ThumbsUp className="h-4 w-4 text-gray-600" />
               <span className="text-xs font-semibold text-gray-700">{game.likePercentage}% Rating</span>
               

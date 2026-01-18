@@ -74,7 +74,7 @@ export default function PopularGames() {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-2 md:gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
@@ -99,7 +99,7 @@ export default function PopularGames() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-2 md:gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
             {games.slice(0, 6).map((game: any, index: number) => (
               <GameCard 
                 key={game.id} 

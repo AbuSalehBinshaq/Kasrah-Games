@@ -104,12 +104,12 @@ export default function GameCard({
     );
   }
 
-  // Grid View - Match the design from the image
+  // Grid View - Match the actual website design
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
 
   return (
     <Link href={`/games/${game.slug}`}>
-      <div className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow">
+      <div className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow">
         {/* Image Container */}
         <div className={`relative w-full ${aspectClass} overflow-hidden bg-gray-100`}>
           {imageError ? (
@@ -131,8 +131,8 @@ export default function GameCard({
         </div>
 
         {/* Content */}
-        <div className="p-3 flex flex-col flex-grow">
-          <h3 className="font-bold text-gray-900 line-clamp-2 mb-2 text-sm">
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="font-bold text-gray-900 line-clamp-2 mb-3 text-sm">
             {game.title}
           </h3>
           
@@ -143,8 +143,7 @@ export default function GameCard({
               
               {showOnlineCount && (
                 <>
-                  <Users className="h-4 w-4 text-gray-600 ml-2" />
-                  <span className="text-xs text-gray-700">{game.onlineCount || 0}</span>
+                  <span className="text-xs text-gray-600 ml-auto">{game.onlineCount || 0}</span>
                 </>
               )}
             </div>

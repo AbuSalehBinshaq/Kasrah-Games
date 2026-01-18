@@ -35,7 +35,7 @@ export default function FeaturedGames() {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Featured</h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3 md:gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
@@ -59,8 +59,8 @@ export default function FeaturedGames() {
           <h3 className="mb-2 text-xl font-semibold text-gray-900">No featured games yet</h3>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3 md:gap-4">
-          {games.slice(0, 6).map((game: any, index: number) => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          {games.slice(0, 2).map((game: any, index: number) => (
             <GameCard 
               key={game.id}
               game={game} 

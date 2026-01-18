@@ -80,8 +80,8 @@ export default function ContinueGames() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Continue</h2>
           <span className="text-primary-600 font-semibold text-lg">→</span>
         </div>
-        <div className="grid grid-cols-4 gap-2 md:grid-cols-4 lg:grid-cols-4 md:gap-3">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
             <div key={i} className="aspect-square animate-pulse rounded-2xl bg-gray-200"></div>
           ))}
         </div>
@@ -96,8 +96,8 @@ export default function ContinueGames() {
         <span className="text-primary-600 font-semibold text-lg">→</span>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 md:grid-cols-4 lg:grid-cols-4 md:gap-3">
-        {games.map((game) => (
+      <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
+        {games.slice(0, 3).map((game) => (
           <GameCard 
             key={game.id} 
             game={game as any} 

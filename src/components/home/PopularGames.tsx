@@ -72,13 +72,13 @@ export default function PopularGames() {
     return (
       <section className="py-8">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">Recommended For You</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-2 md:gap-4">
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
-              className="aspect-video animate-pulse rounded-xl bg-gray-200"
+              className="aspect-video animate-pulse rounded-2xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -89,17 +89,17 @@ export default function PopularGames() {
   return (
     <section className="py-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">Recommended For You</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
       </div>
 
       {!games || games.length === 0 ? (
-        <div className="rounded-xl bg-gray-50 p-12 text-center">
+        <div className="rounded-2xl bg-gray-50 p-12 text-center">
           <Play className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-xl font-semibold text-gray-900">No games yet</h3>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-2 md:gap-4">
             {games.slice(0, 6).map((game: any, index: number) => (
               <GameCard 
                 key={game.id} 

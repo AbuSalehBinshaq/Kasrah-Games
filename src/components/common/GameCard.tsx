@@ -25,7 +25,8 @@ interface GameCardProps {
   compact?: boolean;
   hideDescription?: boolean;
   priority?: boolean;
-  aspectRatio?: 'video' | 'square'; // video = 16:9, square = 1:1
+  aspectRatio?: 'video' | 'square';
+  showOnlineCount?: boolean;
 }
 
 export default function GameCard({ 
@@ -34,7 +35,8 @@ export default function GameCard({
   compact = false, 
   hideDescription = false, 
   priority = false,
-  aspectRatio = 'video'
+  aspectRatio = 'video',
+  showOnlineCount = false
 }: GameCardProps) {
   const [imageError, setImageError] = useState(false);
   const { settings, loading: settingsLoading } = useSettings();
@@ -102,12 +104,12 @@ export default function GameCard({
     );
   }
 
-  // Grid View
+  // Grid View - Match the design from the image
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
 
   return (
     <Link href={`/games/${game.slug}`}>
-      <div className="group flex flex-col rounded-xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow">
+      <div className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image Container */}
         <div className={`relative w-full ${aspectClass} overflow-hidden bg-gray-100`}>
           {imageError ? (
@@ -129,15 +131,22 @@ export default function GameCard({
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="font-bold text-gray-900 line-clamp-2 mb-2">
+        <div className="p-3 flex flex-col flex-grow">
+          <h3 className="font-bold text-gray-900 line-clamp-2 mb-2 text-sm">
             {game.title}
           </h3>
           
           {showStats && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <ThumbsUp className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-semibold text-gray-700">{game.likePercentage}% Rating</span>
+              <span className="text-xs font-semibold text-gray-700">{game.likePercentage}% Rating</span>
+              
+              {showOnlineCount && (
+                <>
+                  <Users className="h-4 w-4 text-gray-600 ml-2" />
+                  <span className="text-xs text-gray-700">{game.onlineCount || 0}</span>
+                </>
+              )}
             </div>
           )}
         </div>

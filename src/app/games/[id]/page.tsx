@@ -114,12 +114,18 @@ export default function GameDetailPage() {
     }
   }
 
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   async function handlePlayGame() {
     if (!game) return;
     setIsPlaying(true);
     setIsPaused(false);
     try {
-      await fetch(`/api/games/${game.id}/play`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const response = await fetch(`/api/games/${game.id}/play`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await response.json();
+      if (data.sessionId) {
+        setSessionId(data.sessionId);
+      }
     } catch (err) {
       console.error('Failed to track play session:', err);
     }
@@ -134,6 +140,21 @@ export default function GameDetailPage() {
     setIsPaused(true);
     setIsPlaying(false);
   }
+
+  // Track session end when leaving or closing
+  useEffect(() => {
+    return () => {
+      if (sessionId && game?.id) {
+        const url = `/api/games/${game.id}/play/end`;
+        const body = JSON.stringify({ sessionId });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, body);
+        } else {
+          fetch(url, { method: 'POST', body, keepalive: true });
+        }
+      }
+    };
+  }, [sessionId, game?.id]);
 
   async function handleVote(vote: 'like' | 'dislike') {
     if (!user) {
@@ -284,7 +305,7 @@ export default function GameDetailPage() {
           <span className="font-semibold text-slate-900">{game.title}</span>
         </div>
 
-        {(!isPlaying || isPaused) && (
+        {!isPlaying && (
           <div className="space-y-8">
             {/* Hero aligned with reference design */}
             <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
@@ -302,216 +323,169 @@ export default function GameDetailPage() {
               <div className="relative flex flex-col items-center gap-6 px-6 py-10 md:px-10 lg:px-14">
                 <div className="flex flex-col items-center gap-6">
                   <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-2xl">
-                    <div className="relative h-40 w-64 md:h-48 md:w-80">
-                      <Image
-                        src={game.thumbnail}
-                        alt={game.title}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                    </div>
+                    <Image
+                      src={game.thumbnail}
+                      alt={game.title}
+                      width={180}
+                      height={180}
+                      className="object-cover"
+                    />
                   </div>
-
                   <div className="text-center">
-                    <h1 className="text-3xl font-bold md:text-4xl">{game.title}</h1>
-                  </div>
-
-                  <button
-                    onClick={isPaused ? handleContinuePlaying : handlePlayGame}
-                    className="rounded-full bg-[var(--color-primary)] px-10 py-3 text-lg font-semibold text-white shadow-lg transition hover:bg-[var(--color-primary-hover)] md:block"
-                  >
-                    {isPaused ? 'Continue Playing' : 'Play Now'}
-                  </button>
-                </div>
-
-                <div className="flex w-full items-center justify-between gap-2 rounded-2xl bg-black/40 px-4 py-3 text-sm md:px-6">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold">
-                      {game.title.slice(0, 1).toUpperCase()}
-                    </div>
-                    <span className="font-semibold">{game.title}</span>
-                  </div>
-
-                  <div className="flex flex-1 flex-wrap items-center justify-end gap-3 text-white/90">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
-                      <ThumbsUp className="h-4 w-4" />
-                      <span className="font-semibold">{(game.likes ?? 0).toLocaleString()}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-semibold">{(game.views ?? 0).toLocaleString()}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
-                      <Users className="h-4 w-4" />
-                      <span className="font-semibold">{(game.onlineCount ?? 0).toLocaleString()}</span>
+                    <h1 className="mb-3 text-3xl font-bold md:text-4xl lg:text-5xl">{game.title}</h1>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      {game.categoryNames.map((cat) => (
+                        <span key={cat} className="rounded-full bg-white/10 px-4 py-1 text-sm font-medium backdrop-blur-sm">
+                          {cat}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Description + stats below hero */}
-            <div className="grid gap-5 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                  <h2 className="mb-3 text-xl font-bold text-slate-900">About this game</h2>
-                  <p className="leading-relaxed text-slate-700">{game.description || game.shortDescription}</p>
-                </div>
-              </div>
+                <button
+                  onClick={handlePlayGame}
+                  className="group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-primary-600 px-10 py-5 text-xl font-bold text-white transition-all hover:bg-primary-500 hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] active:scale-95"
+                >
+                  <Play className="h-6 w-6 fill-current" />
+                  <span>PLAY NOW</span>
+                </button>
 
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-3 text-lg font-bold text-slate-900">Stats</h3>
-                <div className="space-y-3 text-sm text-slate-700">
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <ThumbsUp className="h-4 w-4 text-slate-500" />
-                      Likes
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.likes ?? 0).toLocaleString()}</span>
+                {showStats && (
+                  <div className="flex items-center gap-8 text-sm font-medium opacity-90">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-5 w-5 text-primary-400" />
+                      <span>{game.views.toLocaleString()} Views</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="h-5 w-5 text-green-400" />
+                      <span>{game.likePercentage}% Likes</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-blue-400" />
+                      <span>{game.onlineCount} Online</span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Users className="h-4 w-4 text-slate-500" />
-                      Online
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.onlineCount ?? 0).toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Eye className="h-4 w-4 text-slate-500" />
-                      Visits
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.views ?? 0).toLocaleString()}</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* GameContainer - visible when playing, hidden when paused (but keeps iframe loaded) */}
-        {(isPlaying || isPaused) && (
-          <GameContainer
-            title={game.title}
-            siteName={settings?.siteName || 'Kasrah Games'}
-            siteLogoUrl={settings?.siteLogo || undefined}
-            likes={game.likes}
-            dislikes={game.dislikes}
-            userVote={userVote}
-            onVote={handleVote}
-            onFavorite={handleFavorite}
-            isFavorited={isFavorited}
-            isFavoriting={isFavoriting}
-            onExitFullscreen={handleExitFullscreen}
-            isPaused={isPaused}
-          >
-            <iframe src={game.gameUrl} className="h-full w-full" title={game.title} allowFullScreen />
-          </GameContainer>
-        )}
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-xl font-bold text-slate-900">About This Game</h2>
-              <p className="leading-relaxed text-slate-700">{game.description}</p>
-            </div>
-
-            {game.tags && game.tags.length > 0 && (
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-3 text-lg font-semibold text-slate-900">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {game.tags.map((tag) => (
-                    <Link
-                      key={tag}
-                      href={`/games?tag=${encodeURIComponent(tag)}`}
-                      className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 hover:bg-primary-100"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-xl font-bold text-slate-900">Rate This Game</h2>
-              {user ? (
-                <div className="space-y-3">
-                  <LikeDislike
-                    likes={game.likes}
-                    dislikes={game.dislikes}
-                    userVote={userVote}
-                    onVote={handleVote}
-                    showCounts
-                    size="lg"
-                  />
-                  <p className="text-sm text-slate-600">
-                    {game.totalRatings > 0 ? `Rating: ${game.likePercentage}% (${game.totalRatings} votes)` : 'Be the first to rate this game!'}
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <p className="mb-3 text-slate-600">Please login to rate this game.</p>
-                  <Link href="/auth/login" className="inline-block rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white hover:bg-primary-700">
-                    Login to Rate
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900">Similar Games</h2>
-                {loadingSimilar && <span className="text-sm text-slate-500">Loading...</span>}
-              </div>
-              {similarGames.length === 0 && !loadingSimilar ? (
-                <p className="text-sm text-slate-600">No similar games found.</p>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {similarGames.map((g) => (
-                    <GameCard key={`similar-${g.id}`} game={g} viewMode="grid" />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
+        {isPlaying && (
           <div className="space-y-6">
-            {/* Sidebar Ad */}
+            <GameContainer
+              title={game.title}
+              likes={game.likes}
+              dislikes={game.dislikes}
+              userVote={userVote}
+              onVote={handleVote}
+              onFavorite={handleFavorite}
+              isFavorited={isFavorited}
+              isFavoriting={isFavoriting}
+            >
+              <iframe
+                src={game.gameUrl}
+                className="h-full w-full border-0"
+                allowFullScreen
+                allow="autoplay; gamepad; fullscreen"
+              />
+            </GameContainer>
+            
+            <div className="flex justify-center">
+              <button
+                onClick={handleExitFullscreen}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+              >
+                Exit Game
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isPaused && !isPlaying && (
+          <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+            <h2 className="mb-4 text-2xl font-bold">Game Paused</h2>
+            <button
+              onClick={handleContinuePlaying}
+              className="rounded-xl bg-primary-600 px-8 py-3 font-bold text-white hover:bg-primary-500"
+            >
+              Continue Playing
+            </button>
+          </div>
+        )}
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-8">
+            <section className="rounded-3xl bg-white p-8 shadow-sm">
+              <h2 className="mb-4 text-2xl font-bold text-slate-900">About {game.title}</h2>
+              <div className="prose prose-slate max-w-none text-slate-600">
+                <p className="whitespace-pre-wrap leading-relaxed">{game.description}</p>
+              </div>
+              
+              <div className="mt-8 grid grid-cols-2 gap-6 border-t border-slate-100 pt-8 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Developer</p>
+                  <p className="font-semibold text-slate-900">{game.developer}</p>
+                </div>
+                {game.releaseDate && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Released</p>
+                    <p className="font-semibold text-slate-900">
+                      {new Date(game.releaseDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Technology</p>
+                  <p className="font-semibold text-slate-900">{game.gameType}</p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-slate-900">Similar Games</h2>
+                <Link href="/games" className="text-sm font-bold text-primary-600 hover:text-primary-700">
+                  View All
+                </Link>
+              </div>
+              {loadingSimilar ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="aspect-[4/3] animate-pulse rounded-2xl bg-slate-200" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {similarGames.map((g) => (
+                    <GameCard key={g.id} game={g} viewMode="grid" compact hideDescription />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div className="space-y-8">
             <AdDisplay position="SIDEBAR" />
             
-            {game.requirements && (
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-3 text-lg font-semibold text-slate-900">Requirements</h3>
-                <div className="space-y-2 text-sm text-slate-700">
-                  {game.requirements.browser && (
-                    <p>
-                      <strong>Browser:</strong> {game.requirements.browser}
-                    </p>
-                  )}
-                  {game.requirements.controls && (
-                    <p>
-                      <strong>Controls:</strong> {game.requirements.controls}
-                    </p>
-                  )}
-                  {game.requirements.min && (
-                    <p>
-                      <strong>Minimum:</strong> {game.requirements.min}
-                    </p>
-                  )}
-                  {game.requirements.recommended && (
-                    <p>
-                      <strong>Recommended:</strong> {game.requirements.recommended}
-                    </p>
-                  )}
-                </div>
+            <section className="rounded-3xl bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-lg font-bold text-slate-900">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {game.tags?.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/games?tag=${tag}`}
+                    className="rounded-xl bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
               </div>
-            )}
+            </section>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

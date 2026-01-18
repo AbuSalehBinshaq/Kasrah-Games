@@ -98,13 +98,20 @@ export async function GET(
       },
     });
     
-    // Count unique users with active sessions (not ended or ended recently)
-    const onlineUsers = new Set(
+    // Count active sessions (not ended or ended recently)
+    // For logged in users, we count unique userIds.
+    // For anonymous users, we count each session as a unique player.
+    const loggedInOnline = new Set(
       activeSessions
-        .filter(session => !session.endedAt || session.endedAt >= fiveMinutesAgo)
-        .map(session => session.userId)
-    );
-    const onlineCount = onlineUsers.size;
+        .filter(s => s.userId !== 'anonymous' && (!s.endedAt || s.endedAt >= fiveMinutesAgo))
+        .map(s => s.userId)
+    ).size;
+
+    const anonymousOnline = activeSessions
+      .filter(s => s.userId === 'anonymous' && (!s.endedAt || s.endedAt >= fiveMinutesAgo))
+      .length;
+
+    const onlineCount = loggedInOnline + anonymousOnline;
 
     // Get user's vote if authenticated
     const userVote = request.headers.get('cookie')?.includes('token') 

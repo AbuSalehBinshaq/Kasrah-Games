@@ -138,10 +138,16 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Group sessions by gameId
+    // Group sessions by gameId with accurate counting
     const sessionsByGame = allActiveSessions.reduce((acc: any, session) => {
-      if (!acc[session.gameId]) acc[session.gameId] = new Set();
-      acc[session.gameId].add(session.userId);
+      if (!acc[session.gameId]) {
+        acc[session.gameId] = { loggedIn: new Set(), anonymous: 0 };
+      }
+      if (session.userId === 'anonymous') {
+        acc[session.gameId].anonymous += 1;
+      } else {
+        acc[session.gameId].loggedIn.add(session.userId);
+      }
       return acc;
     }, {});
 
@@ -151,7 +157,9 @@ export async function GET(request: NextRequest) {
       const dislikes = ratings.filter(r => !r.isLike).length;
       const totalRatings = likes + dislikes;
       const likePercentage = totalRatings > 0 ? Math.round((likes / totalRatings) * 100) : 0;
-      const onlineCount = sessionsByGame[game.id]?.size || 0;
+      
+      const gameStats = sessionsByGame[game.id];
+      const onlineCount = gameStats ? (gameStats.loggedIn.size + gameStats.anonymous) : 0;
 
       return {
         ...game,

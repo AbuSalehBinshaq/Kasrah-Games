@@ -13,7 +13,6 @@ export default function PopularGames() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const limit = 12;
   
-  // مرجع للعنصر الذي سنراقبه في نهاية القائمة
   const observerTarget = useRef(null);
 
   const fetchPopularGames = useCallback(async (pageNum: number, isInitial: boolean = false) => {
@@ -44,12 +43,10 @@ export default function PopularGames() {
     }
   }, []);
 
-  // التحميل الأولي
   useEffect(() => {
     fetchPopularGames(1, true);
   }, [fetchPopularGames]);
 
-  // إعداد Intersection Observer لمراقبة التمرير
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
@@ -57,7 +54,7 @@ export default function PopularGames() {
           fetchPopularGames(page + 1);
         }
       },
-      { threshold: 0.1, rootMargin: '100px' } // يبدأ التحميل قبل الوصول للنهاية بـ 100 بكسل
+      { threshold: 0.1, rootMargin: '100px' }
     );
 
     if (observerTarget.current) {
@@ -73,13 +70,15 @@ export default function PopularGames() {
 
   if (loading) {
     return (
-      <section className="py-8 md:py-12">
-        <div className="mb-6 h-10 w-48 animate-pulse rounded bg-gray-200"></div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[...Array(limit)].map((_, i) => (
+      <section className="py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"
+              className="aspect-square animate-pulse rounded-xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -88,17 +87,14 @@ export default function PopularGames() {
   }
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-8">
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
-          <p className="text-sm text-gray-600">Based on what players love</p>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
         <Link
           href="/games?sort=popular"
-          className="rounded-full border border-primary-200 px-4 py-2 text-sm font-semibold text-primary-600 hover:bg-primary-50"
+          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          See all
+          See all →
         </Link>
       </div>
 
@@ -106,24 +102,20 @@ export default function PopularGames() {
         <div className="rounded-xl bg-gray-50 p-12 text-center">
           <Play className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-xl font-semibold text-gray-900">No games yet</h3>
-          <p className="text-gray-600">Be the first to play!</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
             {games.map((game: any) => (
-              <div key={game.id}>
-                <GameCard game={game} viewMode="grid" compact hideDescription />
-              </div>
+              <GameCard key={game.id} game={game} viewMode="grid" hideDescription={true} />
             ))}
           </div>
 
-          {/* العنصر المراقب للتحميل اللانهائي */}
-          <div ref={observerTarget} className="mt-10 flex h-20 justify-center items-center">
+          <div ref={observerTarget} className="mt-8 flex justify-center">
             {loadingMore && (
-              <div className="flex items-center gap-2 text-primary-600 font-medium">
-                <Loader2 className="h-6 w-6 animate-spin" />
-                <span>Loading more games...</span>
+              <div className="flex items-center gap-2 text-primary-600">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Loading more...</span>
               </div>
             )}
           </div>

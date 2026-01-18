@@ -56,18 +56,8 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
   const toggleFullscreen = async () => {
     try {
       if (!document.fullscreenElement) {
-        if (iframeRef.current) {
-          try {
-            await iframeRef.current.requestFullscreen();
-            setIsFullscreen(true);
-            return;
-          } catch (iframeError) {
-            console.log('Iframe fullscreen not supported, trying container');
-          }
-        }
-        
         if (containerRef.current) {
-          await containerRef.current.requestFullscreen();
+          await containerRef.current.requestFullscreen({ navigationUI: 'hide' });
           setIsFullscreen(true);
         }
       } else {
@@ -76,6 +66,7 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
       }
     } catch (error) {
       console.error('Fullscreen error:', error);
+      alert('Fullscreen is not supported in your browser');
     }
   };
 

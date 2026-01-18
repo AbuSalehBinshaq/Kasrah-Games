@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Star, Play } from 'lucide-react';
+import { Star } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 
 export default function FeaturedGames() {
@@ -15,7 +15,7 @@ export default function FeaturedGames() {
 
   async function fetchFeaturedGames() {
     try {
-      const response = await fetch('/api/games?featured=true&limit=20');
+      const response = await fetch('/api/games?featured=true&limit=8');
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
@@ -23,7 +23,7 @@ export default function FeaturedGames() {
       setGames(data.games || []);
     } catch (error) {
       console.error('Failed to fetch featured games:', error);
-      setGames([]); // Set empty array on error
+      setGames([]);
     } finally {
       setLoading(false);
     }
@@ -31,16 +31,15 @@ export default function FeaturedGames() {
 
   if (loading) {
     return (
-      <section className="py-8 md:py-12">
+      <section className="py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
-          <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-200"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Featured</h2>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[...Array(20)].map((_, i) => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"
+              className="aspect-square animate-pulse rounded-xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -49,15 +48,14 @@ export default function FeaturedGames() {
   }
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Featured</h2>
         <Link
           href="/games?featured=true"
-          className="flex items-center space-x-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
+          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          <span>See all</span>
-          <ArrowRight className="h-4 w-4" />
+          See all →
         </Link>
       </div>
 
@@ -65,23 +63,17 @@ export default function FeaturedGames() {
         <div className="rounded-xl bg-gray-50 p-12 text-center">
           <Star className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-xl font-semibold text-gray-900">No featured games yet</h3>
-          <p className="text-gray-600">Check back soon for featured games!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
           {games.map((game: any, index: number) => (
-            <div
+            <GameCard 
               key={game.id}
-              className=""
-            >
-              <GameCard 
-                game={game} 
-                viewMode="grid" 
-                compact 
-                hideDescription 
-                priority={index < 4} // Load first 4 images with priority
-              />
-            </div>
+              game={game} 
+              viewMode="grid" 
+              hideDescription={true}
+              priority={index < 2}
+            />
           ))}
         </div>
       )}

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 
 type FavoriteGame = {
@@ -72,21 +71,19 @@ export default function FavoritesGames() {
     }
   }
 
-  // إخفاء القسم إذا لا توجد مفضلة
   if (!loading && (!games || games.length === 0)) {
     return null;
   }
 
   if (loading) {
     return (
-      <section className="py-8 md:py-12">
+      <section className="py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-3xl font-bold text-gray-900">Favorites</h2>
-          <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-200"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Favorites</h2>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-36 sm:h-40 md:h-48 animate-pulse rounded-xl bg-gray-200"></div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="aspect-square animate-pulse rounded-xl bg-gray-200"></div>
           ))}
         </div>
       </section>
@@ -94,24 +91,22 @@ export default function FavoritesGames() {
   }
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-gray-900">Favorites</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Favorites</h2>
         <Link
           href="/auth/profile"
-          className="flex items-center space-x-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
+          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          <span>See all</span>
-          <ArrowRight className="h-4 w-4" />
+          See all →
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
         {games.map((game) => (
-          <GameCard key={game.id} game={game as any} viewMode="grid" compact hideDescription />
+          <GameCard key={game.id} game={game as any} viewMode="grid" hideDescription={true} />
         ))}
       </div>
     </section>
   );
 }
-

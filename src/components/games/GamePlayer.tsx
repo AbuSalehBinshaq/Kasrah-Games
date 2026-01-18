@@ -54,12 +54,22 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
   };
 
   const toggleFullscreen = async () => {
-    if (!containerRef.current) return;
-
     try {
       if (!document.fullscreenElement) {
-        await containerRef.current.requestFullscreen();
-        setIsFullscreen(true);
+        if (iframeRef.current) {
+          try {
+            await iframeRef.current.requestFullscreen();
+            setIsFullscreen(true);
+            return;
+          } catch (iframeError) {
+            console.log('Iframe fullscreen not supported, trying container');
+          }
+        }
+        
+        if (containerRef.current) {
+          await containerRef.current.requestFullscreen();
+          setIsFullscreen(true);
+        }
       } else {
         await document.exitFullscreen();
         setIsFullscreen(false);

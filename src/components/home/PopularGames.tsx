@@ -11,7 +11,7 @@ export default function PopularGames() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const limit = 12;
+  const limit = 20;
   
   const observerTarget = useRef(null);
 

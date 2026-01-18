@@ -58,11 +58,9 @@ export default function GameCard({
                 alt={game.title}
                 fill
                 className="object-cover"
-                quality={60}
-                sizes="(max-width: 768px) 50vw, 200px"
+                quality={75}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority={priority}
-                placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOfU99y6gAAAABJRU5ErkJggg=="
                 onError={() => setImageError(true)}
               />
             )}
@@ -124,11 +122,9 @@ export default function GameCard({
               alt={game.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"
-              quality={60}
-              sizes="(max-width: 640px) 50vw, 250px"
+              quality={85}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={priority}
-              placeholder="blur"
-              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8AOfU99y6gAAAABJRU5ErkJggg=="
               onError={() => setImageError(true)}
             />
           )}
@@ -141,13 +137,14 @@ export default function GameCard({
           </h3>
           
           {showStats && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-2 mt-1">
               <ThumbsUp className="h-4 w-4 text-gray-600" />
               <span className="text-xs font-semibold text-gray-700">{game.likePercentage}% Rating</span>
               
               {showOnlineCount && (
                 <>
-                  <span className="text-xs text-gray-600 ml-auto">{game.onlineCount || 0}</span>
+                  <Users className="h-4 w-4 text-gray-600 ml-auto" />
+                  <span className="text-xs text-gray-700">{game.onlineCount || 0}</span>
                 </>
               )}
             </div>

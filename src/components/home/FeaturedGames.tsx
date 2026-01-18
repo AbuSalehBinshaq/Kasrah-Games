@@ -15,7 +15,7 @@ export default function FeaturedGames() {
 
   async function fetchFeaturedGames() {
     try {
-      const response = await fetch('/api/games?featured=true&limit=8');
+      const response = await fetch('/api/games?featured=true&limit=6');
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
@@ -32,14 +32,14 @@ export default function FeaturedGames() {
   if (loading) {
     return (
       <section className="py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Featured</h2>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="aspect-square animate-pulse rounded-xl bg-gray-200"
+              className="aspect-video animate-pulse rounded-xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -49,14 +49,8 @@ export default function FeaturedGames() {
 
   return (
     <section className="py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Featured</h2>
-        <Link
-          href="/games?featured=true"
-          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
-        >
-          See all →
-        </Link>
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-gray-900">Featured</h2>
       </div>
 
       {!games || games.length === 0 ? (
@@ -65,14 +59,15 @@ export default function FeaturedGames() {
           <h3 className="mb-2 text-xl font-semibold text-gray-900">No featured games yet</h3>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {games.map((game: any, index: number) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
+          {games.slice(0, 3).map((game: any, index: number) => (
             <GameCard 
               key={game.id}
               game={game} 
               viewMode="grid" 
               hideDescription={true}
-              priority={index < 2}
+              aspectRatio="video"
+              priority={index < 3}
             />
           ))}
         </div>

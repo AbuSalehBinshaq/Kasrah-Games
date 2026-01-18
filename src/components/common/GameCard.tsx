@@ -25,9 +25,17 @@ interface GameCardProps {
   compact?: boolean;
   hideDescription?: boolean;
   priority?: boolean;
+  aspectRatio?: 'video' | 'square'; // video = 16:9, square = 1:1
 }
 
-export default function GameCard({ game, viewMode, compact = false, hideDescription = false, priority = false }: GameCardProps) {
+export default function GameCard({ 
+  game, 
+  viewMode, 
+  compact = false, 
+  hideDescription = false, 
+  priority = false,
+  aspectRatio = 'video'
+}: GameCardProps) {
   const [imageError, setImageError] = useState(false);
   const { settings, loading: settingsLoading } = useSettings();
   
@@ -94,12 +102,14 @@ export default function GameCard({ game, viewMode, compact = false, hideDescript
     );
   }
 
-  // Grid View - Simple design like the image
+  // Grid View
+  const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
+
   return (
     <Link href={`/games/${game.slug}`}>
       <div className="group flex flex-col rounded-xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image Container */}
-        <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
+        <div className={`relative w-full ${aspectClass} overflow-hidden bg-gray-100`}>
           {imageError ? (
             <div className="flex h-full w-full items-center justify-center bg-gray-200">
               <Play className="h-12 w-12 text-gray-400" />

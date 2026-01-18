@@ -79,9 +79,9 @@ export default function FavoritesGames() {
     return (
       <section className="py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Favorites</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Favorites</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-gray-200"></div>
           ))}
@@ -93,7 +93,7 @@ export default function FavoritesGames() {
   return (
     <section className="py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Favorites</h2>
+        <h2 className="text-3xl font-bold text-gray-900">Favorites</h2>
         <Link
           href="/auth/profile"
           className="text-sm font-semibold text-primary-600 hover:text-primary-700"
@@ -102,9 +102,15 @@ export default function FavoritesGames() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
         {games.map((game) => (
-          <GameCard key={game.id} game={game as any} viewMode="grid" hideDescription={true} />
+          <GameCard 
+            key={game.id} 
+            game={game as any} 
+            viewMode="grid" 
+            hideDescription={true}
+            aspectRatio="square"
+          />
         ))}
       </div>
     </section>

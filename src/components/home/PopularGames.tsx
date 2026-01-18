@@ -71,14 +71,14 @@ export default function PopularGames() {
   if (loading) {
     return (
       <section className="py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-900">Recommended For You</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+          {[...Array(2)].map((_, i) => (
             <div
               key={i}
-              className="aspect-square animate-pulse rounded-xl bg-gray-200"
+              className="aspect-video animate-pulse rounded-xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -88,14 +88,8 @@ export default function PopularGames() {
 
   return (
     <section className="py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Recommended for you</h2>
-        <Link
-          href="/games?sort=popular"
-          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
-        >
-          See all →
-        </Link>
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-gray-900">Recommended For You</h2>
       </div>
 
       {!games || games.length === 0 ? (
@@ -105,9 +99,16 @@ export default function PopularGames() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-2">
-            {games.map((game: any) => (
-              <GameCard key={game.id} game={game} viewMode="grid" hideDescription={true} />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+            {games.slice(0, 6).map((game: any, index: number) => (
+              <GameCard 
+                key={game.id} 
+                game={game} 
+                viewMode="grid" 
+                hideDescription={true}
+                aspectRatio="video"
+                priority={index < 2}
+              />
             ))}
           </div>
 

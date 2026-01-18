@@ -75,6 +75,7 @@ export default function GameDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [userVote, setUserVote] = useState<'like' | 'dislike' | null>(null);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
   const [similarGames, setSimilarGames] = useState<CardGame[]>([]);
@@ -116,11 +117,22 @@ export default function GameDetailPage() {
   async function handlePlayGame() {
     if (!game) return;
     setIsPlaying(true);
+    setIsPaused(false);
     try {
       await fetch(`/api/games/${game.id}/play`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
       console.error('Failed to track play session:', err);
     }
+  }
+
+  function handleContinuePlaying() {
+    setIsPaused(false);
+    setIsPlaying(true);
+  }
+
+  function handleExitFullscreen() {
+    setIsPaused(true);
+    setIsPlaying(false);
   }
 
   async function handleVote(vote: 'like' | 'dislike') {
@@ -272,7 +284,7 @@ export default function GameDetailPage() {
           <span className="font-semibold text-slate-900">{game.title}</span>
         </div>
 
-        {!isPlaying && (
+        {(!isPlaying || isPaused) && (
           <div className="space-y-8">
             {/* Hero aligned with reference design */}
             <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
@@ -306,10 +318,10 @@ export default function GameDetailPage() {
                   </div>
 
                   <button
-                    onClick={handlePlayGame}
+                    onClick={isPaused ? handleContinuePlaying : handlePlayGame}
                     className="rounded-full bg-[var(--color-primary)] px-10 py-3 text-lg font-semibold text-white shadow-lg transition hover:bg-[var(--color-primary-hover)] md:block"
                   >
-                    Play Now
+                    {isPaused ? 'Continue Playing' : 'Play Now'}
                   </button>
                 </div>
 
@@ -378,7 +390,8 @@ export default function GameDetailPage() {
           </div>
         )}
 
-        {isPlaying && (
+        {/* GameContainer - visible when playing, hidden when paused (but keeps iframe loaded) */}
+        {(isPlaying || isPaused) && (
           <GameContainer
             title={game.title}
             siteName={settings?.siteName || 'Kasrah Games'}
@@ -390,6 +403,8 @@ export default function GameDetailPage() {
             onFavorite={handleFavorite}
             isFavorited={isFavorited}
             isFavoriting={isFavoriting}
+            onExitFullscreen={handleExitFullscreen}
+            isPaused={isPaused}
           >
             <iframe src={game.gameUrl} className="h-full w-full" title={game.title} allowFullScreen />
           </GameContainer>

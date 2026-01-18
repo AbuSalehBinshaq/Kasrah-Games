@@ -143,7 +143,7 @@ export default function GameCard({
               {!hideRating && (
                 <>
                   <ThumbsUp className="h-4 w-4 text-gray-600" />
-                  <span className="text-xs font-semibold text-gray-700">{game.likePercentage}% Rating</span>
+                  <span className="text-xs font-semibold text-gray-700">{game.likePercentage}%</span>
                 </>
               )}
               

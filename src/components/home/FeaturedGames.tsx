@@ -80,11 +80,11 @@ export default function FeaturedGames() {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Featured</h2>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-4">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="aspect-video w-48 flex-shrink-0 md:w-auto animate-pulse rounded-2xl bg-gray-200"
+              className="aspect-video w-32 flex-shrink-0 md:w-auto animate-pulse rounded-2xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -113,11 +113,11 @@ export default function FeaturedGames() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex gap-3 overflow-x-auto pb-2 scroll-smooth md:overflow-x-hidden"
+            className="flex gap-2 overflow-x-auto pb-2 scroll-smooth md:overflow-x-hidden"
             style={{ scrollBehavior: 'smooth' }}
           >
             {games.map((game: any, index: number) => (
-              <div key={game.id} className="w-48 flex-shrink-0 md:hidden">
+              <div key={game.id} className="w-32 flex-shrink-0 md:hidden">
                 <GameCard 
                   game={game} 
                   viewMode="grid" 

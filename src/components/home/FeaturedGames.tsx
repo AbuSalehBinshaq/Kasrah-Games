@@ -80,11 +80,11 @@ export default function FeaturedGames() {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Featured</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-4">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="aspect-video animate-pulse rounded-2xl bg-gray-200"
+              className="aspect-video w-48 flex-shrink-0 md:w-auto animate-pulse rounded-2xl bg-gray-200"
             ></div>
           ))}
         </div>
@@ -109,17 +109,23 @@ export default function FeaturedGames() {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Mobile Grid - 2 columns */}
-          <div className="md:hidden grid grid-cols-2 gap-2">
-            {games.slice(0, 6).map((game: any, index: number) => (
-              <GameCard 
-                key={game.id}
-                game={game} 
-                viewMode="grid" 
-                hideDescription={true}
-                aspectRatio="video"
-                priority={index < 2}
-              />
+          {/* Mobile Swipe */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex gap-3 overflow-x-auto pb-2 scroll-smooth md:overflow-x-hidden"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {games.map((game: any, index: number) => (
+              <div key={game.id} className="w-48 flex-shrink-0 md:hidden">
+                <GameCard 
+                  game={game} 
+                  viewMode="grid" 
+                  hideDescription={true}
+                  aspectRatio="video"
+                  priority={index < 2}
+                />
+              </div>
             ))}
           </div>
 

@@ -260,40 +260,15 @@ export default function GameContainer({
         .game-container:fullscreen,
         .game-container:-webkit-full-screen,
         .game-container:-moz-full-screen {
-          width: 100vw !important;
-          height: 100vh !important;
+          width: 100vw;
+          height: 100vh;
           background: black;
-          border: none !important;
-          border-radius: 0 !important;
         }
         .game-container:fullscreen > *,
         .game-container:-webkit-full-screen > *,
         .game-container:-moz-full-screen > * {
-          width: 100% !important;
-          height: 100% !important;
-        }
-        .game-container:fullscreen .aspect-video,
-        .game-container:-webkit-full-screen .aspect-video,
-        .game-container:-moz-full-screen .aspect-video {
-          width: 100% !important;
-          height: 100% !important;
-          aspect-ratio: unset !important;
-        }
-        .game-container:fullscreen iframe,
-        .game-container:fullscreen canvas,
-        .game-container:fullscreen video,
-        .game-container:-webkit-full-screen iframe,
-        .game-container:-webkit-full-screen canvas,
-        .game-container:-webkit-full-screen video,
-        .game-container:-moz-full-screen iframe,
-        .game-container:-moz-full-screen canvas,
-        .game-container:-moz-full-screen video {
-          width: 100% !important;
-          height: 100% !important;
-          position: absolute;
-          top: 0;
-          left: 0;
-          border: none !important;
+          width: 100%;
+          height: 100%;
         }
         .game-container iframe,
         .game-container canvas,

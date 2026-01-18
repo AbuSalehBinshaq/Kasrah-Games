@@ -81,8 +81,8 @@ export default function FavoritesGames() {
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Favorites</h2>
         </div>
-        <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="aspect-square animate-pulse rounded-2xl bg-gray-200"></div>
           ))}
         </div>
@@ -102,8 +102,8 @@ export default function FavoritesGames() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
-        {games.slice(0, 3).map((game) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+        {games.map((game) => (
           <GameCard 
             key={game.id} 
             game={game as any} 

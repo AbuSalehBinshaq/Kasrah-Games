@@ -121,7 +121,7 @@ export default function ContinueGames() {
 
   if (loading) {
     return (
-      <section className="py-8">
+      <section className="py-4">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Continue</h2>
           <span className="text-primary-600 font-semibold text-lg">→</span>
@@ -136,7 +136,7 @@ export default function ContinueGames() {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-4">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Continue</h2>
         <span className="text-primary-600 font-semibold text-lg">→</span>

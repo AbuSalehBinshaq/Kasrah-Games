@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   return (
-    <main className="space-y-12 pb-24">
+    <main className="space-y-6 pb-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -29,7 +29,7 @@ export default function HomePage() {
         }}
       />
 
-      <div className="space-y-10 px-4 md:px-8">
+      <div className="space-y-4 px-4 md:px-8">
         {/* In-Content Ad */}
         <div className="flex justify-center">
           <AdDisplay position="IN_CONTENT" />

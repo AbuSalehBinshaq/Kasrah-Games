@@ -77,7 +77,7 @@ export default function FavoritesGames() {
 
   if (loading) {
     return (
-      <section className="py-8">
+      <section className="py-4">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Favorites</h2>
         </div>
@@ -91,7 +91,7 @@ export default function FavoritesGames() {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-4">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Favorites</h2>
         <Link

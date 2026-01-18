@@ -70,7 +70,7 @@ export default function PopularGames() {
 
   if (loading) {
     return (
-      <section className="py-8">
+      <section className="py-4">
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
         </div>
@@ -87,7 +87,7 @@ export default function PopularGames() {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-4">
       <div className="mb-6">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
       </div>

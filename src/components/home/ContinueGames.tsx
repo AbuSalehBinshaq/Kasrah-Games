@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 
 type ContinueGame = {
@@ -23,6 +24,9 @@ type ContinueGame = {
 export default function ContinueGames() {
   const [games, setGames] = useState<ContinueGame[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     fetchContinueGames();
@@ -69,6 +73,22 @@ export default function ContinueGames() {
     }
   }
 
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 280;
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+      scrollContainerRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
   if (!loading && (!games || games.length === 0)) {
     return null;
   }
@@ -80,9 +100,9 @@ export default function ContinueGames() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Continue</h2>
           <span className="text-primary-600 font-semibold text-lg">→</span>
         </div>
-        <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
+        <div className="flex gap-3 overflow-x-auto pb-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="aspect-square animate-pulse rounded-2xl bg-gray-200"></div>
+            <div key={i} className="aspect-square w-24 flex-shrink-0 animate-pulse rounded-2xl bg-gray-200"></div>
           ))}
         </div>
       </section>
@@ -96,17 +116,46 @@ export default function ContinueGames() {
         <span className="text-primary-600 font-semibold text-lg">→</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-3">
-        {games.slice(0, 3).map((game) => (
-          <GameCard 
-            key={game.id} 
-            game={game as any} 
-            viewMode="grid" 
-            hideDescription={true}
-            aspectRatio="square"
-            showOnlineCount={true}
-          />
-        ))}
+      <div className="relative">
+        {/* Scroll Container */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {games.map((game) => (
+            <div key={game.id} className="w-24 flex-shrink-0">
+              <GameCard 
+                game={game as any} 
+                viewMode="grid" 
+                hideDescription={true}
+                aspectRatio="square"
+                showOnlineCount={true}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation Buttons */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-5 w-5 text-gray-900" />
+          </button>
+        )}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </button>
+        )}
       </div>
     </section>
   );

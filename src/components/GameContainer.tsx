@@ -16,6 +16,7 @@ type GameContainerProps = {
   onFavorite?: () => Promise<void> | void;
   isFavorited?: boolean;
   isFavoriting?: boolean;
+  onExit?: () => void;
 };
 
 export default function GameContainer({
@@ -30,12 +31,14 @@ export default function GameContainer({
   onFavorite,
   isFavorited = false,
   isFavoriting = false,
+  onExit,
 }: GameContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showBar, setShowBar] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
 
   useEffect(() => {
@@ -92,6 +95,44 @@ export default function GameContainer({
     }
   }, [isMobile, isMobileFullscreen]);
 
+  // Hide page elements when in desktop fullscreen
+  useEffect(() => {
+    if (!isMobile && isFullscreen) {
+      const header = document.querySelector('header');
+      const footer = document.querySelector('footer');
+      const mobileNav = document.querySelector('[data-mobile-nav]');
+      const mainContent = document.querySelector('main');
+      const body = document.body;
+      
+      if (header) (header as HTMLElement).style.display = 'none';
+      if (footer) (footer as HTMLElement).style.display = 'none';
+      if (mobileNav) (mobileNav as HTMLElement).style.display = 'none';
+      if (mainContent && mainContent !== containerRef.current?.closest('main')) {
+        const gamePageContent = containerRef.current?.closest('.bg-gray-50');
+        if (gamePageContent && gamePageContent !== mainContent) {
+          (gamePageContent as HTMLElement).style.display = 'none';
+        }
+      }
+      
+      body.style.overflow = 'hidden';
+      body.style.background = '#000';
+      
+      return () => {
+        if (header) (header as HTMLElement).style.display = '';
+        if (footer) (footer as HTMLElement).style.display = '';
+        if (mobileNav) (mobileNav as HTMLElement).style.display = '';
+        if (mainContent && mainContent !== containerRef.current?.closest('main')) {
+          const gamePageContent = containerRef.current?.closest('.bg-gray-50');
+          if (gamePageContent) {
+            (gamePageContent as HTMLElement).style.display = '';
+          }
+        }
+        body.style.overflow = '';
+        body.style.background = '';
+      };
+    }
+  }, [isMobile, isFullscreen]);
+
   const handleMobileFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(true);
@@ -106,6 +147,11 @@ export default function GameContainer({
   };
 
   const handleExitMobileFullscreen = () => {
+    // Show exit dialog before exiting
+    setShowExitDialog(true);
+  };
+
+  const handleConfirmExit = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -115,6 +161,14 @@ export default function GameContainer({
     } else {
       exitFullscreen();
     }
+    setShowExitDialog(false);
+    if (onExit) {
+      onExit();
+    }
+  };
+
+  const handleContinue = () => {
+    setShowExitDialog(false);
   };
 
   const toggleFullscreen = () => {
@@ -124,6 +178,19 @@ export default function GameContainer({
       handleMobileFullscreen();
     }
   };
+
+  // Handle ESC key to show exit dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') && (isFullscreen || isMobileFullscreen)) {
+        e.preventDefault();
+        setShowExitDialog(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, isMobileFullscreen]);
 
   const handleVote = async (vote: 'like' | 'dislike') => {
     if (!onVote || isVoting) return;
@@ -146,21 +213,49 @@ export default function GameContainer({
 
   return (
     <>
+      {/* Exit Dialog */}
+      {showExitDialog && (
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">الخروج من اللعبة</h3>
+            <p className="text-gray-600 mb-6">هل تريد الخروج من اللعبة أم الاستمرار في اللعب؟</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleContinue}
+                className="flex-1 rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white hover:bg-primary-700 transition-colors"
+              >
+                الاستمرار
+              </button>
+              <button
+                onClick={handleConfirmExit}
+                className="flex-1 rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                الخروج
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Desktop view */}
       <div className="hidden md:block space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-          <button
-            onClick={toggleFullscreen}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-800 shadow-sm hover:bg-gray-50"
-          >
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </button>
-        </div>
+        {!isFullscreen && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+            <button
+              onClick={toggleFullscreen}
+              className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-800 shadow-sm hover:bg-gray-50"
+            >
+              Fullscreen
+            </button>
+          </div>
+        )}
 
         <div
           ref={containerRef}
-          className="game-container relative overflow-hidden rounded-xl border border-gray-200 bg-black"
+          className={`game-container relative overflow-hidden bg-black ${
+            isFullscreen ? '' : 'rounded-xl border border-gray-200'
+          }`}
         >
           <div className="aspect-video w-full">
             {children}
@@ -169,7 +264,7 @@ export default function GameContainer({
           {showBar && (
             <div
               className={`pointer-events-auto flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-3 py-2 text-sm text-white ${
-                isFullscreen ? 'absolute inset-x-0 bottom-0 z-10' : ''
+                isFullscreen ? 'absolute inset-x-0 bottom-0 z-10' : 'border-t'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -222,8 +317,26 @@ export default function GameContainer({
                 >
                   Hide bar
                 </button>
+                {isFullscreen && (
+                  <button
+                    onClick={handleExitMobileFullscreen}
+                    className="text-[11px] font-semibold text-white underline underline-offset-2 hover:text-gray-200"
+                  >
+                    Exit
+                  </button>
+                )}
               </div>
             </div>
+          )}
+          
+          {/* Exit button in fullscreen mode */}
+          {isFullscreen && (
+            <button
+              onClick={handleExitMobileFullscreen}
+              className="absolute top-4 right-4 z-20 rounded-lg bg-black/70 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-white hover:bg-black/90 transition-colors"
+            >
+              Exit
+            </button>
           )}
         </div>
       </div>
@@ -260,21 +373,45 @@ export default function GameContainer({
         .game-container:fullscreen,
         .game-container:-webkit-full-screen,
         .game-container:-moz-full-screen {
-          width: 100vw;
-          height: 100vh;
-          background: black;
+          width: 100vw !important;
+          height: 100vh !important;
+          background: black !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          z-index: 99999 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          border-radius: 0 !important;
         }
         .game-container:fullscreen > *,
         .game-container:-webkit-full-screen > *,
         .game-container:-moz-full-screen > * {
-          width: 100%;
-          height: 100%;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        .game-container:fullscreen .aspect-video,
+        .game-container:-webkit-full-screen .aspect-video,
+        .game-container:-moz-full-screen .aspect-video {
+          width: 100% !important;
+          height: 100% !important;
+          aspect-ratio: unset !important;
         }
         .game-container iframe,
         .game-container canvas,
         .game-container video {
-          width: 100%;
-          height: 100%;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        .game-container:fullscreen iframe,
+        .game-container:-webkit-full-screen iframe,
+        .game-container:-moz-full-screen iframe {
+          width: 100% !important;
+          height: 100% !important;
+          border: none !important;
         }
         
         /* Mobile fullscreen styles - CSS only, no Fullscreen API needed */

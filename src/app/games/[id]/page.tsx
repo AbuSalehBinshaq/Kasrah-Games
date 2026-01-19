@@ -458,9 +458,11 @@ export default function GameDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-xl font-bold text-slate-900">Description</h2>
+              <h2 className="mb-3 text-xl font-bold text-slate-900">Game Details & Instructions</h2>
               <div className="prose prose-slate max-w-none">
-                <p className="leading-relaxed text-slate-700 whitespace-pre-wrap">{game.description || game.shortDescription}</p>
+                <div className="leading-relaxed text-slate-700 whitespace-pre-wrap text-base">
+                  {game.description || game.shortDescription}
+                </div>
               </div>
             </div>
 

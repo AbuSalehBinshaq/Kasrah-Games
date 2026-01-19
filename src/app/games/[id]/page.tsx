@@ -294,8 +294,36 @@ export default function GameDetailPage() {
     );
   }
 
+  // Generate Schema.org JSON-LD for the game
+  const gameSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoGame',
+    name: game.title,
+    description: game.shortDescription || game.description,
+    image: game.coverImage || game.thumbnail,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com'}/games/${game.slug || game.id}`,
+    developer: {
+      '@type': 'Organization',
+      name: game.developer,
+    },
+    aggregateRating: game.totalRatings > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: (game.likePercentage / 20).toFixed(1),
+      bestRating: 5,
+      worstRating: 1,
+      ratingCount: game.totalRatings,
+    } : undefined,
+    playCount: game.playCount,
+    gameType: game.gameType,
+    keywords: [...(game.tags || []), ...(game.categoryNames || [])].join(', '),
+  };
+
   return (
     <div className="bg-gray-50 pb-12 text-slate-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(gameSchema) }}
+      />
       <div className="mx-auto max-w-5xl space-y-8 px-4">
         <div className="flex items-center gap-2 pt-4 text-sm text-slate-500">
           <Link href="/" className="hover:text-slate-900">Home</Link>

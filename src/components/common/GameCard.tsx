@@ -13,6 +13,7 @@ interface GameCardProps {
     title: string;
     description: string;
     thumbnail: string;
+    coverImage?: string | null;
     playCount: number;
     onlineCount?: number;
     likes: number;
@@ -108,6 +109,7 @@ export default function GameCard({
 
   // Grid View - Minimal design (image only + text)
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
+  const displayImage = (aspectRatio === 'video' && game.coverImage) ? game.coverImage : game.thumbnail;
 
   return (
     <Link href={`/games/${game.slug}`}>
@@ -120,7 +122,7 @@ export default function GameCard({
             </div>
           ) : (
             <Image
-              src={game.thumbnail || '/images/placeholder-game.svg'}
+              src={displayImage || '/images/placeholder-game.svg'}
               alt={game.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"

@@ -252,13 +252,15 @@ export default function GameForm({ gameId, initialData }: GameFormProps) {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="thumbnail">Thumbnail URL</Label>
-          <Input id="thumbnail" {...register('thumbnail')} />
+          <Label htmlFor="thumbnail">Game Image (Square/Thumbnail)</Label>
+          <Input id="thumbnail" {...register('thumbnail')} placeholder="https://example.com/image.jpg" />
+          <p className="text-xs text-gray-500">Used for "Continue" and small lists.</p>
           {errors.thumbnail && <p className="text-sm text-red-500">{errors.thumbnail.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="coverImage">Cover Image URL (Optional)</Label>
-          <Input id="coverImage" {...register('coverImage')} />
+          <Label htmlFor="coverImage">Game Banner (Wide/Cover)</Label>
+          <Input id="coverImage" {...register('coverImage')} placeholder="https://example.com/banner.jpg" />
+          <p className="text-xs text-gray-500">Used for "Featured" and "Recommended" sections.</p>
           {errors.coverImage && <p className="text-sm text-red-500">{errors.coverImage.message}</p>}
         </div>
       </div>

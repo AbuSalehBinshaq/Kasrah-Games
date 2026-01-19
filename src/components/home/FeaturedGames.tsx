@@ -122,24 +122,24 @@ export default function FeaturedGames() {
                   game={game} 
                   viewMode="grid" 
                   hideDescription={true}
-                  aspectRatio="video"
-                  priority={index < 2}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {games.map((game: any, index: number) => (
-              <GameCard 
-                key={game.id}
-                game={game} 
-                viewMode="grid" 
-                hideDescription={true}
                 aspectRatio="video"
-                priority={index < 4}
+                priority={index < 2}
               />
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-2 gap-4">
+          {games.map((game: any, index: number) => (
+            <GameCard 
+              key={game.id}
+              game={game} 
+              viewMode="grid" 
+              hideDescription={true}
+              aspectRatio="video"
+              priority={index < 2}
+            />
             ))}
           </div>
 

@@ -11,7 +11,7 @@ export default function PopularGames() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const limit = 20;
+  const limit = 6;
   
   const observerTarget = useRef(null);
 
@@ -74,7 +74,7 @@ export default function PopularGames() {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Recommended For You</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
@@ -99,7 +99,7 @@ export default function PopularGames() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
             {games.map((game: any, index: number) => (
               <GameCard 
                 key={game.id} 

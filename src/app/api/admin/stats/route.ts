@@ -23,8 +23,12 @@ export async function GET(request: NextRequest) {
       // Total users
       prisma.user.count(),
 
-      // Total play sessions
-      prisma.playSession.count(),
+      // Total play sessions (Total Plays)
+      prisma.game.aggregate({
+        _sum: {
+          playCount: true
+        }
+      }),
 
       // Active users (last 30 days)
       prisma.user.count({
@@ -115,7 +119,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       totalGames,
       totalUsers,
-      totalPlays,
+      totalPlays: totalPlays._sum.playCount || 0,
       avgRating: likePercentage, // use like percentage as "avg rating"
       activeUsers,
       recentGames: recentGamesWithRatings,

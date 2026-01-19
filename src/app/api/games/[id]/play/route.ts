@@ -25,19 +25,18 @@ export async function POST(
 
     const user = await getCurrentUser();
 
-    // Increment play count
+    // Increment play count only if it's a new session or after some time
+    // For simplicity and accuracy, we increment on every POST request to this endpoint
+    // which is triggered when the user clicks "Play Now"
     await prisma.game.update({
       where: { id: game.id },
       data: { playCount: { increment: 1 } },
     });
 
     // Create play session
-    // If user is not logged in, we still want to track them for "Online Count"
-    // We'll use a special system user ID or handle it in the schema if needed
-    // For now, we'll try to create it with the user ID if available
     const session = await prisma.playSession.create({
       data: {
-        userId: user?.id || 'anonymous', // Ensure your DB handles this or use a valid UUID
+        userId: user?.id || 'anonymous',
         gameId: game.id,
         duration: 0,
         startedAt: new Date(),

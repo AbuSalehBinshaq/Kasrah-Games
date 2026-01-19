@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Filter, Grid, List, Search } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
@@ -36,7 +36,7 @@ interface Pagination {
   hasPrevPage: boolean;
 }
 
-export default function GamesPage() {
+function GamesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -99,7 +99,7 @@ export default function GamesPage() {
       setGames(normalized);
       setPagination(data.pagination);
     } catch (error) {
-      console.error('Failed to fetch games:', error);
+      console.error('Games fetch error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +138,7 @@ export default function GamesPage() {
     } else {
       params.delete(key);
     }
-    params.set('page', '1'); // Reset to first page when filters change
+    params.set('page', '1');
     router.push(`/games?${params.toString()}`);
   }
 
@@ -151,49 +151,29 @@ export default function GamesPage() {
         </p>
       </div>
 
-      {/* Filters and Search */}
-      <div className="mb-8 rounded-xl bg-white p-6 shadow">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <SearchBar initialValue={search} />
-          </div>
-          <div className="flex items-center space-x-4">
-            <CategoryFilter selectedCategory={category} />
-            <select
-              value={sort}
-              onChange={(e) => updateSearchParams('sort', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
-            >
-              <option value="newest">Newest First</option>
-              <option value="trending">Trending</option>
-              <option value="relevance">Best Match</option>
-              <option value="popular">Most Played</option>
-              <option value="views">Most Viewed</option>
-              <option value="likes">Most Liked</option>
-              <option value="oldest">Oldest First</option>
-            </select>
-          </div>
-        </div>
+      <div className="mb-8 space-y-4">
+        <SearchBar
+          value={search}
+          onChange={(value) => updateSearchParams('search', value)}
+          placeholder="Search games..."
+        />
 
-        {/* View Toggle */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing {games.length} of {pagination.total} games
-          </div>
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+          <CategoryFilter
+            value={category}
+            onChange={(value) => updateSearchParams('category', value)}
+          />
+
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`rounded-lg p-2 ${
-                viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
+              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'}`}
             >
               <Grid className="h-5 w-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`rounded-lg p-2 ${
-                viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
+              className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'}`}
             >
               <List className="h-5 w-5" />
             </button>
@@ -201,83 +181,55 @@ export default function GamesPage() {
         </div>
       </div>
 
-      {/* Recommendations */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Recommended for you</h2>
-          {loadingReco && <span className="text-sm text-gray-500">Loading...</span>}
-        </div>
-        {recommended.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recommended.map((game) => (
-              <GameCard key={`reco-${game.id}`} game={game} viewMode="grid" />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Games Grid/List */}
       {isLoading ? (
         <div className="flex justify-center py-12">
           <LoadingSpinner />
         </div>
       ) : games.length === 0 ? (
-        <div className="rounded-xl bg-gray-50 p-12 text-center">
-          <Search className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-xl font-semibold text-gray-900">No games found</h3>
-          <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+          <p className="text-gray-600">No games found. Try adjusting your filters.</p>
         </div>
       ) : (
         <>
-          <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3' : 'space-y-6'}>
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                : 'mb-8 space-y-4'
+            }
+          >
             {games.map((game) => (
               <GameCard key={game.id} game={game} viewMode={viewMode} />
             ))}
           </div>
 
-          {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center space-x-2">
-              <button
-                onClick={() => updateSearchParams('page', (page - 1).toString())}
-                disabled={!pagination.hasPrevPage}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-50"
-              >
-                Previous
-              </button>
-
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                  const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, page - 2)) + i;
-                  if (pageNum > pagination.totalPages) return null;
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => updateSearchParams('page', pageNum.toString())}
-                      className={`h-10 w-10 rounded-lg ${
-                        pageNum === page
-                          ? 'bg-primary-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={() => updateSearchParams('page', (page + 1).toString())}
-                disabled={!pagination.hasNextPage}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-50"
-              >
-                Next
-              </button>
+            <div className="flex justify-center gap-2 py-8">
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => updateSearchParams('page', pageNum.toString())}
+                  className={`px-4 py-2 rounded ${
+                    pageNum === page
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
             </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+export default function GamesPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <GamesPageContent />
+    </Suspense>
   );
 }

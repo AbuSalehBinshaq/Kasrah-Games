@@ -254,13 +254,19 @@ export default function GameForm({ gameId, initialData }: GameFormProps) {
         <div className="space-y-2">
           <Label htmlFor="thumbnail">Game Image (Square/Thumbnail)</Label>
           <Input id="thumbnail" {...register('thumbnail')} placeholder="https://example.com/image.jpg" />
-          <p className="text-xs text-gray-500">Used for "Continue" and small lists.</p>
+          <div className="mt-1 space-y-1">
+            <p className="text-xs font-medium text-blue-600">المقاس المثالي: 512x512 (نسبة 1:1)</p>
+            <p className="text-xs text-gray-500">تُستخدم في قسم "Continue" والمفضلات والقوائم الصغيرة.</p>
+          </div>
           {errors.thumbnail && <p className="text-sm text-red-500">{errors.thumbnail.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="coverImage">Game Banner (Wide/Cover)</Label>
           <Input id="coverImage" {...register('coverImage')} placeholder="https://example.com/banner.jpg" />
-          <p className="text-xs text-gray-500">Used for "Featured" and "Recommended" sections.</p>
+          <div className="mt-1 space-y-1">
+            <p className="text-xs font-medium text-blue-600">المقاس المثالي: 1280x720 (نسبة 16:9)</p>
+            <p className="text-xs text-gray-500">تُستخدم في الأقسام الكبيرة مثل "Featured" و "Recommended".</p>
+          </div>
           {errors.coverImage && <p className="text-sm text-red-500">{errors.coverImage.message}</p>}
         </div>
       </div>

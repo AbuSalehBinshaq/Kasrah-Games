@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
       totalUsers,
       totalPlays,
       activeUsers,
+      onlineNow,
       recentGames,
       recentRatings,
       categoryStats,
@@ -37,6 +38,19 @@ export async function GET(request: NextRequest) {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
         },
+      }),
+
+      // Online Now (Active sessions in last 15 minutes)
+      prisma.playSession.count({
+        where: {
+          startedAt: {
+            gte: new Date(Date.now() - 15 * 60 * 1000),
+          },
+          OR: [
+            { endedAt: null },
+            { endedAt: { gte: new Date() } }
+          ]
+        }
       }),
 
       // Recent games
@@ -122,6 +136,7 @@ export async function GET(request: NextRequest) {
       totalPlays: totalPlays._sum.playCount || 0,
       avgRating: likePercentage, // use like percentage as "avg rating"
       activeUsers,
+      onlineNow: onlineNow || 0,
       recentGames: recentGamesWithRatings,
       recentReviews: recentRatings,
       popularCategories,

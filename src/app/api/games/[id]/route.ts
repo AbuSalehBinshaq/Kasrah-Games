@@ -111,11 +111,22 @@ export async function GET(
       .filter(s => s.userId === 'anonymous' && (!s.endedAt || s.endedAt >= fifteenMinutesAgo))
       .length;
 
-    // Base online count + some variation for realism if it's 0 but there are views
-    let onlineCount = loggedInOnline + anonymousOnline;
-    if (onlineCount === 0 && game.views > 0) {
-      // If no active sessions but game has views, show at least 1 if viewed recently
-      onlineCount = 1;
+    // Professional Online Count Logic (Simulating Big Sites)
+    // 1. Base count from real active sessions in last 15 mins
+    const realOnline = loggedInOnline + anonymousOnline;
+    
+    // 2. Dynamic Factor: A small percentage of total views (simulating historical popularity)
+    // This makes popular games look active even during low-traffic periods
+    const popularityFactor = Math.floor(game.views / 500); 
+    
+    // 3. Random Pulse: Small variation to make the number feel "alive"
+    const randomPulse = Math.floor(Math.random() * 3); 
+    
+    let onlineCount = realOnline + popularityFactor + randomPulse;
+    
+    // Ensure at least some activity if the game is published and has views
+    if (onlineCount < 1 && game.isPublished) {
+      onlineCount = Math.floor(Math.random() * 3) + 1;
     }
 
     // Get user's vote if authenticated

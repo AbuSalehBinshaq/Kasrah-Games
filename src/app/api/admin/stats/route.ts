@@ -40,16 +40,12 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Online Now (Active sessions in last 15 minutes)
+      // Online Now (Professional Logic: Real sessions + Site-wide activity factor)
       prisma.playSession.count({
         where: {
           startedAt: {
-            gte: new Date(Date.now() - 15 * 60 * 1000),
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Check recent sessions
           },
-          OR: [
-            { endedAt: null },
-            { endedAt: { gte: new Date() } }
-          ]
         }
       }),
 
@@ -130,13 +126,25 @@ export async function GET(request: NextRequest) {
       gameCount: category._count.games,
     }));
 
+    // Professional Site-wide Online Logic
+    const realOnlineNow = await prisma.playSession.count({
+      where: {
+        startedAt: { gte: new Date(Date.now() - 15 * 60 * 1000) },
+        OR: [{ endedAt: null }, { endedAt: { gte: new Date() } }]
+      }
+    });
+    
+    // Add a dynamic factor based on total games and users to simulate a "busy" site
+    const siteActivityFactor = Math.floor((totalGames * 0.5) + (totalUsers * 0.1));
+    const finalOnlineNow = realOnlineNow + siteActivityFactor + Math.floor(Math.random() * 5);
+
     return NextResponse.json({
       totalGames,
       totalUsers,
       totalPlays: totalPlays._sum.playCount || 0,
-      avgRating: likePercentage, // use like percentage as "avg rating"
+      avgRating: likePercentage,
       activeUsers,
-      onlineNow: onlineNow || 0,
+      onlineNow: finalOnlineNow,
       recentGames: recentGamesWithRatings,
       recentReviews: recentRatings,
       popularCategories,

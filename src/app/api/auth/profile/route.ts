@@ -45,7 +45,6 @@ export async function GET(request: NextRequest) {
           startedAt: true,
         },
       }),
-      // Get all ratings for this user
       // Get all bookmarks for this user
       prisma.bookmark.findMany({
         where: { userId: user.id },
@@ -102,11 +101,32 @@ export async function GET(request: NextRequest) {
         slug: true,
         title: true,
         thumbnail: true,
-        likes: true,
-        dislikes: true,
-        onlineCount: true,
       },
     });
+
+    // Get ratings for each game
+    const gameRatings = await prisma.rating.groupBy({
+      by: ['gameId'],
+      where: {
+        gameId: { in: recentGameIds },
+      },
+      _count: {
+        isLike: true,
+      },
+    });
+
+    // Create a map of game ratings
+    const ratingsMap = new Map<string, { likes: number; dislikes: number }>();
+    for (const gameId of recentGameIds) {
+      const gameRatingsData = await prisma.rating.findMany({
+        where: { gameId },
+        select: { isLike: true },
+      });
+
+      const likes = gameRatingsData.filter((r) => r.isLike).length;
+      const dislikes = gameRatingsData.filter((r) => !r.isLike).length;
+      ratingsMap.set(gameId, { likes, dislikes });
+    }
 
     // Get play counts for recent games
     const recentGames = recentGamesData.map((game) => {
@@ -115,10 +135,9 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0]
         ?.startedAt;
 
-      const likes = game.likes || 0;
-      const dislikes = game.dislikes || 0;
-      const total = likes + dislikes;
-      const likePercentage = total > 0 ? Math.round((likes / total) * 100) : 0;
+      const ratings = ratingsMap.get(game.id) || { likes: 0, dislikes: 0 };
+      const total = ratings.likes + ratings.dislikes;
+      const likePercentage = total > 0 ? Math.round((ratings.likes / total) * 100) : 0;
 
       return {
         id: game.id,
@@ -127,10 +146,7 @@ export async function GET(request: NextRequest) {
         thumbnail: game.thumbnail || '/images/placeholder-game.svg',
         lastPlayed: lastPlayed?.toISOString() || new Date().toISOString(),
         playCount: gameSessions.length,
-        likes: likes,
-        dislikes: dislikes,
         likePercentage: likePercentage,
-        onlineCount: game.onlineCount || 0,
       };
     });
 

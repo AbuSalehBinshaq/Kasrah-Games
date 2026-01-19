@@ -102,6 +102,9 @@ export async function GET(request: NextRequest) {
         slug: true,
         title: true,
         thumbnail: true,
+        likes: true,
+        dislikes: true,
+        onlineCount: true,
       },
     });
 
@@ -112,6 +115,11 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0]
         ?.startedAt;
 
+      const likes = game.likes || 0;
+      const dislikes = game.dislikes || 0;
+      const total = likes + dislikes;
+      const likePercentage = total > 0 ? Math.round((likes / total) * 100) : 0;
+
       return {
         id: game.id,
         slug: game.slug,
@@ -119,6 +127,10 @@ export async function GET(request: NextRequest) {
         thumbnail: game.thumbnail || '/images/placeholder-game.svg',
         lastPlayed: lastPlayed?.toISOString() || new Date().toISOString(),
         playCount: gameSessions.length,
+        likes: likes,
+        dislikes: dislikes,
+        likePercentage: likePercentage,
+        onlineCount: game.onlineCount || 0,
       };
     });
 
@@ -206,4 +218,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

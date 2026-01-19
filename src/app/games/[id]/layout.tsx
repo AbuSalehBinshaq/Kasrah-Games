@@ -22,9 +22,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         coverImage: true,
         developer: true,
         playCount: true,
-        likes: true,
-        dislikes: true,
-        totalRatings: true,
         tags: true,
       },
     });
@@ -36,11 +33,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
+    // Get ratings for this game
+    const ratings = await prisma.rating.findMany({
+      where: { gameId: game.id },
+      select: { isLike: true },
+    });
+
+    const likes = ratings.filter((r) => r.isLike).length;
+    const dislikes = ratings.filter((r) => !r.isLike).length;
+    const total = likes + dislikes;
+    const rating = total > 0 ? Math.round((likes / total) * 100) : 0;
+
     const gameUrl = `${baseUrl}/games/${game.slug}`;
     const imageUrl = game.coverImage || game.thumbnail || `${baseUrl}/images/placeholder-game.svg`;
     const description = game.shortDescription || game.description.substring(0, 160);
-    const total = (game.likes || 0) + (game.dislikes || 0);
-    const rating = total > 0 ? Math.round(((game.likes || 0) / total) * 100) : 0;
 
     return {
       title: `${game.title} - Play Online | Kasrah Games`,

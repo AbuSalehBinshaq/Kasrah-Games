@@ -295,7 +295,8 @@ export default function GameDetailPage() {
   }
 
   // Generate Schema.org JSON-LD for the game
-  const gameSchema = {
+  const starRating = game.likePercentage > 0 ? (game.likePercentage / 20) : 0;
+  const gameSchema: any = {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
     name: game.title,
@@ -306,17 +307,20 @@ export default function GameDetailPage() {
       '@type': 'Organization',
       name: game.developer,
     },
-    aggregateRating: game.totalRatings > 0 ? {
-      '@type': 'AggregateRating',
-      ratingValue: (game.likePercentage / 20).toFixed(1),
-      bestRating: 5,
-      worstRating: 1,
-      ratingCount: game.totalRatings,
-    } : undefined,
-    playCount: game.playCount,
+    interactionCount: `PlayAction:${game.playCount}`,
     gameType: game.gameType,
     keywords: [...(game.tags || []), ...(game.categoryNames || [])].join(', '),
   };
+  
+  if (game.totalRatings > 0) {
+    gameSchema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: starRating.toFixed(1),
+      bestRating: 5,
+      worstRating: 1,
+      ratingCount: game.totalRatings,
+    };
+  }
 
   return (
     <div className="bg-gray-50 pb-12 text-slate-900">

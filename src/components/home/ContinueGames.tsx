@@ -53,21 +53,28 @@ export default function ContinueGames() {
       const data = await response.json();
       const recentGames = Array.isArray(data?.recentGames) ? data.recentGames : [];
 
-      const normalized = recentGames.map((game: any) => ({
-        id: game.id,
-        slug: game.slug,
-        title: game.title,
-        thumbnail: game.thumbnail || '/images/placeholder-game.svg',
-        description: '',
-        playCount: game.playCount || 0,
-        lastPlayed: game.lastPlayed || game.startedAt || game.createdAt || null,
-        likePercentage: game.likePercentage || 0,
-        likes: game.likes || 0,
-        dislikes: game.dislikes || 0,
-        totalRatings: game.totalRatings || 0,
-        onlineCount: game.onlineCount || 0,
-        categoryNames: game.categoryNames || [],
-      }));
+      const normalized = recentGames.map((game: any) => {
+        const likes = game.likes || 0;
+        const dislikes = game.dislikes || 0;
+        const total = likes + dislikes;
+        const likePercentage = total > 0 ? Math.round((likes / total) * 100) : 0;
+
+        return {
+          id: game.id,
+          slug: game.slug,
+          title: game.title,
+          thumbnail: game.thumbnail || '/images/placeholder-game.svg',
+          description: '',
+          playCount: game.playCount || 0,
+          lastPlayed: game.lastPlayed || game.startedAt || game.createdAt || null,
+          likePercentage: game.likePercentage || likePercentage,
+          likes: likes,
+          dislikes: dislikes,
+          totalRatings: game.totalRatings || total,
+          onlineCount: game.onlineCount || 0,
+          categoryNames: game.categoryNames || [],
+        };
+      });
 
       const sorted = normalized.sort((a: ContinueGame, b: ContinueGame) => {
         const aTime = a.lastPlayed ? new Date(a.lastPlayed).getTime() : 0;

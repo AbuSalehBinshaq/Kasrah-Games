@@ -39,6 +39,7 @@ type CardGame = {
 
 interface GameDetails {
   id: string;
+  slug: string;
   title: string;
   description: string;
   shortDescription: string;
@@ -302,7 +303,7 @@ export default function GameDetailPage() {
     name: game.title,
     description: game.shortDescription || game.description,
     image: game.coverImage || game.thumbnail,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com'}/games/${game.slug || game.id}`,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com'}/games/${game.slug}`,
     developer: {
       '@type': 'Organization',
       name: game.developer,

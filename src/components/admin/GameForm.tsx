@@ -221,16 +221,21 @@ export default function GameForm({ gameId, initialData }: GameFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="shortDescription">Short Description</Label>
-        <Textarea id="shortDescription" {...register('shortDescription')} />
-        {errors.shortDescription && <p className="text-sm text-red-500">{errors.shortDescription.message}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Full Description</Label>
-        <Textarea id="description" rows={5} {...register('description')} />
+        <Label htmlFor="description">Game Description</Label>
+        <Textarea 
+          id="description" 
+          rows={8} 
+          {...register('description')} 
+          placeholder="Enter the full game description here. This will be shown on the game page."
+        />
+        <p className="text-xs text-gray-500">
+          Tip: Use clear and engaging descriptions to attract more players.
+        </p>
         {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
       </div>
+
+      {/* Hidden shortDescription to maintain compatibility with schema */}
+      <input type="hidden" {...register('shortDescription')} value={watch('description')?.slice(0, 150) || ''} />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">

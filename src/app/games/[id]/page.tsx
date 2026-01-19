@@ -405,39 +405,30 @@ export default function GameDetailPage() {
               </div>
             </div>
 
-            {/* Description + stats below hero */}
-            <div className="grid gap-5 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                  <h2 className="mb-3 text-xl font-bold text-slate-900">About this game</h2>
-                  <p className="leading-relaxed text-slate-700">{game.description || game.shortDescription}</p>
+            {/* Stats below hero (Description moved below for better flow) */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-lg font-bold text-slate-900">Game Statistics</h3>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <ThumbsUp className="h-5 w-5 text-slate-500" />
+                    Likes
+                  </span>
+                  <span className="font-bold text-slate-900">{(game.likes ?? 0).toLocaleString()}</span>
                 </div>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-3 text-lg font-bold text-slate-900">Stats</h3>
-                <div className="space-y-3 text-sm text-slate-700">
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <ThumbsUp className="h-4 w-4 text-slate-500" />
-                      Likes
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.likes ?? 0).toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Users className="h-4 w-4 text-slate-500" />
-                      Online
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.onlineCount ?? 0).toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-3">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <Eye className="h-4 w-4 text-slate-500" />
-                      Visits
-                    </span>
-                    <span className="font-semibold text-slate-900">{(game.views ?? 0).toLocaleString()}</span>
-                  </div>
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <Users className="h-5 w-5 text-slate-500" />
+                    Online
+                  </span>
+                  <span className="font-bold text-slate-900">{(game.onlineCount ?? 0).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <Eye className="h-5 w-5 text-slate-500" />
+                    Visits
+                  </span>
+                  <span className="font-bold text-slate-900">{(game.views ?? 0).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -467,8 +458,10 @@ export default function GameDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-xl font-bold text-slate-900">About This Game</h2>
-              <p className="leading-relaxed text-slate-700">{game.description}</p>
+              <h2 className="mb-3 text-xl font-bold text-slate-900">Description</h2>
+              <div className="prose prose-slate max-w-none">
+                <p className="leading-relaxed text-slate-700 whitespace-pre-wrap">{game.description || game.shortDescription}</p>
+              </div>
             </div>
 
             {game.tags && game.tags.length > 0 && (
@@ -515,14 +508,14 @@ export default function GameDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-900">Similar Games</h2>
-                {loadingSimilar && <span className="text-sm text-slate-500">Loading...</span>}
+                {loadingSimilar && <span className="text-sm text-slate-500 animate-pulse">Loading...</span>}
               </div>
               {similarGames.length === 0 && !loadingSimilar ? (
-                <p className="text-sm text-slate-600">No similar games found.</p>
+                <p className="text-sm text-slate-600 italic">No similar games found.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   {similarGames.map((g) => (
                     <GameCard key={`similar-${g.id}`} game={g} viewMode="grid" />
                   ))}

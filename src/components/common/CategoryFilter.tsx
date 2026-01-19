@@ -11,9 +11,17 @@ interface Category {
   icon?: string;
 }
 
-export default function CategoryFilter({ selectedCategory = '' }: { selectedCategory?: string }) {
+interface CategoryFilterProps {
+  selectedCategory?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+}
+
+export default function CategoryFilter({ selectedCategory = '', value, onChange }: CategoryFilterProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const router = useRouter();
+  const isControlled = value !== undefined && onChange !== undefined;
+  const currentValue = isControlled ? value : selectedCategory;
 
   useEffect(() => {
     fetchCategories();
@@ -29,24 +37,28 @@ export default function CategoryFilter({ selectedCategory = '' }: { selectedCate
       setCategories(data.categories || []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      setCategories([]); // Set empty array on error
+      setCategories([]);
     }
   }
 
   function handleCategoryChange(categorySlug: string) {
-    const params = new URLSearchParams(window.location.search);
-    if (categorySlug) {
-      params.set('category', categorySlug);
+    if (isControlled) {
+      onChange?.(categorySlug);
     } else {
-      params.delete('category');
+      const params = new URLSearchParams(window.location.search);
+      if (categorySlug) {
+        params.set('category', categorySlug);
+      } else {
+        params.delete('category');
+      }
+      router.push(`/games?${params.toString()}`);
     }
-    router.push(`/games?${params.toString()}`);
   }
 
   return (
     <div className="relative">
       <select
-        value={selectedCategory}
+        value={currentValue}
         onChange={(e) => handleCategoryChange(e.target.value)}
         className="w-full appearance-none rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
       >

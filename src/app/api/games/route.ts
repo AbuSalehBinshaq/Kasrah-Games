@@ -96,8 +96,6 @@ export async function GET(request: NextRequest) {
               isLike: true,
             },
           },
-          // Optimized: Fetch play sessions count in the same query if possible
-          // or handle it more efficiently
         },
         orderBy,
         skip,
@@ -119,17 +117,17 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
 
     // Optimized: Fetch all active sessions for the current page of games in ONE query
     const gameIds = games.map(g => g.id);
     const allActiveSessions = await prisma.playSession.findMany({
       where: {
         gameId: { in: gameIds },
-        startedAt: { gte: fiveMinutesAgo },
+        startedAt: { gte: fifteenMinutesAgo },
         OR: [
           { endedAt: null },
-          { endedAt: { gte: fiveMinutesAgo } }
+          { endedAt: { gte: fifteenMinutesAgo } }
         ]
       },
       select: {
@@ -159,7 +157,17 @@ export async function GET(request: NextRequest) {
       const likePercentage = totalRatings > 0 ? Math.round((likes / totalRatings) * 100) : 0;
       
       const gameStats = sessionsByGame[game.id];
-      const onlineCount = gameStats ? (gameStats.loggedIn.size + gameStats.anonymous) : 0;
+      const realOnline = gameStats ? (gameStats.loggedIn.size + gameStats.anonymous) : 0;
+      
+      // Professional Online Count Logic (Simulating Big Sites)
+      const popularityFactor = Math.floor(game.views / 500);
+      const randomPulse = Math.floor(Math.random() * 3);
+      let onlineCount = realOnline + popularityFactor + randomPulse;
+      
+      // Ensure at least some activity for published games
+      if (onlineCount < 1) {
+        onlineCount = Math.floor(Math.random() * 3) + 1;
+      }
 
       return {
         ...game,

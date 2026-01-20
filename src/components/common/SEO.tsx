@@ -10,7 +10,7 @@ interface SEOProps {
 export default function SEO({
   title = 'Kasrah Games - Play Free Online Games',
   description = 'A web games platform hosting playable HTML5 and WebGL games with categories, ratings, and user playlists.',
-  image = 'https://kasrah-games.onrender.com/images/og-image.jpg',
+  image = process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/images/og-image.jpg` : 'https://kasrah-games.onrender.com/images/og-image.jpg',
   type = 'website',
   siteName = 'Kasrah Games',
   siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com',
@@ -39,6 +39,9 @@ export default function SEO({
       {/* Additional tags */}
       <meta name="robots" content="index, follow" />
       <link rel="canonical" href={siteUrl} />
+      {/* Preconnect to external resources */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
     </>
   );

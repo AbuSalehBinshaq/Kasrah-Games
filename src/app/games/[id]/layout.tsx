@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!game) {
       return {
+        metadataBase: new URL(baseUrl),
         title: 'Game Not Found',
         description: 'The game you are looking for does not exist.',
       };
@@ -44,34 +45,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const total = likes + dislikes;
     const rating = total > 0 ? Math.round((likes / total) * 100) : 0;
 
-    const gameUrl = `${baseUrl}/games/${game.slug}`;
+    const gameUrl = `${baseUrl}/games/${id}`;
     const imageUrl = game.coverImage || game.thumbnail || `${baseUrl}/images/placeholder-game.svg`;
     const description = game.shortDescription || game.description.substring(0, 160);
+    
+    // Ensure imageUrl is absolute
+    const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
 
     return {
+      metadataBase: new URL(baseUrl),
       title: `${game.title} - Play Online | Kasrah Games`,
       description: description,
-      keywords: [game.title, 'online game', 'play game', 'free game', ...(game.tags || [])],
+      keywords: [game.title, 'online game', 'play game', 'free game', 'HTML5', 'WebGL', ...(game.tags || [])],
       authors: [{ name: game.developer }],
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
       openGraph: {
         type: 'website',
         url: gameUrl,
-        title: game.title,
+        title: `${game.title} - Play Online | Kasrah Games`,
         description: description,
+        siteName: 'Kasrah Games',
+        locale: 'en_US',
         images: [
           {
-            url: imageUrl,
+            url: absoluteImageUrl,
             width: 1200,
             height: 630,
             alt: game.title,
+            type: 'image/jpeg',
           },
         ],
       },
       twitter: {
         card: 'summary_large_image',
-        title: game.title,
+        title: `${game.title} - Play Online | Kasrah Games`,
         description: description,
-        images: [imageUrl],
+        images: [absoluteImageUrl],
+        creator: '@kasrahgames',
       },
       alternates: {
         canonical: gameUrl,
@@ -79,8 +99,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch (error) {
     console.error('Error generating metadata for game:', error);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
     return {
-      title: 'Game',
+      metadataBase: new URL(baseUrl),
+      title: 'Game | Kasrah Games',
       description: 'Play this game on Kasrah Games',
     };
   }

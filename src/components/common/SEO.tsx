@@ -10,10 +10,10 @@ interface SEOProps {
 export default function SEO({
   title = 'Kasrah Games - Play Free Online Games',
   description = 'A web games platform hosting playable HTML5 and WebGL games with categories, ratings, and user playlists.',
-  image = 'https://kasrahgames.example/images/og-image.jpg',
+  image = 'https://kasrah-games.onrender.com/images/og-image.jpg',
   type = 'website',
   siteName = 'Kasrah Games',
-  siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrahgames.example',
+  siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com',
 }: SEOProps) {
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 

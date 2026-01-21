@@ -14,8 +14,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl = new URL(baseUrl);
 
   try {
-    const game = await prisma.game.findUnique({
-      where: { id },
+    // Try to find by slug first (since URL uses slug), then fall back to id
+    let game = await prisma.game.findFirst({
+      where: { slug: id },
       select: {
         id: true,
         slug: true,
@@ -30,12 +31,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     });
 
+    // If not found by slug, try by id
     if (!game) {
-    return {
-      metadataBase: siteUrl,
-      title: 'Game Not Found | Kasrah Games',
-      description: 'The game you are looking for does not exist.',
-    };
+      game = await prisma.game.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          shortDescription: true,
+          thumbnail: true,
+          coverImage: true,
+          developer: true,
+          playCount: true,
+          tags: true,
+        },
+      });
+    }
+
+    if (!game) {
+      return {
+        metadataBase: siteUrl,
+        title: 'Game Not Found | Kasrah Games',
+        description: 'The game you are looking for does not exist.',
+      };
     }
 
     // Get ratings for this game

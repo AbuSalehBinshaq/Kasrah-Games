@@ -1,10 +1,16 @@
 import { Gamepad2, Users, Shield, Zap } from 'lucide-react';
+import SEO from '@/components/common/SEO';
 
 export const dynamic = 'force-dynamic';
 
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto">
+      <SEO 
+        title="About Us | Kasrah Games"
+        description="Learn more about Kasrah Games, the premier platform for HTML5 and WebGL gaming experiences. Our mission is to provide instant access to high-quality browser games."
+        canonicalUrl="https://kasrah-games.onrender.com/about"
+      />
       <div className="mb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold text-gray-900">About Kasrah Games</h1>
         <p className="text-xl text-gray-600">

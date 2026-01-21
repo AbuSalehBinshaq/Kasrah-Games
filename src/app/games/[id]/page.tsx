@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import GameCard from '@/components/common/GameCard';
 import GameContainer from '@/components/GameContainer';
+import SEO from '@/components/common/SEO';
 import type { Game } from '@/types';
 
 type CardGame = {
@@ -325,6 +326,13 @@ export default function GameDetailPage() {
 
   return (
     <div className="bg-gray-50 pb-12 text-slate-900">
+      <SEO 
+        title={`${game.title} - Play Online`}
+        description={game.shortDescription || game.description}
+        image={game.thumbnail}
+        type="game"
+        canonicalUrl={`https://kasrah-games.onrender.com/games/${game.slug}`}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(gameSchema) }}
@@ -563,4 +571,3 @@ export default function GameDetailPage() {
     </div>
   );
 }
-

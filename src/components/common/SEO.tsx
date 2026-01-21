@@ -5,6 +5,7 @@ interface SEOProps {
   type?: 'website' | 'article' | 'game';
   siteName?: string;
   siteUrl?: string;
+  canonicalUrl?: string;
 }
 
 export default function SEO({
@@ -14,8 +15,10 @@ export default function SEO({
   type = 'website',
   siteName = 'Kasrah Games',
   siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com',
+  canonicalUrl,
 }: SEOProps) {
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+  const finalCanonicalUrl = canonicalUrl || siteUrl;
 
   return (
     <>
@@ -26,7 +29,7 @@ export default function SEO({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
-      <meta property="og:url" content={siteUrl} />
+      <meta property="og:url" content={finalCanonicalUrl} />
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content={siteName} />
       
@@ -38,7 +41,7 @@ export default function SEO({
       
       {/* Additional tags */}
       <meta name="robots" content="index, follow" />
-      <link rel="canonical" href={siteUrl} />
+      <link rel="canonical" href={finalCanonicalUrl} />
       {/* Preconnect to external resources */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -102,12 +102,6 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr">
       <head>
-        <SEO 
-          title={settings.seoMetaTitle || `${settings.siteName} - Play Free Online Games`}
-          description={settings.seoMetaDescription || settings.siteDescription}
-          siteName={settings.siteName}
-          siteUrl={siteUrl}
-        />
         {settings.enableAnalytics && settings.analyticsCode && (
           <script dangerouslySetInnerHTML={{ __html: settings.analyticsCode }} />
         )}

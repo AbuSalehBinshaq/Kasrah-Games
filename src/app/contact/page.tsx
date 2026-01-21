@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import SEO from '@/components/common/SEO';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -49,6 +50,11 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      <SEO 
+        title="Contact Us | Kasrah Games"
+        description="Have questions or feedback? Contact the Kasrah Games team. We're here to help with any inquiries about our free online games platform."
+        canonicalUrl="https://kasrah-games.onrender.com/contact"
+      />
       <div className="mb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold text-gray-900">Contact Us</h1>
         <p className="text-xl text-gray-600">

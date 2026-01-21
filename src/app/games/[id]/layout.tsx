@@ -31,11 +31,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 
     if (!game) {
-      return {
-        metadataBase: siteUrl,
-        title: 'Game Not Found | Kasrah Games',
-        description: 'The game you are looking for does not exist.',
-      };
+    return {
+      metadataBase: siteUrl,
+      title: 'Game Not Found | Kasrah Games',
+      description: 'The game you are looking for does not exist.',
+    };
     }
 
     // Get ratings for this game
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       },
       openGraph: {
-        type: 'video.game',
+        type: 'website',
         url: gameUrl,
         title: `${game.title} - Play Online | Kasrah Games`,
         description: description,

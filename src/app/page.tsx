@@ -17,6 +17,10 @@ export default function HomePage() {
         description="Play the best HTML5 and WebGL games online for free. Discover a wide variety of action, puzzle, strategy, and arcade games at Kasrah Games."
         canonicalUrl="https://kasrah-games.onrender.com"
       />
+      
+      {/* Visually hidden H1 for SEO - following Poki/CrazyGames best practices */}
+      <h1 className="sr-only">Kasrah Games - Play Free Online Games</h1>
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -37,15 +41,6 @@ export default function HomePage() {
       />
 
       <div className="space-y-4 px-4 md:px-8">
-        <div className="py-8 text-center">
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
-            Kasrah Games: Play Free Online Games
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Welcome to Kasrah Games, your ultimate destination for high-quality HTML5 and WebGL browser games. 
-            Enjoy instant access to hundreds of free games across all genres without any downloads.
-          </p>
-        </div>
         {/* In-Content Ad */}
         <div className="flex justify-center">
           <AdDisplay position="IN_CONTENT" />

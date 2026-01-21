@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Browse All Games | Kasrah Games - Play Free Online Games',
-  description: 'Discover and play hundreds of free HTML5 and WebGL games. Find your favorite games by category, rating, and popularity. No downloads required.',
-  keywords: ['online games', 'free games', 'HTML5 games', 'WebGL games', 'browser games', 'play games online', 'game collection', 'game categories'],
+  title: 'Browse All Games | Kasrah Games',
+  description: 'Discover and play hundreds of free HTML5 and WebGL games. Find your favorite games by category, rating, and popularity.',
+  keywords: ['online games', 'free games', 'HTML5 games', 'WebGL games', 'browser games', 'play games online'],
   openGraph: {
     type: 'website',
     url: 'https://kasrah-games.onrender.com/games',
     title: 'Browse All Games | Kasrah Games',
-    description: 'Discover and play hundreds of free HTML5 and WebGL games. Find your favorite games by category, rating, and popularity.',
+    description: 'Discover and play hundreds of free HTML5 and WebGL games. Find your favorite games by category, rating, and popularity',
     siteName: 'Kasrah Games',
     locale: 'en_US',
     images: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
         url: 'https://kasrah-games.onrender.com/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Kasrah Games - Play Free Online Games',
+        alt: 'Kasrah Games',
         type: 'image/jpeg',
       },
     ],
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Browse All Games | Kasrah Games',
-    description: 'Discover and play hundreds of free HTML5 and WebGL games.',
+    description: 'Discover and play hundreds of free HTML5 and WebGL games',
     images: ['https://kasrah-games.onrender.com/images/og-image.jpg'],
     creator: '@kasrahgames',
   },

@@ -5,9 +5,13 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+// Revalidate metadata every hour
+export const revalidate = 3600;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
+  const siteUrl = new URL(baseUrl);
 
   try {
     const game = await prisma.game.findUnique({
@@ -28,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!game) {
       return {
-        metadataBase: new URL(baseUrl),
-        title: 'Game Not Found',
+        metadataBase: siteUrl,
+        title: 'Game Not Found | Kasrah Games',
         description: 'The game you are looking for does not exist.',
       };
     }
@@ -45,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const total = likes + dislikes;
     const rating = total > 0 ? Math.round((likes / total) * 100) : 0;
 
-    const gameUrl = `${baseUrl}/games/${id}`;
+    const gameUrl = `${baseUrl}/games/${game.slug || id}`;
     const imageUrl = game.coverImage || game.thumbnail || `${baseUrl}/images/placeholder-game.svg`;
     const description = game.shortDescription || game.description.substring(0, 160);
     
@@ -53,10 +57,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
 
     return {
-      metadataBase: new URL(baseUrl),
+      metadataBase: siteUrl,
       title: `${game.title} - Play Online | Kasrah Games`,
       description: description,
-      keywords: [game.title, 'online game', 'play game', 'free game', 'HTML5', 'WebGL', ...(game.tags || [])],
+      keywords: [game.title, 'online game', 'play game', 'free game', 'HTML5', 'WebGL', 'browser game', ...(game.tags || [])],
       authors: [{ name: game.developer }],
       robots: {
         index: true,
@@ -70,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       },
       openGraph: {
-        type: 'website',
+        type: 'video.game',
         url: gameUrl,
         title: `${game.title} - Play Online | Kasrah Games`,
         description: description,
@@ -99,9 +103,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch (error) {
     console.error('Error generating metadata for game:', error);
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
     return {
-      metadataBase: new URL(baseUrl),
+      metadataBase: siteUrl,
       title: 'Game | Kasrah Games',
       description: 'Play this game on Kasrah Games',
     };
@@ -113,5 +116,5 @@ export default function GameLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <>{children}</>;
 }

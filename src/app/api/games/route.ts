@@ -46,12 +46,8 @@ export async function GET(request: NextRequest) {
       where.isFeatured = true;
     }
 
-    // Check cache first
+    // Cache disabled temporarily to ensure new algorithm takes effect
     const cacheKey = `games:${sort}:${search}:${category}:${tag}:page${page}:limit${limit}:featured${featured}`;
-    const cachedData = getCache<{ games: any; pagination: any }>(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
-    }
 
     let games;
     let total;
@@ -172,7 +168,7 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    setCache(cacheKey, responsePayload, 5 * 60 * 1000);
+    // setCache(cacheKey, responsePayload, 5 * 60 * 1000);
     return NextResponse.json(responsePayload);
   } catch (error) {
     console.error('Games fetch error:', error);

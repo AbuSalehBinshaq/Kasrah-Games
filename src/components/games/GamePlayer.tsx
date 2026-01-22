@@ -107,7 +107,7 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
       {/* Game Container */}
       <div
         ref={containerRef}
-        className="relative aspect-video w-full bg-black"
+        className={`relative bg-black ${isFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen' : 'aspect-video w-full'}`}
       >
         {!isPlaying ? (
           // Play Button Overlay

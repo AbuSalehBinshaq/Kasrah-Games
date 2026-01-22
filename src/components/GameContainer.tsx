@@ -179,9 +179,11 @@ export default function GameContainer({
 
         <div
           ref={containerRef}
-          className="game-container relative overflow-hidden rounded-xl border border-gray-200 bg-black"
+          className={`game-container relative overflow-hidden bg-black ${
+            isFullscreen ? 'w-screen h-screen' : 'rounded-xl border border-gray-200'
+          }`}
         >
-          <div className="aspect-video w-full">
+          <div className={`${isFullscreen ? 'h-full w-full' : 'aspect-video w-full'}`}>
             {children}
           </div>
 
@@ -280,15 +282,20 @@ export default function GameContainer({
         .game-container:fullscreen,
         .game-container:-webkit-full-screen,
         .game-container:-moz-full-screen {
-          width: 100vw;
-          height: 100vh;
-          background: black;
+          width: 100vw !important;
+          height: 100vh !important;
+          max-width: none !important;
+          max-height: none !important;
+          background: black !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          border: none !important;
         }
-        .game-container:fullscreen > *,
-        .game-container:-webkit-full-screen > *,
-        .game-container:-moz-full-screen > * {
-          width: 100%;
-          height: 100%;
+        .game-container:fullscreen > div,
+        .game-container:-webkit-full-screen > div,
+        .game-container:-moz-full-screen > div {
+          width: 100% !important;
+          height: 100% !important;
         }
         .game-container iframe,
         .game-container canvas,

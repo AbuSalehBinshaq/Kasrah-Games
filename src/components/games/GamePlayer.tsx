@@ -56,17 +56,36 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
   const toggleFullscreen = async () => {
     try {
       if (!document.fullscreenElement) {
-        if (containerRef.current) {
-          await containerRef.current.requestFullscreen({ navigationUI: 'hide' });
+        // Target the iframe directly for true fullscreen
+        const element = iframeRef.current || containerRef.current;
+        if (element) {
+          const request = (element as any).requestFullscreen || 
+                          (element as any).webkitRequestFullscreen || 
+                          (element as any).mozRequestFullScreen || 
+                          (element as any).msRequestFullscreen;
+          
+          if (request) {
+            await request.call(element, { navigationUI: 'hide' });
+          } else {
+            // Fallback to container if iframe request fails
+            await containerRef.current?.requestFullscreen({ navigationUI: 'hide' });
+          }
           setIsFullscreen(true);
         }
       } else {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
         setIsFullscreen(false);
       }
     } catch (error) {
       console.error('Fullscreen error:', error);
-      alert('Fullscreen is not supported in your browser');
     }
   };
 
@@ -157,7 +176,8 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
             <iframe
               ref={iframeRef}
               src={gameUrl}
-              className="h-full w-full"
+              className="h-full w-full border-0"
+              style={{ width: '100%', height: '100%', display: 'block' }}
               title={gameTitle}
               allow="autoplay; fullscreen; camera; focus-without-user-activation *; monetization; gamepad; keyboard-map *; xr-spatial-tracking; clipboard-write; web-share; accelerometer; magnetometer; gyroscope; microphone *"
               allowFullScreen

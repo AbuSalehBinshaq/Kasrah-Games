@@ -52,13 +52,13 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 2. Auto-trigger fullscreen on mobile when game starts
+  // 2. Auto-trigger fullscreen on mobile when game starts or resumes
   useEffect(() => {
-    if (isMobile && !isMobileFullscreen) {
-      // If children exist (game is loaded/playing), trigger fullscreen automatically
+    if (isMobile && !isMobileFullscreen && !isPaused) {
+      // Trigger fullscreen automatically when game is active and not paused
       handleMobileFullscreen();
     }
-  }, [isMobile]); // Trigger on mount if it's mobile
+  }, [isMobile, isPaused]); // Trigger when mobile state or pause state changes
 
   // 3. Mobile Logic
   useEffect(() => {

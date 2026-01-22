@@ -41,72 +41,76 @@ export default function GameContainer({
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
 
+  // 1. Detect Device Type once on mount
   useEffect(() => {
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       setIsMobile(isMobileDevice);
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Handle body scroll lock for mobile
+  // 2. Mobile Logic (Original Script Behavior)
   useEffect(() => {
-    if (isMobile && isMobileFullscreen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (isMobile) {
+      if (isMobileFullscreen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
     }
   }, [isMobile, isMobileFullscreen]);
 
-  const handleFullscreen = async () => {
-    if (isMobile) {
-      // Use the original mobile script logic
-      setIsMobileFullscreen(true);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) enterFullscreen();
-    } else {
-      // Desktop: Target iframe directly for professional immersive experience
-      const iframe = containerRef.current?.querySelector('iframe');
-      if (iframe) {
-        const element = iframe as any;
-        const request = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
-        if (request) {
-          request.call(element).catch(() => enterFullscreen());
-        } else {
-          enterFullscreen();
-        }
+  const handleMobileFullscreen = () => {
+    setIsMobileFullscreen(true);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (!isIOS) enterFullscreen();
+  };
+
+  const handleMobileExit = () => {
+    setIsMobileFullscreen(false);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (!isIOS) exitFullscreen();
+    if (onExitFullscreen) onExitFullscreen();
+  };
+
+  // 3. Desktop Logic (Pro Immersive Simulation)
+  const handleDesktopFullscreen = () => {
+    const iframe = containerRef.current?.querySelector('iframe');
+    if (iframe) {
+      const element = iframe as any;
+      const request = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+      if (request) {
+        request.call(element).catch(() => enterFullscreen());
       } else {
         enterFullscreen();
       }
-    }
-  };
-
-  const handleExitFullscreen = () => {
-    if (isMobile) {
-      setIsMobileFullscreen(false);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) exitFullscreen();
-      if (onExitFullscreen) onExitFullscreen();
     } else {
-      exitFullscreen();
+      enterFullscreen();
     }
   };
 
+  const handleDesktopExit = () => {
+    exitFullscreen();
+  };
+
+  // 4. Unified Toggle (Routes to specific logic)
   const toggleFullscreen = () => {
-    if (isFullscreen || isMobileFullscreen) {
-      handleExitFullscreen();
+    if (isMobile) {
+      if (isMobileFullscreen) handleMobileExit();
+      else handleMobileFullscreen();
     } else {
-      handleFullscreen();
+      if (isFullscreen) handleDesktopExit();
+      else handleDesktopFullscreen();
     }
   };
 
   return (
     <div className="space-y-3">
-      {/* Header with Fullscreen Button */}
-      {!isFullscreen && !isMobileFullscreen && (
+      {/* Header - Hidden in Fullscreen */}
+      {((!isMobile && !isFullscreen) || (isMobile && !isMobileFullscreen)) && (
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
           <button
@@ -118,11 +122,11 @@ export default function GameContainer({
         </div>
       )}
 
-      {/* Game Area */}
+      {/* Game Container */}
       <div
         ref={containerRef}
         className={`game-container relative overflow-hidden bg-black ${
-          isFullscreen || isMobileFullscreen 
+          (isMobile && isMobileFullscreen) || (!isMobile && isFullscreen)
             ? 'fixed inset-0 z-[9999] w-screen h-screen' 
             : 'rounded-xl border border-gray-200 aspect-video w-full'
         }`}
@@ -131,8 +135,8 @@ export default function GameContainer({
           {children}
         </div>
 
-        {/* Game Bar (Hidden in Fullscreen) */}
-        {showBar && !isFullscreen && !isMobileFullscreen && (
+        {/* Game Bar - Desktop Only, Hidden in Fullscreen */}
+        {showBar && !isMobile && !isFullscreen && (
           <div className="absolute bottom-0 inset-x-0 z-10 flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-4 py-2 text-sm text-white backdrop-blur-sm">
             <div className="flex items-center gap-2">
               {siteLogoUrl && (
@@ -142,7 +146,6 @@ export default function GameContainer({
                 {title}
               </span>
             </div>
-
             <div className="flex items-center gap-3">
               {onFavorite && (
                 <button
@@ -172,10 +175,10 @@ export default function GameContainer({
           </div>
         )}
 
-        {/* Mobile Exit Button */}
-        {isMobileFullscreen && (
+        {/* Mobile Exit Button - Only for Mobile */}
+        {isMobile && isMobileFullscreen && (
           <button
-            onClick={handleExitFullscreen}
+            onClick={handleMobileExit}
             className="fixed top-4 right-4 z-[10000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md border border-white/20"
           >
             Exit Game
@@ -184,6 +187,7 @@ export default function GameContainer({
       </div>
 
       <style jsx global>{`
+        /* Base Iframe Styles */
         .game-container iframe {
           width: 100% !important;
           height: 100% !important;
@@ -191,19 +195,18 @@ export default function GameContainer({
           display: block !important;
         }
         
-        /* Desktop Fullscreen API styles */
+        /* Desktop Specific Fullscreen (Iframe Focus) */
         iframe:fullscreen {
           width: 100vw !important;
           height: 100vh !important;
           background: #000 !important;
         }
-        
         :-webkit-full-screen iframe {
           width: 100vw !important;
           height: 100vh !important;
         }
 
-        /* Mobile specific fixes - Original script logic */
+        /* Mobile Specific Fullscreen (Original Script Behavior) */
         @media (max-width: 768px) {
           .game-container.fixed {
             position: fixed !important;
@@ -212,6 +215,7 @@ export default function GameContainer({
             width: 100vw !important;
             height: 100vh !important;
             z-index: 99999 !important;
+            background: #000 !important;
           }
         }
       `}</style>

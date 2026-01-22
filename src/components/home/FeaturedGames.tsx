@@ -130,7 +130,7 @@ export default function FeaturedGames() {
         </div>
 
         {/* Desktop Grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
           {games.map((game: any, index: number) => (
             <GameCard 
               key={game.id}

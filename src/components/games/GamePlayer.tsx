@@ -84,7 +84,7 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
   return (
     <div className="relative rounded-xl overflow-hidden bg-gray-900 shadow-2xl">
       {/* Game Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4">
+      <div className={`absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4 ${isFullscreen ? 'hidden' : ''}`}>
         <h3 className="text-lg font-semibold text-white truncate">{gameTitle}</h3>
         <div className="flex items-center space-x-2">
           <button

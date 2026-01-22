@@ -187,11 +187,9 @@ export default function GameContainer({
             {children}
           </div>
 
-          {showBar && (
+          {showBar && !isFullscreen && (
             <div
-              className={`pointer-events-auto flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-3 py-2 text-sm text-white ${
-                isFullscreen ? 'absolute inset-x-0 bottom-0 z-10' : ''
-              }`}
+              className="pointer-events-auto flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-3 py-2 text-sm text-white"
             >
               <div className="flex items-center gap-2">
                 {siteLogoUrl ? (
@@ -290,12 +288,16 @@ export default function GameContainer({
           padding: 0 !important;
           margin: 0 !important;
           border: none !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         .game-container:fullscreen > div,
         .game-container:-webkit-full-screen > div,
         .game-container:-moz-full-screen > div {
           width: 100% !important;
           height: 100% !important;
+          display: block !important;
         }
         .game-container iframe,
         .game-container canvas,

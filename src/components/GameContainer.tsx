@@ -37,7 +37,6 @@ export default function GameContainer({
 }: GameContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showBar, setShowBar] = useState(true);
-  const [isVoting, setIsVoting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
@@ -53,15 +52,33 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleFullscreen = () => {
+  // Handle body scroll lock
+  useEffect(() => {
+    if (isMobileFullscreen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+  }, [isMobileFullscreen]);
+
+  const handleFullscreen = async () => {
     if (isMobile) {
       setIsMobileFullscreen(true);
-      // Force body scroll lock for mobile fullscreen
-      document.body.style.overflow = 'hidden';
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) enterFullscreen();
+      // Try to lock orientation to landscape if supported
+      if (typeof screen !== 'undefined' && (screen as any).orientation?.lock) {
+        try {
+          await (screen as any).orientation.lock('landscape');
+        } catch (e) {
+          console.log('Orientation lock not supported or requires fullscreen');
+        }
+      }
+      // On mobile, we use the overlay approach but with better CSS
     } else {
-      // For Desktop: Try to fullscreen the iframe directly for the best experience
+      // Desktop: Target iframe directly
       const iframe = containerRef.current?.querySelector('iframe');
       if (iframe) {
         const element = iframe as any;
@@ -80,9 +97,6 @@ export default function GameContainer({
   const handleExitFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
-      document.body.style.overflow = '';
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) exitFullscreen();
       if (onExitFullscreen) onExitFullscreen();
     } else {
       exitFullscreen();
@@ -166,13 +180,14 @@ export default function GameContainer({
           </div>
         )}
 
-        {/* Mobile Exit Button */}
+        {/* Mobile Exit Button - Floating and subtle like Poki */}
         {isMobileFullscreen && (
           <button
             onClick={handleExitFullscreen}
-            className="fixed top-4 right-4 z-[10000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md border border-white/20"
+            className="fixed top-4 right-4 z-[10000] bg-black/40 text-white/80 w-10 h-10 flex items-center justify-center rounded-full text-xl font-light backdrop-blur-sm border border-white/10 hover:bg-black/60 transition-all"
+            aria-label="Exit Fullscreen"
           >
-            Exit Game
+            ×
           </button>
         )}
       </div>
@@ -185,7 +200,7 @@ export default function GameContainer({
           display: block !important;
         }
         
-        /* Ensure iframe fills screen when requested directly */
+        /* Desktop Fullscreen API styles */
         iframe:fullscreen {
           width: 100vw !important;
           height: 100vh !important;
@@ -197,7 +212,7 @@ export default function GameContainer({
           height: 100vh !important;
         }
 
-        /* Mobile specific fixes */
+        /* Mobile Fullscreen Overlay styles */
         @media (max-width: 768px) {
           .game-container.fixed {
             position: fixed !important;
@@ -206,6 +221,16 @@ export default function GameContainer({
             width: 100vw !important;
             height: 100vh !important;
             z-index: 99999 !important;
+            background: #000 !important;
+          }
+          
+          /* Force iframe to fill the fixed container on mobile */
+          .game-container.fixed iframe {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
           }
         }
       `}</style>

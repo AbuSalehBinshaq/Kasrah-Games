@@ -24,39 +24,32 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
   }, []);
 
   const handlePlay = () => {
     setIsPlaying(true);
     setError(null);
     onPlayStart?.();
-
-    // Track play session start
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('game_start_time', Date.now().toString());
-    }
   };
 
   const handlePause = () => {
     setIsPlaying(false);
     onPlayEnd?.();
-
-    // Track play duration
-    if (typeof window !== 'undefined') {
-      const startTime = sessionStorage.getItem('game_start_time');
-      if (startTime) {
-        const duration = Date.now() - parseInt(startTime);
-        console.log(`Play duration: ${Math.round(duration / 1000)} seconds`);
-        sessionStorage.removeItem('game_start_time');
-      }
-    }
   };
 
   const toggleFullscreen = async () => {
     try {
       if (!document.fullscreenElement) {
-        // Target the iframe directly for true fullscreen
         const element = iframeRef.current || containerRef.current;
         if (element) {
           const request = (element as any).requestFullscreen || 
@@ -65,163 +58,58 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
                           (element as any).msRequestFullscreen;
           
           if (request) {
-            await request.call(element, { navigationUI: 'hide' });
+            await request.call(element);
           } else {
-            // Fallback to container if iframe request fails
-            await containerRef.current?.requestFullscreen({ navigationUI: 'hide' });
+            await containerRef.current?.requestFullscreen();
           }
-          setIsFullscreen(true);
         }
       } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen();
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen();
-        }
-        setIsFullscreen(false);
+        const exit = document.exitFullscreen || 
+                     (document as any).webkitExitFullscreen || 
+                     (document as any).mozCancelFullScreen || 
+                     (document as any).msExitFullscreen;
+        if (exit) await exit.call(document);
       }
     } catch (error) {
       console.error('Fullscreen error:', error);
     }
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    // In a real implementation, you would mute/unmute the iframe
-    // This requires communication with the iframe content
-  };
-
-  const handleIframeError = () => {
-    setError('Failed to load the game. Please check the game URL or try again later.');
-    setIsPlaying(false);
-  };
-
   return (
-    <div className="relative rounded-xl overflow-hidden bg-gray-900 shadow-2xl">
-      {/* Game Header */}
-      <div className={`absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4 ${isFullscreen ? 'hidden' : ''}`}>
-        <h3 className="text-lg font-semibold text-white truncate">{gameTitle}</h3>
-        <div className="flex items-center space-x-2">
+    <div ref={containerRef} className={`relative bg-black overflow-hidden ${isFullscreen ? 'w-screen h-screen' : 'w-full h-full rounded-xl'}`}>
+      {!isPlaying ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
           <button
-            onClick={toggleMute}
-            className="rounded-lg bg-white/20 p-2 text-white hover:bg-white/30"
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
+            onClick={handlePlay}
+            className="group flex h-20 w-20 items-center justify-center rounded-full bg-primary-600 text-white shadow-xl hover:scale-110 transition-transform"
           >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            className="rounded-lg bg-white/20 p-2 text-white hover:bg-white/30"
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          >
-            <Fullscreen className="h-5 w-5" />
+            <Play className="h-10 w-10 ml-1" />
           </button>
         </div>
-      </div>
-
-      {/* Game Container */}
-      <div
-        ref={containerRef}
-        className={`relative bg-black ${isFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen' : 'aspect-video w-full'}`}
-      >
-        {!isPlaying ? (
-          // Play Button Overlay
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-            <div className="text-center">
+      ) : (
+        <div className="w-full h-full">
+          <iframe
+            ref={iframeRef}
+            src={gameUrl}
+            className="w-full h-full border-0"
+            allow="autoplay; fullscreen; gamepad; keyboard-map *"
+            allowFullScreen
+            title={gameTitle}
+          />
+          
+          {/* Overlay Controls (Only visible when NOT in fullscreen) */}
+          {!isFullscreen && (
+            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                onClick={handlePlay}
-                className="group relative mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 shadow-lg hover:shadow-xl"
+                onClick={toggleFullscreen}
+                className="p-2 bg-black/50 text-white rounded-lg backdrop-blur-sm hover:bg-black/70"
               >
-                <div className="absolute inset-0 rounded-full bg-white/20 group-hover:animate-ping-slow" />
-                <Play className="h-12 w-12 text-white ml-2" />
-              </button>
-              <h3 className="mb-2 text-2xl font-bold text-white">Ready to Play?</h3>
-              <p className="text-gray-300">Click the play button to start the game</p>
-              <div className="mt-6 text-sm text-gray-400">
-                <p>• Game will load in fullscreen mode</p>
-                <p>• Use keyboard/mouse to play</p>
-                <p>• Press F11 for fullscreen</p>
-              </div>
-            </div>
-          </div>
-        ) : error ? (
-          // Error State
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-900/20 to-black">
-            <div className="text-center p-8">
-              <div className="mb-4 inline-flex rounded-full bg-red-500/20 p-4">
-                <div className="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center">
-                  <Play className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <h3 className="mb-2 text-xl font-bold text-white">Game Loading Failed</h3>
-              <p className="mb-4 text-gray-300">{error}</p>
-              <button
-                onClick={() => {
-                  setError(null);
-                  handlePlay();
-                }}
-                className="rounded-lg bg-primary-600 px-6 py-2 font-semibold text-white hover:bg-primary-700"
-              >
-                Try Again
+                <Fullscreen className="h-5 w-5" />
               </button>
             </div>
-          </div>
-        ) : (
-          // Game Iframe
-          <>
-            <iframe
-              ref={iframeRef}
-              src={gameUrl}
-              className="h-full w-full border-0"
-              style={{ width: '100%', height: '100%', display: 'block' }}
-              title={gameTitle}
-              allow="autoplay; fullscreen; camera; focus-without-user-activation *; monetization; gamepad; keyboard-map *; xr-spatial-tracking; clipboard-write; web-share; accelerometer; magnetometer; gyroscope; microphone *"
-              allowFullScreen
-              onError={handleIframeError}
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
-            />
-            {/* Loading Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity duration-300 opacity-0 hover:opacity-100">
-              <div className="text-center">
-                <button
-                  onClick={handlePause}
-                  className="rounded-full bg-white/20 p-4 text-white backdrop-blur hover:bg-white/30"
-                >
-                  <Pause className="h-8 w-8" />
-                </button>
-                <p className="mt-2 text-sm text-white">Click to pause</p>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Game Controls Footer */}
-      <div className="bg-gradient-to-t from-black/80 to-transparent p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-300">
-            {isPlaying ? 'Game is running' : 'Click play to start'}
-          </div>
-          <div className="flex items-center space-x-4">
-            {isPlaying && (
-              <button
-                onClick={handlePause}
-                className="flex items-center space-x-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-              >
-                <Pause className="h-4 w-4" />
-                <span>End Game</span>
-              </button>
-            )}
-            <div className="text-xs text-gray-400">
-              Press <kbd className="px-1 py-0.5 bg-gray-800 rounded">ESC</kbd> to exit fullscreen
-            </div>
-          </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

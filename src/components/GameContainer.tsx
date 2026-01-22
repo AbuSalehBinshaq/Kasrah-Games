@@ -43,7 +43,6 @@ export default function GameContainer({
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
 
   useEffect(() => {
-    // Check if mobile device
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       setIsMobile(isMobileDevice);
@@ -54,78 +53,19 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Reset mobile fullscreen when paused
-  useEffect(() => {
-    if (isPaused && isMobileFullscreen) {
-      setIsMobileFullscreen(false);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) {
-        exitFullscreen();
-      }
-    }
-  }, [isPaused, isMobileFullscreen, exitFullscreen]);
-
-  // Auto enter mobile fullscreen when component mounts (after Play button is clicked)
-  useEffect(() => {
-    if (isMobile && !isMobileFullscreen && !isPaused) {
-      const timer = setTimeout(() => {
-        setIsMobileFullscreen(true);
-        // Don't call enterFullscreen() for iOS - just use CSS
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-        if (!isIOS) {
-          enterFullscreen();
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, isPaused]);
-
-  useEffect(() => {
-    if (isMobile && isMobileFullscreen) {
-      // Hide header, footer, mobile nav, and other content
-      const header = document.querySelector('header');
-      const footer = document.querySelector('footer');
-      const mobileNav = document.querySelector('[data-mobile-nav]');
-      const body = document.body;
-      
-      if (header) (header as HTMLElement).style.display = 'none';
-      if (footer) (footer as HTMLElement).style.display = 'none';
-      if (mobileNav) (mobileNav as HTMLElement).style.display = 'none';
-      
-      // Prevent scrolling and set body to black
-      body.style.overflow = 'hidden';
-      body.style.background = '#000';
-      
-      return () => {
-        if (header) (header as HTMLElement).style.display = '';
-        if (footer) (footer as HTMLElement).style.display = '';
-        if (mobileNav) (mobileNav as HTMLElement).style.display = '';
-        body.style.overflow = '';
-        body.style.background = '';
-      };
-    }
-  }, [isMobile, isMobileFullscreen]);
-
-  const handleMobileFullscreen = () => {
+  const handleFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(true);
-      // Only use Fullscreen API on non-iOS devices
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) {
-        enterFullscreen();
-      }
+      if (!isIOS) enterFullscreen();
     } else {
-      // Desktop: Try to find the iframe and request fullscreen on it directly
+      // For Desktop: Try to fullscreen the iframe directly for the best experience
       const iframe = containerRef.current?.querySelector('iframe');
       if (iframe) {
         const element = iframe as any;
         const request = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
         if (request) {
-          request.call(element).catch((err: any) => {
-            console.error('Iframe fullscreen failed, falling back to container', err);
-            enterFullscreen();
-          });
+          request.call(element).catch(() => enterFullscreen());
         } else {
           enterFullscreen();
         }
@@ -135,264 +75,123 @@ export default function GameContainer({
     }
   };
 
-  const handleExitMobileFullscreen = () => {
+  const handleExitFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      if (!isIOS) {
-        exitFullscreen();
-      }
-      // Notify parent component that fullscreen was exited
-      if (onExitFullscreen) {
-        onExitFullscreen();
-      }
+      if (!isIOS) exitFullscreen();
+      if (onExitFullscreen) onExitFullscreen();
     } else {
       exitFullscreen();
     }
   };
 
   const toggleFullscreen = () => {
-    if (isMobileFullscreen || isFullscreen) {
-      handleExitMobileFullscreen();
+    if (isFullscreen || isMobileFullscreen) {
+      handleExitFullscreen();
     } else {
-      handleMobileFullscreen();
-    }
-  };
-
-  const handleVote = async (vote: 'like' | 'dislike') => {
-    if (!onVote || isVoting) return;
-    try {
-      setIsVoting(true);
-      await onVote(vote);
-    } finally {
-      setIsVoting(false);
-    }
-  };
-
-  const handleFavorite = async () => {
-    if (!onFavorite || isFavoriting) return;
-    try {
-      await onFavorite();
-    } catch (error) {
-      console.error('Failed to favorite:', error);
+      handleFullscreen();
     }
   };
 
   return (
-    <>
-      {/* Desktop view */}
-      <div className="hidden md:block space-y-3">
+    <div className="space-y-3">
+      {/* Header with Fullscreen Button */}
+      {!isFullscreen && !isMobileFullscreen && (
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
           <button
             onClick={toggleFullscreen}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-800 shadow-sm hover:bg-gray-50"
+            className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-gray-50 transition-colors"
           >
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            Fullscreen
           </button>
         </div>
+      )}
 
-        <div
-          ref={containerRef}
-          className={`game-container relative overflow-hidden bg-black ${
-            isFullscreen ? 'w-screen h-screen' : 'rounded-xl border border-gray-200'
-          }`}
-        >
-          <div className={`${isFullscreen ? 'h-full w-full' : 'aspect-video w-full'}`}>
-            {children}
-          </div>
-
-          {showBar && !isFullscreen && (
-            <div
-              className="pointer-events-auto flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-3 py-2 text-sm text-white"
-            >
-              <div className="flex items-center gap-2">
-                {siteLogoUrl ? (
-                  <img
-                    src={siteLogoUrl}
-                    alt={siteName}
-                    className="h-7 w-7 rounded-full border border-white/20 object-cover bg-white"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[11px] font-bold uppercase">
-                    {siteName.slice(0, 2)}
-                  </div>
-                )}
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-90 line-clamp-1">
-                  {title}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {onFavorite && (
-                  <button
-                    onClick={handleFavorite}
-                    disabled={isFavoriting}
-                    className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${
-                      isFavorited
-                        ? 'border-white/50 bg-white/30 text-white'
-                        : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    <span>{isFavoriting ? 'Saving...' : isFavorited ? 'Favorited' : 'Favorite'}</span>
-                  </button>
-                )}
-                {onVote && (
-                  <LikeDislike
-                    likes={likes}
-                    dislikes={dislikes}
-                    userVote={userVote}
-                    onVote={handleVote}
-                    showCounts
-                    size="sm"
-                  />
-                )}
-                <button
-                  onClick={() => setShowBar(false)}
-                  className="text-[11px] font-semibold text-white underline underline-offset-2 hover:text-gray-200"
-                >
-                  Hide bar
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Game Area */}
+      <div
+        ref={containerRef}
+        className={`game-container relative overflow-hidden bg-black ${
+          isFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen' : 'rounded-xl border border-gray-200 aspect-video w-full'
+        }`}
+      >
+        <div className="w-full h-full">
+          {children}
         </div>
-      </div>
 
-      {/* Mobile view */}
-      <div className="md:hidden">
-        {isMobileFullscreen && !isPaused ? (
-          <div
-            ref={containerRef}
-            className="game-container-mobile-fullscreen"
-          >
-            {children}
-            
-            {/* Exit button */}
-            <button
-              onClick={handleExitMobileFullscreen}
-              className="mobile-exit-button"
-            >
-              Exit
-            </button>
+        {/* Game Bar (Hidden in Fullscreen) */}
+        {showBar && !isFullscreen && !isMobileFullscreen && (
+          <div className="absolute bottom-0 inset-x-0 z-10 flex items-center justify-between gap-3 border-t border-white/10 bg-black/70 px-4 py-2 text-sm text-white backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              {siteLogoUrl && (
+                <img src={siteLogoUrl} alt={siteName} className="h-7 w-7 rounded-full bg-white p-0.5" />
+              )}
+              <span className="text-xs font-semibold uppercase tracking-wide truncate max-w-[150px]">
+                {title}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {onFavorite && (
+                <button
+                  onClick={onFavorite}
+                  disabled={isFavoriting}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    isFavorited ? 'bg-white/30 border-white/50' : 'bg-white/10 border-white/30 hover:bg-white/20'
+                  }`}
+                >
+                  {isFavorited ? 'Favorited' : 'Favorite'}
+                </button>
+              )}
+              {onVote && (
+                <LikeDislike
+                  likes={likes}
+                  dislikes={dislikes}
+                  userVote={userVote}
+                  onVote={onVote}
+                  showCounts
+                  size="sm"
+                />
+              )}
+              <button onClick={() => setShowBar(false)} className="text-[10px] opacity-70 hover:opacity-100 underline">
+                Hide
+              </button>
+            </div>
           </div>
-        ) : (
-          <div
-            ref={containerRef}
-            className="game-container-mobile relative bg-black rounded-xl border border-gray-200 aspect-video w-full overflow-hidden"
-            style={{ display: isPaused ? 'none' : 'block' }}
+        )}
+
+        {/* Mobile Exit Button */}
+        {isMobileFullscreen && (
+          <button
+            onClick={handleExitFullscreen}
+            className="fixed top-4 right-4 z-[10000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md border border-white/20"
           >
-            {children}
-          </div>
+            Exit Game
+          </button>
         )}
       </div>
 
       <style jsx global>{`
-        /* Desktop fullscreen styles */
-        .game-container:fullscreen,
-        .game-container:-webkit-full-screen,
-        .game-container:-moz-full-screen {
-          width: 100vw !important;
-          height: 100vh !important;
-          max-width: none !important;
-          max-height: none !important;
-          background: black !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          border: none !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-        }
-        .game-container:fullscreen > div,
-        .game-container:-webkit-full-screen > div,
-        .game-container:-moz-full-screen > div {
+        .game-container iframe {
           width: 100% !important;
           height: 100% !important;
+          border: none !important;
           display: block !important;
         }
-        .game-container iframe,
-        .game-container canvas,
-        .game-container video {
-          width: 100%;
-          height: 100%;
-        }
         
-        /* When iframe itself is in fullscreen */
+        /* Ensure iframe fills screen when requested directly */
         iframe:fullscreen {
           width: 100vw !important;
           height: 100vh !important;
-          border: none !important;
           background: #000 !important;
         }
-        iframe:-webkit-full-screen {
+        
+        :-webkit-full-screen iframe {
           width: 100vw !important;
           height: 100vh !important;
         }
-        
-        /* Mobile fullscreen styles - CSS only, no Fullscreen API needed */
-        .game-container-mobile-fullscreen {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          width: 100vw;
-          height: 100vh;
-          height: 100dvh; /* Dynamic viewport height for mobile browsers */
-          background: #000;
-          z-index: 9999;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-        }
-        
-        .game-container-mobile-fullscreen iframe,
-        .game-container-mobile-fullscreen canvas,
-        .game-container-mobile-fullscreen video {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100% !important;
-          height: 100% !important;
-          border: none !important;
-          display: block !important;
-        }
-        
-        .mobile-exit-button {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          z-index: 10000;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(8px);
-          color: white;
-          border: none;
-          border-radius: 9999px;
-          padding: 6px 12px;
-          font-size: 12px;
-          font-weight: 500;
-          cursor: pointer;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-        
-        .mobile-exit-button:hover {
-          background: rgba(0, 0, 0, 0.8);
-        }
-        
-        /* Regular mobile container */
-        .game-container-mobile iframe,
-        .game-container-mobile canvas,
-        .game-container-mobile video {
-          width: 100% !important;
-          height: 100% !important;
-          border: none !important;
-          display: block !important;
-        }
       `}</style>
-    </>
+    </div>
   );
 }

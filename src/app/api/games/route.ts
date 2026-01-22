@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCache, setCache } from '@/lib/cache';
 
-// Remove force-dynamic to allow Next.js caching
-// export const dynamic = 'force-dynamic';
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -49,30 +46,6 @@ export async function GET(request: NextRequest) {
       where.isFeatured = true;
     }
 
-    // Build orderBy clause
-    let orderBy: any = {};
-    switch (sort) {
-      case 'popular':
-      case 'plays':
-        orderBy = { playCount: 'desc' };
-        break;
-      case 'views':
-        orderBy = { views: 'desc' };
-        break;
-      case 'rating':
-      case 'likes':
-        orderBy = { ratings: { _count: 'desc' } };
-        break;
-      case 'oldest':
-        orderBy = { createdAt: 'asc' };
-        break;
-      case 'newest':
-      case 'trending':
-      case 'relevance':
-      default:
-        orderBy = { createdAt: 'desc' };
-    }
-
     // Check cache first
     const cacheKey = `games:${sort}:${search}:${category}:${tag}:page${page}:limit${limit}:featured${featured}`;
     const cachedData = getCache<{ games: any; pagination: any }>(cacheKey);
@@ -80,108 +53,115 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cachedData);
     }
 
-    // Get total count and games in parallel
-    const [total, games] = await Promise.all([
-      prisma.game.count({ where }),
-      prisma.game.findMany({
+    let games;
+    let total;
+
+    // خوارزمية روبلوكس: الترتيب حسب اللاعبين النشطين والتفاعل الحديث
+    if (sort === 'popular' || sort === 'trending') {
+      const allGames = await prisma.game.findMany({
         where,
         include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-          ratings: {
-            select: {
-              isLike: true,
-            },
-          },
+          categories: { include: { category: true } },
+          ratings: { select: { isLike: true } },
         },
-        orderBy,
-        skip,
-        take: limit,
-      })
-    ]);
+      });
 
-    if (total === 0) {
-      return NextResponse.json({
-        games: [],
-        pagination: {
-          page: 1,
-          limit,
-          total: 0,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
+      total = allGames.length;
+
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const activeSessions = await prisma.playSession.findMany({
+        where: {
+          startedAt: { gte: tenMinutesAgo },
+          OR: [{ endedAt: null }, { endedAt: { gte: tenMinutesAgo } }]
         },
+        select: { gameId: true, userId: true }
+      });
+
+      const sessionsByGame = activeSessions.reduce((acc: any, session) => {
+        if (!acc[session.gameId]) acc[session.gameId] = new Set();
+        acc[session.gameId].add(session.userId);
+        return acc;
+      }, {});
+
+      const gamesWithScores = allGames.map(game => {
+        const onlineCount = sessionsByGame[game.id]?.size || 0;
+        const ratings = game.ratings || [];
+        const likes = ratings.filter(r => r.isLike).length;
+        const totalRatings = ratings.length;
+        const likePercentage = totalRatings > 0 ? (likes / totalRatings) : 0;
+        
+        // خوارزمية روبلوكس: (لاعبون نشطون * 100) + (تفاعل كلي * 0.1) + (نسبة إعجاب * 50)
+        const score = (onlineCount * 100) + (game.playCount * 0.1) + (likePercentage * 50);
+        
+        return { 
+          ...game, 
+          onlineCount, 
+          score, 
+          likes, 
+          totalRatings, 
+          likePercentage: Math.round(likePercentage * 100),
+          categoryNames: game.categories.map(gc => gc.category.name)
+        };
+      });
+
+      gamesWithScores.sort((a, b) => b.score - a.score);
+      games = gamesWithScores.slice(skip, skip + limit);
+    } else {
+      let orderBy: any = {};
+      switch (sort) {
+        case 'views': orderBy = { views: 'desc' }; break;
+        case 'oldest': orderBy = { createdAt: 'asc' }; break;
+        default: orderBy = { createdAt: 'desc' };
+      }
+
+      [total, games] = await Promise.all([
+        prisma.game.count({ where }),
+        prisma.game.findMany({
+          where,
+          include: {
+            categories: { include: { category: true } },
+            ratings: { select: { isLike: true } },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        })
+      ]);
+
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const gameIds = games.map(g => g.id);
+      const activeSessions = await prisma.playSession.findMany({
+        where: {
+          gameId: { in: gameIds },
+          startedAt: { gte: tenMinutesAgo },
+          OR: [{ endedAt: null }, { endedAt: { gte: tenMinutesAgo } }]
+        },
+        select: { gameId: true, userId: true }
+      });
+
+      const sessionsByGame = activeSessions.reduce((acc: any, session) => {
+        if (!acc[session.gameId]) acc[session.gameId] = new Set();
+        acc[session.gameId].add(session.userId);
+        return acc;
+      }, {});
+
+      games = games.map(game => {
+        const ratings = game.ratings || [];
+        const likes = ratings.filter(r => r.isLike).length;
+        const totalRatings = ratings.length;
+        return {
+          ...game,
+          onlineCount: sessionsByGame[game.id]?.size || 0,
+          likes,
+          totalRatings,
+          likePercentage: totalRatings > 0 ? Math.round((likes / totalRatings) * 100) : 0,
+          categoryNames: game.categories.map(gc => gc.category.name),
+        };
       });
     }
 
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-
-    // Optimized: Fetch all active sessions for the current page of games in ONE query
-    const gameIds = games.map(g => g.id);
-    const allActiveSessions = await prisma.playSession.findMany({
-      where: {
-        gameId: { in: gameIds },
-        startedAt: { gte: fifteenMinutesAgo },
-        OR: [
-          { endedAt: null },
-          { endedAt: { gte: fifteenMinutesAgo } }
-        ]
-      },
-      select: {
-        gameId: true,
-        userId: true,
-      }
-    });
-
-    // Group sessions by gameId with accurate counting
-    const sessionsByGame = allActiveSessions.reduce((acc: any, session) => {
-      if (!acc[session.gameId]) {
-        acc[session.gameId] = { loggedIn: new Set(), anonymous: 0 };
-      }
-      if (session.userId === 'anonymous') {
-        acc[session.gameId].anonymous += 1;
-      } else {
-        acc[session.gameId].loggedIn.add(session.userId);
-      }
-      return acc;
-    }, {});
-
-    const processedGames = games.map((game) => {
-      const ratings = Array.isArray(game.ratings) ? game.ratings : [];
-      const likes = ratings.filter(r => r.isLike).length;
-      const dislikes = ratings.filter(r => !r.isLike).length;
-      const totalRatings = likes + dislikes;
-      const likePercentage = totalRatings > 0 ? Math.round((likes / totalRatings) * 100) : 0;
-      
-      const gameStats = sessionsByGame[game.id];
-      const realOnline = gameStats ? (gameStats.loggedIn.size + gameStats.anonymous) : 0;
-      
-      // Professional Online Count Logic (Simulating Big Sites)
-      const popularityFactor = Math.floor(game.views / 500);
-      const randomPulse = Math.floor(Math.random() * 3);
-      let onlineCount = realOnline + popularityFactor + randomPulse;
-      
-      // Ensure at least some activity for published games
-      if (onlineCount < 1) {
-        onlineCount = Math.floor(Math.random() * 3) + 1;
-      }
-
-      return {
-        ...game,
-        likes,
-        dislikes,
-        likePercentage,
-        totalRatings,
-        onlineCount,
-        categoryNames: game.categories.map(gc => gc.category.name),
-      };
-    });
-
     const responsePayload = {
-      games: processedGames,
+      games,
       pagination: {
         page,
         limit,
@@ -192,16 +172,10 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Cache the result for 5 minutes
     setCache(cacheKey, responsePayload, 5 * 60 * 1000);
-
     return NextResponse.json(responsePayload);
   } catch (error) {
     console.error('Games fetch error:', error);
-    return NextResponse.json({
-      games: [],
-      pagination: { page: 1, limit: 12, total: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false },
-      error: 'Internal server error',
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -180,16 +180,16 @@ export default function GameContainer({
           </div>
         )}
 
-        {/* Mobile Exit Button - Floating and subtle like Poki */}
+        {/* Mobile Exit Button - Floating and subtle like Poki */
         {isMobileFullscreen && (
           <button
             onClick={handleExitFullscreen}
-            className="fixed top-4 right-4 z-[10000] bg-black/40 text-white/80 w-10 h-10 flex items-center justify-center rounded-full text-xl font-light backdrop-blur-sm border border-white/10 hover:bg-black/60 transition-all"
+            className="fixed top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-[1000000] bg-black/20 text-white/60 w-8 h-8 flex items-center justify-center rounded-full text-2xl font-light backdrop-blur-sm border border-white/5 hover:bg-black/40 transition-all"
             aria-label="Exit Fullscreen"
           >
             ×
           </button>
-        )}
+        )}}
       </div>
 
       <style jsx global>{`
@@ -212,27 +212,35 @@ export default function GameContainer({
           height: 100vh !important;
         }
 
-        /* Mobile Fullscreen Overlay styles */
+           /* Mobile Pseudo Fullscreen (Simulation) */
         @media (max-width: 768px) {
           .game-container.fixed {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 99999 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            height: -webkit-fill-available !important; /* Fix for iOS Safari */
+            z-index: 999999 !important;
             background: #000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
           }
           
-          /* Force iframe to fill the fixed container on mobile */
           .game-container.fixed iframe {
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
             height: 100% !important;
+            border: none !important;
+            /* Handle safe areas for notched phones */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) !important;
           }
-        }
+        }       }
       `}</style>
     </div>
   );

@@ -56,6 +56,8 @@ export default function GameContainer({
   const handleFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(true);
+      // Force body scroll lock for mobile fullscreen
+      document.body.style.overflow = 'hidden';
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
       if (!isIOS) enterFullscreen();
     } else {
@@ -78,6 +80,7 @@ export default function GameContainer({
   const handleExitFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
+      document.body.style.overflow = '';
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
       if (!isIOS) exitFullscreen();
       if (onExitFullscreen) onExitFullscreen();
@@ -113,7 +116,9 @@ export default function GameContainer({
       <div
         ref={containerRef}
         className={`game-container relative overflow-hidden bg-black ${
-          isFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen' : 'rounded-xl border border-gray-200 aspect-video w-full'
+          isFullscreen || isMobileFullscreen 
+            ? 'fixed inset-0 z-[9999] w-screen h-screen' 
+            : 'rounded-xl border border-gray-200 aspect-video w-full'
         }`}
       >
         <div className="w-full h-full">
@@ -190,6 +195,18 @@ export default function GameContainer({
         :-webkit-full-screen iframe {
           width: 100vw !important;
           height: 100vh !important;
+        }
+
+        /* Mobile specific fixes */
+        @media (max-width: 768px) {
+          .game-container.fixed {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+          }
         }
       `}</style>
     </div>

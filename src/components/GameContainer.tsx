@@ -52,33 +52,23 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Handle body scroll lock
+  // Handle body scroll lock for mobile
   useEffect(() => {
-    if (isMobileFullscreen) {
+    if (isMobile && isMobileFullscreen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
     } else {
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
     }
-  }, [isMobileFullscreen]);
+  }, [isMobile, isMobileFullscreen]);
 
   const handleFullscreen = async () => {
     if (isMobile) {
+      // Use the original mobile script logic
       setIsMobileFullscreen(true);
-      // Try to lock orientation to landscape if supported
-      if (typeof screen !== 'undefined' && (screen as any).orientation?.lock) {
-        try {
-          await (screen as any).orientation.lock('landscape');
-        } catch (e) {
-          console.log('Orientation lock not supported or requires fullscreen');
-        }
-      }
-      // On mobile, we use the overlay approach but with better CSS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (!isIOS) enterFullscreen();
     } else {
-      // Desktop: Target iframe directly
+      // Desktop: Target iframe directly for professional immersive experience
       const iframe = containerRef.current?.querySelector('iframe');
       if (iframe) {
         const element = iframe as any;
@@ -97,6 +87,8 @@ export default function GameContainer({
   const handleExitFullscreen = () => {
     if (isMobile) {
       setIsMobileFullscreen(false);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (!isIOS) exitFullscreen();
       if (onExitFullscreen) onExitFullscreen();
     } else {
       exitFullscreen();
@@ -180,16 +172,15 @@ export default function GameContainer({
           </div>
         )}
 
-        {/* Mobile Exit Button - Floating and subtle like Poki */
+        {/* Mobile Exit Button */}
         {isMobileFullscreen && (
           <button
             onClick={handleExitFullscreen}
-            className="fixed top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-[1000000] bg-black/20 text-white/60 w-8 h-8 flex items-center justify-center rounded-full text-2xl font-light backdrop-blur-sm border border-white/5 hover:bg-black/40 transition-all"
-            aria-label="Exit Fullscreen"
+            className="fixed top-4 right-4 z-[10000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md border border-white/20"
           >
-            ×
+            Exit Game
           </button>
-        )}}
+        )}
       </div>
 
       <style jsx global>{`
@@ -212,35 +203,17 @@ export default function GameContainer({
           height: 100vh !important;
         }
 
-           /* Mobile Pseudo Fullscreen (Simulation) */
+        /* Mobile specific fixes - Original script logic */
         @media (max-width: 768px) {
           .game-container.fixed {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            height: -webkit-fill-available !important; /* Fix for iOS Safari */
-            z-index: 999999 !important;
-            background: #000 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
           }
-          
-          .game-container.fixed iframe {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            border: none !important;
-            /* Handle safe areas for notched phones */
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) !important;
-          }
-        }       }
+        }
       `}</style>
     </div>
   );

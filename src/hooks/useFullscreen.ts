@@ -75,7 +75,10 @@ export function useFullscreen(targetRef: RefObject<HTMLElement>) {
 
   useEffect(() => {
     const handleChange = () => {
-      const active = getFullscreenElement() === targetRef.current;
+      const currentFullscreenElement = getFullscreenElement();
+      // Consider it fullscreen if the target element OR any of its children (like an iframe) is the fullscreen element
+      const active = currentFullscreenElement === targetRef.current || 
+                    (targetRef.current && targetRef.current.contains(currentFullscreenElement as Node));
       setIsFullscreen(active);
     };
 

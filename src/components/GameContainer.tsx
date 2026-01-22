@@ -116,7 +116,22 @@ export default function GameContainer({
         enterFullscreen();
       }
     } else {
-      enterFullscreen();
+      // Desktop: Try to find the iframe and request fullscreen on it directly
+      const iframe = containerRef.current?.querySelector('iframe');
+      if (iframe) {
+        const element = iframe as any;
+        const request = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+        if (request) {
+          request.call(element).catch((err: any) => {
+            console.error('Iframe fullscreen failed, falling back to container', err);
+            enterFullscreen();
+          });
+        } else {
+          enterFullscreen();
+        }
+      } else {
+        enterFullscreen();
+      }
     }
   };
 
@@ -304,6 +319,18 @@ export default function GameContainer({
         .game-container video {
           width: 100%;
           height: 100%;
+        }
+        
+        /* When iframe itself is in fullscreen */
+        iframe:fullscreen {
+          width: 100vw !important;
+          height: 100vh !important;
+          border: none !important;
+          background: #000 !important;
+        }
+        iframe:-webkit-full-screen {
+          width: 100vw !important;
+          height: 100vh !important;
         }
         
         /* Mobile fullscreen styles - CSS only, no Fullscreen API needed */

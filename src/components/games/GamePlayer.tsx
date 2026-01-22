@@ -159,7 +159,7 @@ export default function GamePlayer({ gameUrl, gameTitle, onPlayStart, onPlayEnd 
               src={gameUrl}
               className="h-full w-full"
               title={gameTitle}
-              allow="fullscreen; gamepad; accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allow="autoplay; fullscreen; camera; focus-without-user-activation *; monetization; gamepad; keyboard-map *; xr-spatial-tracking; clipboard-write; web-share; accelerometer; magnetometer; gyroscope; microphone *"
               allowFullScreen
               onError={handleIframeError}
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"

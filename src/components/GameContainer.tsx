@@ -81,8 +81,8 @@ export default function GameContainer({
     setIsMobileFullscreen(false);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (!isIOS) exitFullscreen();
-    // We DON'T call onExitFullscreen here because we want the game to CONTINUE playing
-    // onExitFullscreen in page.tsx sets isPlaying to false, which we want to avoid.
+    // Call onExitFullscreen to show the "Continue Playing" overlay in page.tsx
+    if (onExitFullscreen) onExitFullscreen();
   };
 
   // 4. Desktop Logic

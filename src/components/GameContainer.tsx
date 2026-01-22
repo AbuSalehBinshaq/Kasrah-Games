@@ -41,7 +41,7 @@ export default function GameContainer({
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen(containerRef);
 
-  // 1. Detect Device Type once on mount
+  // 1. Detect Device Type
   useEffect(() => {
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -52,7 +52,15 @@ export default function GameContainer({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 2. Mobile Logic (Original Script Behavior)
+  // 2. Auto-trigger fullscreen on mobile when game starts
+  useEffect(() => {
+    if (isMobile && !isMobileFullscreen) {
+      // If children exist (game is loaded/playing), trigger fullscreen automatically
+      handleMobileFullscreen();
+    }
+  }, [isMobile]); // Trigger on mount if it's mobile
+
+  // 3. Mobile Logic
   useEffect(() => {
     if (isMobile) {
       if (isMobileFullscreen) {
@@ -73,10 +81,11 @@ export default function GameContainer({
     setIsMobileFullscreen(false);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (!isIOS) exitFullscreen();
-    if (onExitFullscreen) onExitFullscreen();
+    // We DON'T call onExitFullscreen here because we want the game to CONTINUE playing
+    // onExitFullscreen in page.tsx sets isPlaying to false, which we want to avoid.
   };
 
-  // 3. Desktop Logic (Pro Immersive Simulation)
+  // 4. Desktop Logic
   const handleDesktopFullscreen = () => {
     const iframe = containerRef.current?.querySelector('iframe');
     if (iframe) {
@@ -96,7 +105,6 @@ export default function GameContainer({
     exitFullscreen();
   };
 
-  // 4. Unified Toggle (Routes to specific logic)
   const toggleFullscreen = () => {
     if (isMobile) {
       if (isMobileFullscreen) handleMobileExit();
@@ -175,19 +183,18 @@ export default function GameContainer({
           </div>
         )}
 
-        {/* Mobile Exit Button - Only for Mobile */}
+        {/* Mobile Exit Button */}
         {isMobile && isMobileFullscreen && (
           <button
             onClick={handleMobileExit}
             className="fixed top-4 right-4 z-[10000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md border border-white/20"
           >
-            Exit Game
+            Exit Fullscreen
           </button>
         )}
       </div>
 
       <style jsx global>{`
-        /* Base Iframe Styles */
         .game-container iframe {
           width: 100% !important;
           height: 100% !important;
@@ -195,7 +202,6 @@ export default function GameContainer({
           display: block !important;
         }
         
-        /* Desktop Specific Fullscreen (Iframe Focus) */
         iframe:fullscreen {
           width: 100vw !important;
           height: 100vh !important;
@@ -206,7 +212,6 @@ export default function GameContainer({
           height: 100vh !important;
         }
 
-        /* Mobile Specific Fullscreen (Original Script Behavior) */
         @media (max-width: 768px) {
           .game-container.fixed {
             position: fixed !important;

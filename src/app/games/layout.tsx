@@ -49,5 +49,79 @@ export default function GamesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  const gameCollectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Browse All Games | Kasrah Games',
+    description: 'Discover and play hundreds of free HTML5 and WebGL games. Find your favorite games by category, rating, and popularity.',
+    url: 'https://kasrah-games.onrender.com/games',
+    image: 'https://kasrah-games.onrender.com/images/og-image.jpg',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Kasrah Games',
+      url: 'https://kasrah-games.onrender.com',
+    },
+    mainEntity: {
+      '@type': 'GameCollection',
+      name: 'Kasrah Games Collection',
+      description: 'A collection of free HTML5 and WebGL games',
+      url: 'https://kasrah-games.onrender.com/games',
+      numberOfItems: 100, // Approximate number
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Action Games',
+          url: 'https://kasrah-games.onrender.com/games?category=action',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Puzzle Games',
+          url: 'https://kasrah-games.onrender.com/games?category=puzzle',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Strategy Games',
+          url: 'https://kasrah-games.onrender.com/games?category=strategy',
+        },
+        {
+          '@type': 'ListItem',
+          position: 4,
+          name: 'Sports Games',
+          url: 'https://kasrah-games.onrender.com/games?category=sports',
+        },
+      ],
+    },
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://kasrah-games.onrender.com',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Games',
+          item: 'https://kasrah-games.onrender.com/games',
+        },
+      ],
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(gameCollectionSchema),
+        }}
+      />
+      {children}
+    </>
+  );
 }

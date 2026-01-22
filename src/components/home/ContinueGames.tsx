@@ -162,7 +162,7 @@ export default function ContinueGames() {
           style={{ scrollBehavior: 'smooth' }}
         >
           {games.map((game) => (
-            <div key={game.id} className="w-24 flex-shrink-0 md:hidden">
+            <div key={game.id} className="w-20 flex-shrink-0 md:hidden">
               <GameCard 
                 game={game as any} 
                 viewMode="grid" 

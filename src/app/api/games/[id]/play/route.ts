@@ -23,11 +23,21 @@ export async function POST(
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
+    const body = await request.json().catch(() => ({}));
+    const { sessionId, isHeartbeat } = body;
+
+    if (isHeartbeat && sessionId) {
+      // Update existing session's startedAt to keep it "active"
+      await prisma.playSession.update({
+        where: { id: sessionId },
+        data: { startedAt: new Date() }
+      });
+      return NextResponse.json({ success: true });
+    }
+
     const user = await getCurrentUser();
 
-    // Increment play count only if it's a new session or after some time
-    // For simplicity and accuracy, we increment on every POST request to this endpoint
-    // which is triggered when the user clicks "Play Now"
+    // Increment play count only for new sessions
     await prisma.game.update({
       where: { id: game.id },
       data: { playCount: { increment: 1 } },

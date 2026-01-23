@@ -133,17 +133,42 @@ export default function GameDetailPage() {
     }
   }
 
+  // Heartbeat to keep session active
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying && sessionId && game?.id) {
+      interval = setInterval(() => {
+        fetch(`/api/games/${game.id}/play`, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, isHeartbeat: true })
+        }).catch(err => console.error('Heartbeat failed:', err));
+      }, 30000); // Every 30 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, sessionId, game?.id]);
+
   // Track session end when leaving or closing
   useEffect(() => {
-    return () => {
+    const handleUnload = () => {
       if (sessionId && game?.id) {
         const url = `/api/games/${game.id}/play/end`;
         const body = JSON.stringify({ sessionId });
         if (navigator.sendBeacon) {
           navigator.sendBeacon(url, body);
-        } else {
-          fetch(url, { method: 'POST', body, keepalive: true });
         }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      if (sessionId && game?.id) {
+        const url = `/api/games/${game.id}/play/end`;
+        const body = JSON.stringify({ sessionId });
+        fetch(url, { method: 'POST', body, keepalive: true }).catch(() => {});
       }
     };
   }, [sessionId, game?.id]);

@@ -38,7 +38,7 @@ export default function GameCard({
   hideDescription = false, 
   priority = false,
   aspectRatio = 'video',
-  showOnlineCount = false,
+  showOnlineCount = true,
   hideRatingText = false
 }: GameCardProps) {
   const [imageError, setImageError] = useState(false);
@@ -141,19 +141,19 @@ export default function GameCard({
           </h3>
           
           {showStats && (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-3 mt-1">
               {!hideRatingText && (
-                <>
-                  <ThumbsUp className="h-4 w-4 text-gray-600" />
-                  <span className="text-xs font-semibold text-gray-700">{game.likePercentage}%</span>
-                </>
+                <div className="flex items-center gap-1">
+                  <ThumbsUp className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-xs font-medium text-gray-600">{game.likePercentage}%</span>
+                </div>
               )}
               
               {showOnlineCount && (
-                <>
-                  <Users className="h-4 w-4 text-gray-600 ml-auto" />
-                  <span className="text-xs text-gray-700">{game.onlineCount || 0}</span>
-                </>
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-xs font-medium text-gray-600">{game.onlineCount || 0} Playing</span>
+                </div>
               )}
             </div>
           )}

@@ -2,18 +2,27 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import LoginForm from '@/components/auth/LoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState('');
+  const [callbackUrl, setCallbackUrl] = useState('/');
+
+  useEffect(() => {
+    const url = searchParams.get('callbackUrl');
+    if (url) {
+      setCallbackUrl(url);
+    }
+  }, [searchParams]);
 
   const handleLoginSuccess = () => {
-    router.push('/');
+    router.push(callbackUrl);
     router.refresh();
   };
 

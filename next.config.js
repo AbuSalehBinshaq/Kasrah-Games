@@ -45,7 +45,7 @@ const nextConfig = {
         },
         {
           key: 'Access-Control-Allow-Origin',
-          value: 'https://kasrah-games-v2.onrender.com', // السماح لموقع الألعاب بالوصول
+          value: 'https://kasrah-games-v2.onrender.com',
         },
         {
           key: 'Access-Control-Allow-Methods',

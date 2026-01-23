@@ -3,7 +3,6 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
-  // Enable image optimization for better quality/perf (AVIF/WebP).
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
@@ -11,10 +10,8 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
     ],
-    // Optimized device sizes to prevent generating unnecessarily large images
     deviceSizes: [320, 420, 640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    // Increased Cache TTL for better performance (1 year)
     minimumCacheTTL: 31536000,
   },
   headers: async () => [
@@ -24,10 +21,6 @@ const nextConfig = {
         {
           key: 'X-Content-Type-Options',
           value: 'nosniff',
-        },
-        {
-          key: 'X-Frame-Options',
-          value: 'DENY',
         },
         {
           key: 'X-XSS-Protection',
@@ -52,9 +45,7 @@ const nextConfig = {
         },
         {
           key: 'Access-Control-Allow-Origin',
-          value: process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}` 
-            : (process.env.NEXT_PUBLIC_SITE_URL || '*'),
+          value: 'https://kasrah-games-v2.onrender.com', // السماح لموقع الألعاب بالوصول
         },
         {
           key: 'Access-Control-Allow-Methods',
@@ -66,7 +57,6 @@ const nextConfig = {
         },
       ],
     },
-    // Cache static assets more aggressively
     {
       source: '/images/(.*)',
       headers: [

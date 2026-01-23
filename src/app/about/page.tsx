@@ -1,11 +1,11 @@
-import { Gamepad2, Users, Shield, Zap } from 'lucide-react';
+import { Gamepad2, Users, Shield, Zap, Globe } from 'lucide-react';
 import SEO from '@/components/common/SEO';
 
 export const dynamic = 'force-dynamic';
 
 export default function AboutPage() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <SEO 
         title="About Us | Kasrah Games"
         description="Learn more about Kasrah Games, the premier platform for HTML5 and WebGL gaming experiences. Our mission is to provide instant access to high-quality browser games."
@@ -74,11 +74,11 @@ export default function AboutPage() {
 
           <div className="rounded-xl bg-white p-6 text-center shadow">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
-              <Gamepad2 className="h-8 w-8 text-purple-600" />
+              <Globe className="h-8 w-8 text-purple-600" />
             </div>
-            <h3 className="mb-2 font-semibold text-gray-900">Curated Collection</h3>
+            <h3 className="mb-2 font-semibold text-gray-900">Cross-Platform</h3>
             <p className="text-sm text-gray-600">
-              Hand-picked games across various genres and categories.
+              Play on desktop, tablet, or smartphone seamlessly.
             </p>
           </div>
         </div>
@@ -101,43 +101,20 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="rounded-lg bg-white p-6">
-            <h3 className="mb-3 font-semibold text-gray-900">Cross-Platform</h3>
+            <h3 className="mb-3 font-semibold text-gray-900">Global Access</h3>
             <p className="text-sm text-gray-600">
-              Play on desktop, laptop, tablet, or smartphone - all from the same link.
+              Our servers are optimized to provide low-latency gaming experiences worldwide.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Team */}
-      <div className="rounded-2xl border border-gray-200 p-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">Our Team</h2>
-        <p className="mb-8 text-gray-700">
-          Kasrah Games is built by a passionate team of gamers, developers, and designers
-          who are dedicated to creating the best browser gaming experience.
+      {/* About the Platform */}
+      <div className="rounded-2xl border border-gray-200 p-8 text-center">
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">Our Commitment</h2>
+        <p className="text-gray-700 leading-relaxed">
+          Kasrah Games is dedicated to building the best browser gaming destination. We constantly update our library with the latest and most popular titles, ensuring there's always something new to discover. Our team works tirelessly to maintain a safe, fast, and enjoyable environment for gamers of all ages.
         </p>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-primary-400 to-secondary-400"></div>
-            <h4 className="font-semibold text-gray-900">Alex Chen</h4>
-            <p className="text-sm text-gray-600">Lead Developer</p>
-          </div>
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-green-400 to-blue-400"></div>
-            <h4 className="font-semibold text-gray-900">Maria Rodriguez</h4>
-            <p className="text-sm text-gray-600">Game Curator</p>
-          </div>
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-purple-400 to-pink-400"></div>
-            <h4 className="font-semibold text-gray-900">David Kim</h4>
-            <p className="text-sm text-gray-600">UI/UX Designer</p>
-          </div>
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-r from-yellow-400 to-red-400"></div>
-            <h4 className="font-semibold text-gray-900">Sarah Johnson</h4>
-            <p className="text-sm text-gray-600">Community Manager</p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -145,6 +145,7 @@ export async function GET(request: NextRequest) {
       avgRating: likePercentage,
       activeUsers,
       onlineNow: finalOnlineNow,
+      realOnlineNow: realOnlineNow, // Added for admin to see real data
       recentGames: recentGamesWithRatings,
       recentReviews: recentRatings,
       popularCategories,

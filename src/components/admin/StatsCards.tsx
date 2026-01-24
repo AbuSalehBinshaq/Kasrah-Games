@@ -1,6 +1,6 @@
 'use client';
 
-import { Gamepad2, Users, Play, Star, TrendingUp, Clock } from 'lucide-react';
+import { Gamepad2, Users, Play, Star, TrendingUp, Activity } from 'lucide-react';
 
 interface StatsCardsProps {
   stats: {
@@ -9,11 +9,21 @@ interface StatsCardsProps {
     totalPlays: number;
     avgRating: number;
     activeUsers: number;
+    onlineNow?: number;
+    realOnlineNow?: number;
   };
 }
 
 export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
+    {
+      title: 'Online Now',
+      value: (stats?.realOnlineNow || 0).toLocaleString(),
+      subValue: `(Visible: ${stats?.onlineNow || 0})`,
+      icon: Activity,
+      color: 'bg-orange-500',
+      change: 'Real-time',
+    },
     {
       title: 'Total Games',
       value: (stats?.totalGames || 0).toLocaleString(),
@@ -36,13 +46,6 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       change: '+24%',
     },
     {
-      title: 'Avg Rating',
-      value: (stats?.avgRating || 0).toFixed(1),
-      icon: Star,
-      color: 'bg-yellow-500',
-      change: '+0.3',
-    },
-    {
       title: 'Active Users',
       value: (stats?.activeUsers || 0).toLocaleString(),
       icon: TrendingUp,
@@ -58,10 +61,17 @@ export default function StatsCards({ stats }: StatsCardsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">{card.title}</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">{card.value}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="mt-2 text-3xl font-bold text-gray-900">{card.value}</p>
+                {card.subValue && (
+                  <p className="text-xs text-gray-500 font-medium">{card.subValue}</p>
+                )}
+              </div>
               <div className="mt-2 flex items-center">
                 <span className="text-sm font-medium text-green-600">{card.change}</span>
-                <span className="ml-2 text-sm text-gray-600">from last month</span>
+                <span className="ml-2 text-sm text-gray-600">
+                  {card.title === 'Online Now' ? 'active sessions' : 'from last month'}
+                </span>
               </div>
             </div>
             <div className={`${card.color} rounded-lg p-3`}>

@@ -128,8 +128,10 @@ export async function GET(request: NextRequest) {
       ratingsMap.set(gameId, { likes, dislikes });
     }
 
-    // Get play counts for recent games
-    const recentGames = recentGamesData.map((game) => {
+    // Get play counts and online counts for recent games
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    
+    const recentGames = await Promise.all(recentGamesData.map(async (game) => {
       const gameSessions = playSessions.filter((ps) => ps.gameId === game.id);
       const lastPlayed = gameSessions
         .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0]
@@ -139,6 +141,24 @@ export async function GET(request: NextRequest) {
       const total = ratings.likes + ratings.dislikes;
       const likePercentage = total > 0 ? Math.round((ratings.likes / total) * 100) : 0;
 
+      // Calculate real-time online count for this game
+      const activeSessionsCount = await prisma.playSession.count({
+        where: {
+          gameId: game.id,
+          startedAt: { gte: fifteenMinutesAgo },
+          OR: [
+            { endedAt: null },
+            { endedAt: { gte: fifteenMinutesAgo } }
+          ]
+        }
+      });
+
+      // Add professional simulation factor (like in the main games API)
+      const popularityFactor = Math.floor((game as any).views / 500) || 0;
+      const randomPulse = Math.floor(Math.random() * 3);
+      let onlineCount = activeSessionsCount + popularityFactor + randomPulse;
+      if (onlineCount < 1) onlineCount = Math.floor(Math.random() * 3) + 1;
+
       return {
         id: game.id,
         slug: game.slug,
@@ -147,8 +167,9 @@ export async function GET(request: NextRequest) {
         lastPlayed: lastPlayed?.toISOString() || new Date().toISOString(),
         playCount: gameSessions.length,
         likePercentage: likePercentage,
+        onlineCount: onlineCount,
       };
-    });
+    }));
 
     // Format bookmarks
     const bookmarksWithRatings = bookmarks.map((bookmark) => ({

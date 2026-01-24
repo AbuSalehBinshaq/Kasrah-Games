@@ -143,19 +143,19 @@ export default function GameCard({
           </h3>
           
           {showStats && (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-4 mt-1.5">
               {!hideRatingText && (
-                <>
-                  <ThumbsUp className="h-4 w-4 text-gray-600" />
-                  <span className="text-xs font-semibold text-gray-700">{game.likePercentage}%</span>
-                </>
+                <div className="flex items-center gap-1.5">
+                  <ThumbsUp className="h-4.5 w-4.5 text-gray-500" />
+                  <span className="text-sm font-bold text-gray-700">{game.likePercentage}%</span>
+                </div>
               )}
               
               {showOnlineCount && (
-                <>
-                  <Users className="h-4 w-4 text-gray-600 ml-auto" />
-                  <span className="text-xs text-gray-700">{game.onlineCount || 0}</span>
-                </>
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-4.5 w-4.5 text-gray-500" />
+                  <span className="text-sm font-bold text-gray-700">{game.onlineCount || 0}</span>
+                </div>
               )}
             </div>
           )}

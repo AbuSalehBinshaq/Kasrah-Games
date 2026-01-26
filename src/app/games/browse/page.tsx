@@ -72,20 +72,20 @@ function BrowsePageContent() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="max-w-[1400px] mx-auto py-6 md:py-8 px-4">
+      <div className="mb-6 md:mb-8">
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
           <Link 
             href="/games"
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 md:p-2 rounded-full hover:bg-gray-100 transition-colors"
           >
-            <ChevronLeft className="h-6 w-6 text-gray-600" />
+            <ChevronLeft className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
           </Link>
           <div className="flex-1">
             <select 
               value={sort}
               onChange={(e) => router.push(`/games/browse?sort=${e.target.value}`)}
-              className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-bold"
+              className="bg-gray-50 border border-gray-200 text-gray-900 text-xs md:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 md:p-2.5 font-bold"
             >
               <option value="popular">Top Trending</option>
               <option value="newest">Up-and-Coming</option>
@@ -94,7 +94,7 @@ function BrowsePageContent() {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           {sortTitles[sort] || 'Browse Games'}
         </h1>
       </div>
@@ -104,15 +104,16 @@ function BrowsePageContent() {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
           {games.map((game) => (
-            <GameCard 
-              key={game.id} 
-              game={game} 
-              viewMode="grid"
-              aspectRatio="square"
-              showOnlineCount={true}
-            />
+            <div key={game.id} className="w-full">
+              <GameCard 
+                game={game} 
+                viewMode="grid"
+                aspectRatio="square"
+                showOnlineCount={true}
+              />
+            </div>
           ))}
         </div>
       )}

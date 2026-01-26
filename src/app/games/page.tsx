@@ -43,18 +43,18 @@ function GameSection({ title, games, sort, infoText }: SectionProps) {
           href={`/games/browse?sort=${sort}`}
           className="group flex items-center gap-2"
         >
-          <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
             {title}
           </h2>
-          <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+          <ChevronRight className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
         </Link>
         
         <div className="relative">
           <button 
             onClick={() => setShowInfo(!showInfo)}
-            className="rounded-full bg-gray-100 p-2 hover:bg-gray-200 transition-colors"
+            className="rounded-full bg-gray-100 p-1.5 md:p-2 hover:bg-gray-200 transition-colors"
           >
-            <Info className="h-5 w-5 text-gray-600" />
+            <Info className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
           </button>
           
           {showInfo && (
@@ -74,18 +74,18 @@ function GameSection({ title, games, sort, infoText }: SectionProps) {
       </div>
 
       {title === "Top Playing Now" && (
-        <p className="mb-4 px-4 md:px-0 text-xs text-gray-500 font-medium uppercase tracking-wider">
+        <p className="mb-4 px-4 md:px-0 text-[10px] md:text-xs text-gray-500 font-medium uppercase tracking-wider">
           Results for all devices and locations
         </p>
       )}
 
       <div 
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-6 px-4 md:px-0 no-scrollbar scroll-smooth"
+        className="flex gap-3 md:gap-4 overflow-x-auto pb-6 px-4 md:px-0 no-scrollbar scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {games.map((game) => (
-          <div key={game.id} className="w-[140px] flex-shrink-0 sm:w-[160px] md:w-[180px]">
+          <div key={game.id} className="w-[100px] flex-shrink-0 sm:w-[130px] md:w-[160px] lg:w-[180px]">
             <GameCard 
               game={game} 
               viewMode="grid"
@@ -98,12 +98,12 @@ function GameSection({ title, games, sort, infoText }: SectionProps) {
         {games.length >= 25 && (
           <Link 
             href={`/games/browse?sort=${sort}`}
-            className="flex w-[140px] flex-shrink-0 flex-col items-center justify-center rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors border-2 border-dashed border-gray-200"
+            className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors border-2 border-dashed border-gray-200 sm:w-[130px] md:w-[160px]"
           >
-            <div className="rounded-full bg-white p-3 shadow-sm mb-2">
-              <ChevronRight className="h-6 w-6 text-blue-600" />
+            <div className="rounded-full bg-white p-2 md:p-3 shadow-sm mb-2">
+              <ChevronRight className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
             </div>
-            <span className="text-sm font-bold text-gray-900">See All</span>
+            <span className="text-xs md:text-sm font-bold text-gray-900">See All</span>
           </Link>
         )}
       </div>
@@ -170,7 +170,7 @@ function GamesPageContent() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 py-8">
+    <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-10 py-6 md:py-8">
       <GameSection 
         title="Top Trending" 
         games={topTrending} 

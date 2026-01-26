@@ -81,8 +81,11 @@ export default function CategoryShowcase() {
           </div>
         ) : (
           categories.map((category) => {
-          const IconComponent = categoryIcons[category.slug] || Puzzle;
-          const colorClass = categoryColors[category.slug] || 'from-gray-500 to-gray-600';
+          // Use icon from DB if available, otherwise fallback to predefined icons
+          const IconComponent = categoryIcons[category.slug] || categoryIcons[category.icon || ''] || Puzzle;
+          
+          // Use color from DB if available (expected format: 'from-xxx to-xxx'), otherwise fallback
+          const colorClass = category.color || categoryColors[category.slug] || 'from-gray-500 to-gray-600';
           
           return (
             <Link

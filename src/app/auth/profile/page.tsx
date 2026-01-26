@@ -20,7 +20,11 @@ import {
   History,
   Bookmark,
   LayoutDashboard,
-  Play
+  Play,
+  Lock,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -72,11 +76,21 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'library' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'library' | 'history' | 'security'>('overview');
   const [editData, setEditData] = useState({
     name: '',
     bio: '',
   });
+
+  // Security states
+  const [securityData, setSecurityData] = useState({
+    email: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [securityStatus, setSecurityStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [isUpdatingSecurity, setIsUpdatingSecurity] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -104,6 +118,7 @@ export default function ProfilePage() {
         name: profileData.name || '',
         bio: profileData.bio || '',
       });
+      setSecurityData(prev => ({ ...prev, email: profileData.email }));
     } catch (error) {
       console.error('Failed to fetch profile:', error);
     } finally {
@@ -125,6 +140,41 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Failed to save profile:', error);
       alert('Failed to save changes. Please try again.');
+    }
+  }
+
+  async function handleUpdateSecurity(e: React.FormEvent) {
+    e.preventDefault();
+    setSecurityStatus(null);
+
+    if (securityData.newPassword && securityData.newPassword !== securityData.confirmPassword) {
+      setSecurityStatus({ type: 'error', message: 'New passwords do not match' });
+      return;
+    }
+
+    setIsUpdatingSecurity(true);
+    try {
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: securityData.email,
+          password: securityData.newPassword || undefined,
+          currentPassword: securityData.currentPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to update security settings');
+
+      setSecurityStatus({ type: 'success', message: 'Security settings updated successfully!' });
+      setSecurityData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      await fetchProfile();
+    } catch (error: any) {
+      setSecurityStatus({ type: 'error', message: error.message });
+    } finally {
+      setIsUpdatingSecurity(false);
     }
   }
 
@@ -225,18 +275,22 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="mb-8 flex space-x-1 rounded-2xl bg-gray-100 p-1">
-        <button onClick={() => setActiveTab('overview')} className={`flex flex-1 items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+      <div className="mb-8 flex space-x-1 rounded-2xl bg-gray-100 p-1 overflow-x-auto">
+        <button onClick={() => setActiveTab('overview')} className={`flex flex-1 min-w-[100px] items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
           <LayoutDashboard className="h-4 w-4" />
           <span>Overview</span>
         </button>
-        <button onClick={() => setActiveTab('library')} className={`flex flex-1 items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'library' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+        <button onClick={() => setActiveTab('library')} className={`flex flex-1 min-w-[100px] items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'library' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
           <Bookmark className="h-4 w-4" />
           <span>My Library</span>
         </button>
-        <button onClick={() => setActiveTab('history')} className={`flex flex-1 items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+        <button onClick={() => setActiveTab('history')} className={`flex flex-1 min-w-[100px] items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
           <History className="h-4 w-4" />
           <span>History</span>
+        </button>
+        <button onClick={() => setActiveTab('security')} className={`flex flex-1 min-w-[100px] items-center justify-center space-x-2 rounded-xl py-3 text-sm font-bold transition-all ${activeTab === 'security' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+          <ShieldCheck className="h-4 w-4" />
+          <span>Security</span>
         </button>
       </div>
 
@@ -318,7 +372,7 @@ export default function ProfilePage() {
                     key={bookmark.id} 
                     game={{
                       ...bookmark.game,
-                      playCount: 0, // Placeholder
+                      playCount: 0,
                     }} 
                     viewMode="grid"
                     showOnlineCount={true}
@@ -361,6 +415,94 @@ export default function ProfilePage() {
                 <Link href="/games" className="mt-6 rounded-xl bg-primary-600 px-6 py-2 text-sm font-bold text-white hover:bg-primary-700">Start Playing</Link>
               </div>
             )}
+          </section>
+        )}
+
+        {activeTab === 'security' && (
+          <section className="max-w-2xl mx-auto">
+            <div className="rounded-3xl bg-white p-8 shadow-sm border border-gray-100">
+              <div className="mb-8 flex items-center space-x-3">
+                <div className="rounded-xl bg-primary-50 p-2 text-primary-600">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Security Settings</h2>
+              </div>
+
+              {securityStatus && (
+                <div className={`mb-6 flex items-center space-x-3 rounded-2xl p-4 ${securityStatus.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {securityStatus.type === 'success' ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+                  <p className="text-sm font-medium">{securityStatus.message}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleUpdateSecurity} className="space-y-6">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="email"
+                      value={securityData.email}
+                      onChange={(e) => setSecurityData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-gray-700">New Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="password"
+                        value={securityData.newPassword}
+                        onChange={(e) => setSecurityData(prev => ({ ...prev, newPassword: e.target.value }))}
+                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        placeholder="Leave blank to keep current"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-gray-700">Confirm New Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="password"
+                        value={securityData.confirmPassword}
+                        onChange={(e) => setSecurityData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Current Password</label>
+                  <p className="mb-4 text-xs text-gray-500 italic">Required to save any security changes</p>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="password"
+                      value={securityData.currentPassword}
+                      onChange={(e) => setSecurityData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isUpdatingSecurity}
+                  className="w-full rounded-2xl bg-primary-600 py-4 font-bold text-white shadow-lg shadow-primary-200 transition-all hover:bg-primary-700 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isUpdatingSecurity ? 'Updating...' : 'Update Security Settings'}
+                </button>
+              </form>
+            </div>
           </section>
         )}
       </div>

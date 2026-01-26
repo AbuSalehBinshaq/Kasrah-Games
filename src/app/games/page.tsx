@@ -4,10 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Filter, Grid, List, Search } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
-import SearchBar from '@/components/common/SearchBar';
-import CategoryFilter from '@/components/common/CategoryFilter';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface Game {
@@ -27,201 +25,148 @@ interface Game {
   tags?: string[];
 }
 
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
 function GamesPageContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const [games, setGames] = useState<Game[]>([]);
+  const [topTrending, setTopTrending] = useState<Game[]>([]);
+  const [upAndComing, setUpAndComing] = useState<Game[]>([]);
+  const [topPlayingNow, setTopPlayingNow] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [recommended, setRecommended] = useState<Game[]>([]);
-  const [loadingReco, setLoadingReco] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    limit: 12,
-    total: 0,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-
-  const search = searchParams.get('search') || '';
-  const category = searchParams.get('category') || '';
-  const tag = searchParams.get('tag') || '';
-  const sort = searchParams.get('sort') || 'newest';
-  const page = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
-    fetchGames();
-  }, [search, category, tag, sort, page]);
-
-  useEffect(() => {
-    fetchRecommendations();
+    fetchAllSections();
   }, []);
 
-  async function fetchGames() {
+  async function fetchAllSections() {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '12',
-        search,
-        category,
-        tag,
-        sort,
-      });
+      // Fetch Top Trending (popular games with high ratings)
+      const trendingResponse = await fetch('/api/games?sort=popular&limit=12');
+      const trendingData = await trendingResponse.json();
+      
+      // Fetch Up-and-Coming (newest games)
+      const upcomingResponse = await fetch('/api/games?sort=newest&limit=12');
+      const upcomingData = await upcomingResponse.json();
+      
+      // Fetch Top Playing Now (games with most online players)
+      const playingResponse = await fetch('/api/games?sort=trending&limit=12');
+      const playingData = await playingResponse.json();
 
-      const response = await fetch(`/api/games?${params}`);
-      const data = await response.json();
+      const normalizeGames = (games: any[]) => 
+        Array.isArray(games)
+          ? games.map((g: any) => ({
+              ...g,
+              likes: g.likes ?? 0,
+              dislikes: g.dislikes ?? 0,
+              likePercentage: g.likePercentage ?? 0,
+              totalRatings: g.totalRatings ?? 0,
+              onlineCount: g.onlineCount ?? 0,
+              playCount: g.playCount ?? 0,
+              thumbnail: g.thumbnail ?? '/images/placeholder-game.svg',
+              description: g.description ?? g.shortDescription ?? '',
+            }))
+          : [];
 
-      const normalized = Array.isArray(data.games)
-        ? data.games.map((g: any) => ({
-            ...g,
-            likes: g.likes ?? 0,
-            dislikes: g.dislikes ?? 0,
-            likePercentage: g.likePercentage ?? 0,
-            totalRatings: g.totalRatings ?? 0,
-            onlineCount: g.onlineCount ?? 0,
-            playCount: g.playCount ?? 0,
-            thumbnail: g.thumbnail ?? '/images/placeholder-game.svg',
-            description: g.description ?? g.shortDescription ?? '',
-          }))
-        : [];
-      setGames(normalized);
-      setPagination(data.pagination);
+      setTopTrending(normalizeGames(trendingData.games));
+      setUpAndComing(normalizeGames(upcomingData.games));
+      setTopPlayingNow(normalizeGames(playingData.games));
     } catch (error) {
-      console.error('Games fetch error:', error);
+      console.error('Failed to fetch games:', error);
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function fetchRecommendations() {
-    setLoadingReco(true);
-    try {
-      const response = await fetch(`/api/games/recommendations?limit=6`);
-      const data = await response.json();
-      const normalized = Array.isArray(data.games)
-        ? data.games.map((g: any) => ({
-            ...g,
-            likes: g.likes ?? 0,
-            dislikes: g.dislikes ?? 0,
-            likePercentage: g.likePercentage ?? 0,
-            totalRatings: g.totalRatings ?? 0,
-            onlineCount: g.onlineCount ?? 0,
-            playCount: g.playCount ?? 0,
-            thumbnail: g.thumbnail ?? '/images/placeholder-game.svg',
-            description: g.description ?? g.shortDescription ?? '',
-          }))
-        : [];
-      setRecommended(normalized);
-    } catch (error) {
-      console.error('Failed to fetch recommendations:', error);
-    } finally {
-      setLoadingReco(false);
-    }
-  }
-
-  function updateSearchParams(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    params.set('page', '1');
-    router.push(`/games?${params.toString()}`);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="mb-4 text-3xl font-bold text-gray-900">Browse Games</h1>
-        <p className="text-gray-600">
-          Discover our collection of HTML5 and WebGL games. Filter by category or search for specific games.
-        </p>
-      </div>
-
-      <div className="mb-8 space-y-4">
-        <SearchBar
-          value={search}
-          onChange={(value) => updateSearchParams('search', value)}
-          placeholder="Search games..."
-        />
-
-        <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-          <CategoryFilter
-            value={category}
-            onChange={(value) => updateSearchParams('category', value)}
-          />
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'}`}
-            >
-              <Grid className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100'}`}
-            >
-              <List className="h-5 w-5" />
-            </button>
-          </div>
+    <div className="space-y-12 pb-12">
+      {/* Top Trending Section */}
+      <section>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            Top Trending
+            <ChevronRight className="h-8 w-8" />
+          </h2>
+          <button className="rounded-full bg-gray-100 p-3 hover:bg-gray-200 transition-colors">
+            <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"/>
+            </svg>
+          </button>
         </div>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {topTrending.map((game) => (
+            <GameCard 
+              key={game.id} 
+              game={game} 
+              viewMode="grid"
+              aspectRatio="square"
+              hideRatingText={false}
+            />
+          ))}
         </div>
-      ) : games.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-gray-600">No games found. Try adjusting your filters.</p>
-        </div>
-      ) : (
-        <>
-          <div
-            className={
-              viewMode === 'grid'
-                ? 'mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
-                : 'mb-8 space-y-4'
-            }
-          >
-            {games.map((game) => (
-              <GameCard key={game.id} game={game} viewMode={viewMode} />
-            ))}
-          </div>
+      </section>
 
-          {pagination.totalPages > 1 && (
-            <div className="flex justify-center gap-2 py-8">
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => updateSearchParams('page', pageNum.toString())}
-                  className={`px-4 py-2 rounded ${
-                    pageNum === page
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      {/* Up-and-Coming Section */}
+      <section>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            Up-and-Coming
+            <ChevronRight className="h-8 w-8" />
+          </h2>
+          <button className="rounded-full bg-gray-100 p-3 hover:bg-gray-200 transition-colors">
+            <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"/>
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {upAndComing.map((game) => (
+            <GameCard 
+              key={game.id} 
+              game={game} 
+              viewMode="grid"
+              aspectRatio="square"
+              hideRatingText={false}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Top Playing Now Section */}
+      <section>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            Top Playing Now
+            <ChevronRight className="h-8 w-8" />
+          </h2>
+          <button className="rounded-full bg-gray-100 p-3 hover:bg-gray-200 transition-colors">
+            <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"/>
+            </svg>
+          </button>
+        </div>
+        <p className="mb-6 text-sm text-gray-600">Results for all devices and locations</p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {topPlayingNow.map((game) => (
+            <GameCard 
+              key={game.id} 
+              game={game} 
+              viewMode="grid"
+              aspectRatio="square"
+              hideRatingText={false}
+              showOnlineCount={true}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

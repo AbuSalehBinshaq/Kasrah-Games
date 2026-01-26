@@ -30,11 +30,13 @@ interface SectionProps {
   games: Game[];
   sort: string;
   infoText: string;
+  activeInfo: string | null;
+  setActiveInfo: (title: string | null) => void;
 }
 
-function GameSection({ title, games, sort, infoText }: SectionProps) {
-  const [showInfo, setShowInfo] = useState(false);
+function GameSection({ title, games, sort, infoText, activeInfo, setActiveInfo }: SectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isOpen = activeInfo === title;
 
   return (
     <section className="relative">
@@ -49,19 +51,36 @@ function GameSection({ title, games, sort, infoText }: SectionProps) {
           <ChevronRight className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
         </Link>
         
-        <div className="relative">
+        <div 
+          className="relative"
+          onMouseEnter={() => {
+            if (window.innerWidth >= 768) setActiveInfo(title);
+          }}
+          onMouseLeave={() => {
+            if (window.innerWidth >= 768) setActiveInfo(null);
+          }}
+        >
           <button 
-            onClick={() => setShowInfo(!showInfo)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveInfo(isOpen ? null : title);
+            }}
             className="rounded-full bg-gray-100 p-1.5 md:p-2 hover:bg-gray-200 transition-colors"
           >
             <Info className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
           </button>
           
-          {showInfo && (
-            <div className="absolute right-0 top-10 z-50 w-72 rounded-xl bg-white p-5 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+          {isOpen && (
+            <div className="absolute right-0 top-10 z-50 w-72 rounded-xl bg-white p-5 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-200 pointer-events-auto">
               <div className="flex items-center justify-between mb-3">
                 <span className="font-bold text-gray-900 text-lg">{title}</span>
-                <button onClick={() => setShowInfo(false)}>
+                <button 
+                  className="md:hidden"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveInfo(null);
+                  }}
+                >
                   <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                 </button>
               </div>
@@ -116,9 +135,14 @@ function GamesPageContent() {
   const [upAndComing, setUpAndComing] = useState<Game[]>([]);
   const [topPlayingNow, setTopPlayingNow] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeInfo, setActiveInfo] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllSections();
+    
+    const handleClickOutside = () => setActiveInfo(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
   async function fetchAllSections() {
@@ -175,21 +199,27 @@ function GamesPageContent() {
         title="Top Trending" 
         games={topTrending} 
         sort="popular"
-        infoText="Experiences with the largest increase in time spent over the past two weeks, sorted by their number of daily users. These experiences have at least 5,000 daily users, are within the top 10% of daily active users, or are among the top 30 most played experiences."
+        activeInfo={activeInfo}
+        setActiveInfo={setActiveInfo}
+        infoText="Experiences with the largest increase in time spent over the past two weeks, sorted by their number of daily users. These experiences have at least 5,000 daily users, are within the top 10% of daily active users, or are among the top 30 most played experiences. The order of these experiences is subject to the device and location filters applied to this page."
       />
 
       <GameSection 
         title="Up-and-Coming" 
         games={upAndComing} 
         sort="newest"
-        infoText="The newest experiences that are quickly gaining popularity and attracting a growing number of players on the platform."
+        activeInfo={activeInfo}
+        setActiveInfo={setActiveInfo}
+        infoText="New experiences that users spent the most time in, that have the biggest relative increase in time spent over the last 2 weeks. These experiences have at least 5,000 daily users, are within the top 10% of daily active users, or are among the top 30 most played experiences. The order of these experiences is subject to the device and location filters applied to this page."
       />
 
       <GameSection 
         title="Top Playing Now" 
         games={topPlayingNow} 
         sort="trending"
-        infoText="The experiences with the highest number of active players at this very moment from all around the world."
+        activeInfo={activeInfo}
+        setActiveInfo={setActiveInfo}
+        infoText="Top experiences sorted by the number of concurrent users."
       />
     </div>
   );

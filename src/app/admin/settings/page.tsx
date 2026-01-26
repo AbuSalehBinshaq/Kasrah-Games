@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, Save, AlertCircle, Globe, Users, Gamepad2, Shield, BarChart3, Search } from 'lucide-react';
+import { Settings, Save, Globe, Shield, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -81,8 +81,7 @@ export default function AdminSettingsPage() {
       setSettings(data);
     } catch (error) {
       console.error('Failed to fetch settings:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load settings';
-      setError(errorMessage);
+      setError(error instanceof Error ? error.message : 'Failed to load settings');
     } finally {
       setLoading(false);
     }
@@ -135,9 +134,7 @@ export default function AdminSettingsPage() {
     );
   }
 
-  if (!user || user.role !== 'ADMIN') {
-    return null;
-  }
+  if (!user || user.role !== 'ADMIN') return null;
 
   if (!settings) {
     return (
@@ -173,7 +170,7 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-6 pb-20">
           {/* General Settings */}
           <div className="rounded-xl bg-white p-6 shadow">
             <div className="mb-6 flex items-center space-x-2">
@@ -206,45 +203,35 @@ export default function AdminSettingsPage() {
                   <Label htmlFor="siteUrl">Site URL</Label>
                   <Input
                     id="siteUrl"
-                    type="url"
-                    value={settings.siteUrl || ''}
+                    value={settings.siteUrl ?? ''}
                     onChange={(e) => updateSetting('siteUrl', e.target.value || null)}
-                    placeholder="https://example.com"
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="contactEmail">Contact Email</Label>
                   <Input
                     id="contactEmail"
-                    type="email"
-                    value={settings.contactEmail || ''}
+                    value={settings.contactEmail ?? ''}
                     onChange={(e) => updateSetting('contactEmail', e.target.value || null)}
-                    placeholder="contact@example.com"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="siteLogo">Site Logo URL</Label>
+                  <Label htmlFor="siteLogo">Logo URL</Label>
                   <Input
                     id="siteLogo"
-                    type="url"
-                    value={settings.siteLogo || ''}
+                    value={settings.siteLogo ?? ''}
                     onChange={(e) => updateSetting('siteLogo', e.target.value || null)}
-                    placeholder="https://example.com/logo.png"
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="siteFavicon">Favicon URL</Label>
                   <Input
                     id="siteFavicon"
-                    type="url"
-                    value={settings.siteFavicon || ''}
+                    value={settings.siteFavicon ?? ''}
                     onChange={(e) => updateSetting('siteFavicon', e.target.value || null)}
-                    placeholder="https://example.com/favicon.ico"
                   />
                 </div>
               </div>
@@ -257,347 +244,102 @@ export default function AdminSettingsPage() {
               <Globe className="h-5 w-5 text-gray-600" />
               <h2 className="text-xl font-semibold text-gray-900">Social Media</h2>
             </div>
-            
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="socialFacebook">Facebook URL</Label>
-                <Input
-                  id="socialFacebook"
-                  type="url"
-                  value={settings.socialFacebook || ''}
-                  onChange={(e) => updateSetting('socialFacebook', e.target.value || null)}
-                  placeholder="https://facebook.com/yourpage"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="socialTwitter">Twitter URL</Label>
-                <Input
-                  id="socialTwitter"
-                  type="url"
-                  value={settings.socialTwitter || ''}
-                  onChange={(e) => updateSetting('socialTwitter', e.target.value || null)}
-                  placeholder="https://twitter.com/yourhandle"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="socialInstagram">Instagram URL</Label>
-                <Input
-                  id="socialInstagram"
-                  type="url"
-                  value={settings.socialInstagram || ''}
-                  onChange={(e) => updateSetting('socialInstagram', e.target.value || null)}
-                  placeholder="https://instagram.com/yourhandle"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="socialYoutube">YouTube URL</Label>
-                <Input
-                  id="socialYoutube"
-                  type="url"
-                  value={settings.socialYoutube || ''}
-                  onChange={(e) => updateSetting('socialYoutube', e.target.value || null)}
-                  placeholder="https://youtube.com/yourchannel"
-                />
-              </div>
+              {['Facebook', 'Twitter', 'Instagram', 'Youtube'].map((platform) => {
+                const key = `social${platform}` as keyof SiteSettings;
+                return (
+                  <div key={platform}>
+                    <Label htmlFor={key}>{platform} URL</Label>
+                    <Input
+                      id={key}
+                      value={(settings[key] as string) ?? ''}
+                      onChange={(e) => updateSetting(key, e.target.value || null)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Theme Colors */}
+          {/* Appearance */}
           <div className="rounded-xl bg-white p-6 shadow">
             <div className="mb-6 flex items-center space-x-2">
               <Settings className="h-5 w-5 text-gray-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Theme Colors</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Appearance</h2>
             </div>
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="primaryColor">Primary Color</Label>
-                <div className="flex items-center gap-3">
+                <div className="flex gap-2">
                   <Input
-                    id="primaryColor"
                     type="color"
-                    value={settings.primaryColor || '#7c3aed'}
+                    className="w-12 h-10 p-1"
+                    value={settings.primaryColor ?? '#7c3aed'}
                     onChange={(e) => updateSetting('primaryColor', e.target.value)}
-                    className="h-10 w-16 cursor-pointer p-1"
                   />
                   <Input
-                    type="text"
-                    value={settings.primaryColor || '#7c3aed'}
+                    value={settings.primaryColor ?? ''}
                     onChange={(e) => updateSetting('primaryColor', e.target.value)}
-                    placeholder="#7c3aed"
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="primaryColorHover">Primary Hover</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="primaryColorHover"
-                    type="color"
-                    value={settings.primaryColorHover || '#6d28d9'}
-                    onChange={(e) => updateSetting('primaryColorHover', e.target.value)}
-                    className="h-10 w-16 cursor-pointer p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={settings.primaryColorHover || '#6d28d9'}
-                    onChange={(e) => updateSetting('primaryColorHover', e.target.value)}
-                    placeholder="#6d28d9"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="backgroundFrom">Background From</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="backgroundFrom"
-                    type="color"
-                    value={settings.backgroundFrom || '#f8fafc'}
-                    onChange={(e) => updateSetting('backgroundFrom', e.target.value)}
-                    className="h-10 w-16 cursor-pointer p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={settings.backgroundFrom || '#f8fafc'}
-                    onChange={(e) => updateSetting('backgroundFrom', e.target.value)}
-                    placeholder="#f8fafc"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="backgroundTo">Background To</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="backgroundTo"
-                    type="color"
-                    value={settings.backgroundTo || '#eef2ff'}
-                    onChange={(e) => updateSetting('backgroundTo', e.target.value)}
-                    className="h-10 w-16 cursor-pointer p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={settings.backgroundTo || '#eef2ff'}
-                    onChange={(e) => updateSetting('backgroundTo', e.target.value)}
-                    placeholder="#eef2ff"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Settings */}
-          <div className="rounded-xl bg-white p-6 shadow">
-            <div className="mb-6 flex items-center space-x-2">
-              <Users className="h-5 w-5 text-gray-600" />
-              <h2 className="text-xl font-semibold text-gray-900">User Settings</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Allow Registration</Label>
-                  <p className="text-sm text-gray-600">Allow new users to register</p>
-                </div>
-                <Switch
-                  checked={settings.allowRegistration}
-                  onCheckedChange={(checked) => updateSetting('allowRegistration', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Require Email Verification</Label>
-                  <p className="text-sm text-gray-600">Users must verify their email before using the site</p>
-                </div>
-                <Switch
-                  checked={settings.requireEmailVerification}
-                  onCheckedChange={(checked) => updateSetting('requireEmailVerification', checked)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Game Settings */}
-          <div className="rounded-xl bg-white p-6 shadow">
-            <div className="mb-6 flex items-center space-x-2">
-              <Gamepad2 className="h-5 w-5 text-gray-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Game Settings</h2>
-            </div>
-            
-            <div className="space-y-4">
               <div>
                 <Label htmlFor="gamesPerPage">Games Per Page</Label>
                 <Input
-                  id="gamesPerPage"
                   type="number"
-                  min="1"
-                  max="100"
                   value={settings.gamesPerPage}
                   onChange={(e) => updateSetting('gamesPerPage', parseInt(e.target.value) || 12)}
-                />
-                <p className="mt-1 text-xs text-gray-500">Number of games to display per page (1-100)</p>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Enable Ratings</Label>
-                  <p className="text-sm text-gray-600">Allow users to rate games</p>
-                </div>
-                <Switch
-                  checked={settings.enableRatings}
-                  onCheckedChange={(checked) => updateSetting('enableRatings', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Enable Comments</Label>
-                  <p className="text-sm text-gray-600">Allow users to comment on games</p>
-                </div>
-                <Switch
-                  checked={settings.enableComments}
-                  onCheckedChange={(checked) => updateSetting('enableComments', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Enable Bookmarks</Label>
-                  <p className="text-sm text-gray-600">Allow users to bookmark games</p>
-                </div>
-                <Switch
-                  checked={settings.enableBookmarks}
-                  onCheckedChange={(checked) => updateSetting('enableBookmarks', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Show Statistics</Label>
-                  <p className="text-sm text-gray-600">Display game statistics (ratings, online count, etc.)</p>
-                </div>
-                <Switch
-                  checked={settings.showStatistics}
-                  onCheckedChange={(checked) => updateSetting('showStatistics', checked)}
                 />
               </div>
             </div>
           </div>
 
-          {/* SEO Settings */}
+          {/* SEO */}
           <div className="rounded-xl bg-white p-6 shadow">
             <div className="mb-6 flex items-center space-x-2">
-              <Search className="h-5 w-5 text-gray-600" />
+              <BarChart3 className="h-5 w-5 text-gray-600" />
               <h2 className="text-xl font-semibold text-gray-900">SEO Settings</h2>
             </div>
-            
             <div className="space-y-4">
               <div>
                 <Label htmlFor="seoMetaTitle">Meta Title</Label>
                 <Input
                   id="seoMetaTitle"
-                  value={settings.seoMetaTitle || ''}
+                  value={settings.seoMetaTitle ?? ''}
                   onChange={(e) => updateSetting('seoMetaTitle', e.target.value || null)}
-                  placeholder="Your Site Title"
                 />
               </div>
-
               <div>
                 <Label htmlFor="seoMetaDescription">Meta Description</Label>
                 <Textarea
                   id="seoMetaDescription"
-                  value={settings.seoMetaDescription || ''}
+                  value={settings.seoMetaDescription ?? ''}
                   onChange={(e) => updateSetting('seoMetaDescription', e.target.value || null)}
-                  rows={3}
-                  placeholder="A brief description of your site"
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="seoMetaKeywords">Meta Keywords</Label>
-                <Input
-                  id="seoMetaKeywords"
-                  value={settings.seoMetaKeywords || ''}
-                  onChange={(e) => updateSetting('seoMetaKeywords', e.target.value || null)}
-                  placeholder="keyword1, keyword2, keyword3"
-                />
-                <p className="mt-1 text-xs text-gray-500">Comma-separated keywords</p>
               </div>
             </div>
           </div>
 
-          {/* Analytics */}
-          <div className="rounded-xl bg-white p-6 shadow">
-            <div className="mb-6 flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-gray-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Analytics</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Enable Analytics</Label>
-                  <p className="text-sm text-gray-600">Enable analytics tracking code</p>
-                </div>
-                <Switch
-                  checked={settings.enableAnalytics}
-                  onCheckedChange={(checked) => updateSetting('enableAnalytics', checked)}
-                />
-              </div>
-
-              {settings.enableAnalytics && (
-                <div>
-                  <Label htmlFor="analyticsCode">Analytics Code</Label>
-                  <Textarea
-                    id="analyticsCode"
-                    value={settings.analyticsCode || ''}
-                    onChange={(e) => updateSetting('analyticsCode', e.target.value || null)}
-                    rows={4}
-                    placeholder="Paste your analytics code here (e.g., Google Analytics)"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Maintenance Mode */}
+          {/* Maintenance */}
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-6">
             <div className="mb-6 flex items-center space-x-2">
               <Shield className="h-5 w-5 text-yellow-600" />
               <h2 className="text-xl font-semibold text-gray-900">Maintenance Mode</h2>
             </div>
-            
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label>Maintenance Mode</Label>
-                  <p className="text-sm text-gray-600">
-                    Enable maintenance mode to temporarily disable the site for all non-admin users
-                  </p>
-                </div>
+                <Label>Enable Maintenance Mode</Label>
                 <Switch
                   checked={settings.maintenanceMode}
                   onCheckedChange={(checked) => updateSetting('maintenanceMode', checked)}
                 />
               </div>
-
               {settings.maintenanceMode && (
-                <div>
-                  <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
-                  <Textarea
-                    id="maintenanceMessage"
-                    value={settings.maintenanceMessage || ''}
-                    onChange={(e) => updateSetting('maintenanceMessage', e.target.value || null)}
-                    rows={3}
-                    placeholder="We'll be back soon! The site is currently under maintenance."
-                  />
-                </div>
+                <Textarea
+                  value={settings.maintenanceMessage ?? ''}
+                  onChange={(e) => updateSetting('maintenanceMessage', e.target.value || null)}
+                  placeholder="Maintenance message..."
+                />
               )}
             </div>
           </div>

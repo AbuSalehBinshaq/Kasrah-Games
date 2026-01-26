@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCache, setCache } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +14,6 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
     const where: any = {
       isPublished: true,
     };
@@ -46,14 +44,11 @@ export async function GET(request: NextRequest) {
       where.isFeatured = true;
     }
 
-    // Cache disabled temporarily to ensure new algorithm takes effect
-    const cacheKey = `games:${sort}:${search}:${category}:${tag}:page${page}:limit${limit}:featured${featured}`;
-
     let games;
     let total;
 
-    // خوارزمية روبلوكس: الترتيب حسب اللاعبين النشطين والتفاعل الحديث
-    if (sort === 'popular' || sort === 'trending') {
+    // خوارزمية مخصصة بناءً على نصوص الشرح (Roblox-style)
+    if (sort === 'popular' || sort === 'trending' || sort === 'newest') {
       const allGames = await prisma.game.findMany({
         where,
         include: {
@@ -64,7 +59,10 @@ export async function GET(request: NextRequest) {
 
       total = allGames.length;
 
+      // حساب اللاعبين النشطين (آخر 10 دقائق)
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
       const activeSessions = await prisma.playSession.findMany({
         where: {
           startedAt: { gte: tenMinutesAgo },
@@ -86,8 +84,24 @@ export async function GET(request: NextRequest) {
         const totalRatings = ratings.length;
         const likePercentage = totalRatings > 0 ? (likes / totalRatings) : 0;
         
-        // خوارزمية روبلوكس: (لاعبون نشطون * 100) + (تفاعل كلي * 0.1) + (نسبة إعجاب * 50)
-        const score = (onlineCount * 100) + (game.playCount * 0.1) + (likePercentage * 50);
+        // حساب "النمو" في وقت اللعب (تبسيط: استخدام playCount كمعيار للتفاعل)
+        // في بيئة حقيقية، سنحتاج لجدول إحصائيات يومي
+        const recentPlayFactor = game.playCount * 0.2; 
+        
+        let score = 0;
+
+        if (sort === 'popular') {
+          // Top Trending: زيادة في وقت اللعب + عدد المستخدمين اليومي
+          // (onlineCount * 1000) + (تفاعل حديث * 50) + (نسبة إعجاب * 100)
+          score = (onlineCount * 1000) + (recentPlayFactor * 50) + (likePercentage * 100);
+        } else if (sort === 'newest') {
+          // Up-and-Coming: ألعاب جديدة + أكبر زيادة نسبية في وقت اللعب
+          const isNew = game.createdAt > twoWeeksAgo ? 2000 : 0;
+          score = isNew + (recentPlayFactor * 100) + (onlineCount * 500);
+        } else if (sort === 'trending') {
+          // Top Playing Now: الترتيب حسب عدد المستخدمين المتزامنين (Concurrent Users)
+          score = onlineCount;
+        }
         
         return { 
           ...game, 
@@ -103,6 +117,7 @@ export async function GET(request: NextRequest) {
       gamesWithScores.sort((a, b) => b.score - a.score);
       games = gamesWithScores.slice(skip, skip + limit);
     } else {
+      // الترتيب الافتراضي (Views, Oldest, etc.)
       let orderBy: any = {};
       switch (sort) {
         case 'views': orderBy = { views: 'desc' }; break;
@@ -124,6 +139,7 @@ export async function GET(request: NextRequest) {
         })
       ]);
 
+      // إضافة عدد المتصلين للألعاب في الترتيب الافتراضي أيضاً
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
       const gameIds = games.map(g => g.id);
       const activeSessions = await prisma.playSession.findMany({
@@ -156,7 +172,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const responsePayload = {
+    return NextResponse.json({
       games,
       pagination: {
         page,
@@ -166,10 +182,7 @@ export async function GET(request: NextRequest) {
         hasNextPage: page * limit < total,
         hasPrevPage: page > 1,
       },
-    };
-
-    // setCache(cacheKey, responsePayload, 5 * 60 * 1000);
-    return NextResponse.json(responsePayload);
+    });
   } catch (error) {
     console.error('Games fetch error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

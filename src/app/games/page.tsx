@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, Suspense, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { ChevronRight, Info, X } from 'lucide-react';
 import GameCard from '@/components/common/GameCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -31,10 +30,9 @@ interface SectionProps {
   games: Game[];
   sort: string;
   infoText: string;
-  showOnlineCount?: boolean;
 }
 
-function GameSection({ title, games, sort, infoText, showOnlineCount = false }: SectionProps) {
+function GameSection({ title, games, sort, infoText }: SectionProps) {
   const [showInfo, setShowInfo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -60,11 +58,11 @@ function GameSection({ title, games, sort, infoText, showOnlineCount = false }: 
           </button>
           
           {showInfo && (
-            <div className="absolute right-0 top-10 z-50 w-64 rounded-xl bg-white p-4 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-gray-900">{title}</span>
+            <div className="absolute right-0 top-10 z-50 w-72 rounded-xl bg-white p-5 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-bold text-gray-900 text-lg">{title}</span>
                 <button onClick={() => setShowInfo(false)}>
-                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                 </button>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -93,7 +91,7 @@ function GameSection({ title, games, sort, infoText, showOnlineCount = false }: 
               viewMode="grid"
               aspectRatio="square"
               hideRatingText={false}
-              showOnlineCount={showOnlineCount}
+              showOnlineCount={true}
             />
           </div>
         ))}
@@ -177,22 +175,21 @@ function GamesPageContent() {
         title="Top Trending" 
         games={topTrending} 
         sort="popular"
-        infoText="الألعاب الأكثر رواجاً وتفاعلاً في الوقت الحالي بناءً على تقييمات اللاعبين ونشاطهم."
+        infoText="Experiences with the largest increase in time spent over the past two weeks, sorted by their number of daily users. These experiences have at least 5,000 daily users, are within the top 10% of daily active users, or are among the top 30 most played experiences."
       />
 
       <GameSection 
         title="Up-and-Coming" 
         games={upAndComing} 
         sort="newest"
-        infoText="أحدث الألعاب التي تم إضافتها للمنصة والتي بدأت في جذب انتباه اللاعبين بسرعة."
+        infoText="The newest experiences that are quickly gaining popularity and attracting a growing number of players on the platform."
       />
 
       <GameSection 
         title="Top Playing Now" 
         games={topPlayingNow} 
         sort="trending"
-        showOnlineCount={true}
-        infoText="الألعاب التي تضم أكبر عدد من اللاعبين النشطين في هذه اللحظة من جميع أنحاء العالم."
+        infoText="The experiences with the highest number of active players at this very moment from all around the world."
       />
     </div>
   );

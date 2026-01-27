@@ -159,33 +159,27 @@ function GamesPageContent() {
         upcomingRes.json(),
         playingRes.json()
       ]);
-const normalizeGames = (games: any[]): Game[] => 
+
+      const normalizeGames = (games: any[]): Game[] => 
         Array.isArray(games)
           ? games.map((g: any) => ({
               id: g.id,
               slug: g.slug,
               title: g.title,
-              description: g.description ?? g.shortDescription ?? 
-
-''
-
-,
-              thumbnail: g.thumbnail ?? 
-
-'/images/placeholder-game.svg
-
-',
-              playCount: g.playCount ?? 0,
-              likes: g.likes ?? 0,
-              dislikes: g.dislikes ?? 0,
-              likePercentage: g.likePercentage ?? 0,
-              totalRatings: g.totalRatings ?? 0,
-              onlineCount: g.onlineCount ?? 0,
-              views: g.views ?? 0,
-              categoryNames: g.categoryNames ?? [],
-              tags: g.tags ?? [],
+              description: g.description || g.shortDescription || '',
+              thumbnail: g.thumbnail || '/images/placeholder-game.svg',
+              playCount: g.playCount || 0,
+              likes: g.likes || 0,
+              dislikes: g.dislikes || 0,
+              likePercentage: g.likePercentage || 0,
+              totalRatings: g.totalRatings || 0,
+              onlineCount: g.onlineCount || 0,
+              views: g.views || 0,
+              categoryNames: g.categoryNames || [],
+              tags: g.tags || [],
             }))
           : [];
+
       setTopTrending(normalizeGames(trendingData.games));
       setUpAndComing(normalizeGames(upcomingData.games));
       setTopPlayingNow(normalizeGames(playingData.games));

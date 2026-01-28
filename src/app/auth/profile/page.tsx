@@ -386,8 +386,10 @@ export default function ProfilePage() {
                       dislikes: 0,
                       totalRatings: 0,
                       categoryNames: [],
+                      likePercentage: 0,
                       ...bookmark.game,
                       playCount: 0,
+                      likePercentage: bookmark.game.likePercentage ?? 0,
                     }} 
                     viewMode="grid"
                     showOnlineCount={true}
@@ -422,7 +424,9 @@ export default function ProfilePage() {
                       dislikes: 0,
                       totalRatings: 0,
                       categoryNames: [],
-                      ...game
+                      likePercentage: 0,
+                      ...game,
+                      likePercentage: game.likePercentage ?? 0,
                     }} 
                     viewMode="grid"
                     showOnlineCount={true}

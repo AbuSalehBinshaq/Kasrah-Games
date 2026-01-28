@@ -54,6 +54,11 @@ interface UserProfile {
     playCount: number;
     onlineCount?: number;
     likePercentage?: number;
+    description?: string;
+    likes?: number;
+    dislikes?: number;
+    totalRatings?: number;
+    categoryNames?: string[];
   }>;
   bookmarks: Array<{
     id: string;
@@ -64,6 +69,11 @@ interface UserProfile {
       thumbnail: string;
       onlineCount?: number;
       likePercentage?: number;
+      description?: string;
+      likes?: number;
+      dislikes?: number;
+      totalRatings?: number;
+      categoryNames?: string[];
     };
     createdAt: string;
   }>;
@@ -371,6 +381,11 @@ export default function ProfilePage() {
                   <GameCard 
                     key={bookmark.id} 
                     game={{
+                      description: '',
+                      likes: 0,
+                      dislikes: 0,
+                      totalRatings: 0,
+                      categoryNames: [],
                       ...bookmark.game,
                       playCount: 0,
                     }} 
@@ -401,7 +416,14 @@ export default function ProfilePage() {
                 {profile.recentGames.map((game) => (
                   <GameCard 
                     key={game.id} 
-                    game={game} 
+                    game={{
+                      description: '',
+                      likes: 0,
+                      dislikes: 0,
+                      totalRatings: 0,
+                      categoryNames: [],
+                      ...game
+                    }} 
                     viewMode="grid"
                     showOnlineCount={true}
                   />

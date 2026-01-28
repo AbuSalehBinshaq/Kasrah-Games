@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const settingsSchema = z.object({
   siteName: z.string().min(1).optional(),
   siteDescription: z.string().optional(),
@@ -38,13 +40,11 @@ export async function GET(request: NextRequest) {
   try {
     await requireAdmin();
 
-    // Get or create settings (singleton pattern)
     let settings = await prisma.settings.findUnique({
       where: { id: 'site-settings' },
     });
 
     if (!settings) {
-      // Create default settings if they don't exist
       try {
         settings = await prisma.settings.create({
           data: {
@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
           },
         });
       } catch (createError: any) {
-        // If create fails, try to find again (race condition)
         if (createError.code === 'P2002') {
           settings = await prisma.settings.findUnique({
             where: { id: 'site-settings' },
@@ -93,7 +92,21 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get or create settings
+    // Sanitize data for Prisma: convert nulls to undefined for fields that don't support null
+    // or ensure they match the schema expectations.
+    const sanitizedData: any = { ...validation.data };
+    
+    // Prisma create/update types can be strict about null vs undefined
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === null) {
+        // If the field in Prisma schema is optional but not nullable, 
+        // we should use undefined instead of null.
+        // For safety in this generic update, we'll keep nulls only if they are explicitly allowed.
+        // Based on the error, primaryColor doesn't like null.
+        sanitizedData[key] = undefined;
+      }
+    });
+
     let settings = await prisma.settings.findUnique({
       where: { id: 'site-settings' },
     });
@@ -102,13 +115,13 @@ export async function PUT(request: NextRequest) {
       settings = await prisma.settings.create({
         data: {
           id: 'site-settings',
-          ...validation.data,
+          ...sanitizedData,
         },
       });
     } else {
       settings = await prisma.settings.update({
         where: { id: 'site-settings' },
-        data: validation.data,
+        data: sanitizedData,
       });
     }
 
@@ -121,4 +134,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

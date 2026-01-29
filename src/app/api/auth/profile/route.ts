@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,6 +36,7 @@ export async function GET(request: NextRequest) {
 
     // Get statistics
     const [playSessions, bookmarks] = await Promise.all([
+      // Get all play sessions for this user
       prisma.playSession.findMany({
         where: { userId: user.id },
         select: {
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
           startedAt: true,
         },
       }),
+      // Get all bookmarks for this user
       prisma.bookmark.findMany({
         where: { userId: user.id },
         select: {
@@ -65,14 +66,18 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    // Calculate stats
     const totalGamesPlayed = new Set(playSessions.map((ps) => ps.gameId)).size;
     const totalPlayTime = playSessions.reduce(
       (sum, ps) => sum + (Number(ps.duration) || 0),
       0
-    );
+    ); // in seconds
     const totalPlayTimeMinutes = Math.floor(totalPlayTime / 60);
+    
+    // Ratings disabled temporarily
     const averageRating = 0;
 
+    // Get recent games (last 5 unique games played)
     const recentGameIds = Array.from(
       new Set(
         playSessions
@@ -96,10 +101,21 @@ export async function GET(request: NextRequest) {
         slug: true,
         title: true,
         thumbnail: true,
-        views: true,
       },
     });
 
+    // Get ratings for each game
+    const gameRatings = await prisma.rating.groupBy({
+      by: ['gameId'],
+      where: {
+        gameId: { in: recentGameIds },
+      },
+      _count: {
+        isLike: true,
+      },
+    });
+
+    // Create a map of game ratings
     const ratingsMap = new Map<string, { likes: number; dislikes: number }>();
     for (const gameId of recentGameIds) {
       const gameRatingsData = await prisma.rating.findMany({
@@ -112,6 +128,7 @@ export async function GET(request: NextRequest) {
       ratingsMap.set(gameId, { likes, dislikes });
     }
 
+    // Get play counts and online counts for recent games
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     
     const recentGames = await Promise.all(recentGamesData.map(async (game) => {
@@ -124,6 +141,7 @@ export async function GET(request: NextRequest) {
       const total = ratings.likes + ratings.dislikes;
       const likePercentage = total > 0 ? Math.round((ratings.likes / total) * 100) : 0;
 
+      // Calculate real-time online count for this game
       const activeSessionsCount = await prisma.playSession.count({
         where: {
           gameId: game.id,
@@ -135,7 +153,8 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      const popularityFactor = Math.floor(game.views / 500) || 0;
+      // Add professional simulation factor (like in the main games API)
+      const popularityFactor = Math.floor((game as any).views / 500) || 0;
       const randomPulse = Math.floor(Math.random() * 3);
       let onlineCount = activeSessionsCount + popularityFactor + randomPulse;
       if (onlineCount < 1) onlineCount = Math.floor(Math.random() * 3) + 1;
@@ -152,6 +171,7 @@ export async function GET(request: NextRequest) {
       };
     }));
 
+    // Format bookmarks
     const bookmarksWithRatings = bookmarks.map((bookmark) => ({
       id: bookmark.id,
       game: {
@@ -164,6 +184,7 @@ export async function GET(request: NextRequest) {
       createdAt: bookmark.createdAt.toISOString(),
     }));
 
+    // Return profile data
     return NextResponse.json({
       id: userData.id,
       username: userData.username,
@@ -202,51 +223,15 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, bio, email, password, currentPassword } = body;
+    const { name, bio } = body;
 
-    // If updating email or password, current password is required for security
-    if (email || password) {
-      if (!currentPassword) {
-        return NextResponse.json(
-          { error: 'Current password is required to update security settings' },
-          { status: 400 }
-        );
-      }
-
-      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-      if (!dbUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-
-      const isPasswordValid = await bcrypt.compare(currentPassword, dbUser.password);
-      if (!isPasswordValid) {
-        return NextResponse.json(
-          { error: 'Invalid current password' },
-          { status: 400 }
-        );
-      }
-
-      // Check if new email is already taken
-      if (email && email !== dbUser.email) {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-          return NextResponse.json(
-            { error: 'Email is already in use' },
-            { status: 400 }
-          );
-        }
-      }
-    }
-
-    const updateData: any = {};
-    if (name !== undefined) updateData.name = name;
-    if (bio !== undefined) updateData.bio = bio;
-    if (email !== undefined) updateData.email = email;
-    if (password !== undefined) {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
-
+    // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: updateData,
+      data: {
+        ...(name !== undefined && { name }),
+        ...(bio !== undefined && { bio }),
+      },
       select: {
         id: true,
         username: true,

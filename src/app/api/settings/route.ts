@@ -4,23 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   // During build time, return default settings immediately to avoid Prisma errors
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return NextResponse.json({
-      siteName: 'Kasrah Games',
-      siteDescription: 'Play the best HTML5 and WebGL games online',
-      maintenanceMode: false,
-      gamesPerPage: 12,
-      enableRatings: true,
-      enableComments: true,
-      enableBookmarks: true,
-      showStatistics: true,
-      primaryColor: '#7c3aed',
-      primaryColorHover: '#6d28d9',
-      backgroundFrom: '#f8fafc',
-      backgroundTo: '#eef2ff',
-    });
-  }
-
+  // We also check for database connection issues which often happen during Render builds
   try {
     // Get settings (public endpoint, no auth required)
     let settings = await prisma.settings.findUnique({
@@ -93,7 +77,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(publicSettings);
   } catch (error) {
     console.error('Public settings fetch error:', error);
-    // Return default settings on error
+    // Return default settings on error (especially during build time or DB connection issues)
     return NextResponse.json({
       siteName: 'Kasrah Games',
       siteDescription: 'Play the best HTML5 and WebGL games online',
@@ -122,4 +106,3 @@ export async function GET(request: NextRequest) {
     });
   }
 }
-

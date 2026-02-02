@@ -138,7 +138,12 @@ export async function GET(request: NextRequest) {
         const onlineUsers = new Set(
           (game.playSessions || []).filter(session => !session.endedAt || session.endedAt.getTime() >= fiveMinutesAgo.getTime()).map(session => session.userId)
         );
-        const onlineCount = onlineUsers.size;
+        const realOnlineCount = onlineUsers.size;
+        
+        // Algorithm for public online count (same as public API)
+        const viewsFactor = Math.floor((game.views || 0) / 500);
+        const randomFactor = Math.floor(Math.random() * 3) + 1;
+        const onlineCount = realOnlineCount + viewsFactor + randomFactor;
 
         return {
           ...game,
@@ -152,6 +157,7 @@ export async function GET(request: NextRequest) {
           tags: Array.isArray(game.tags) ? game.tags : [],
           views: game.views ?? 0,
           onlineCount,
+          realOnlineCount,
         };
       } catch (err) {
         console.error('Error processing game:', game.id, err);

@@ -18,6 +18,7 @@ interface Game {
   isPublished: boolean;
   playCount: number;
   onlineCount?: number;
+  realOnlineCount?: number;
   views: number;
   likes: number;
   dislikes: number;
@@ -282,11 +283,11 @@ export default function AdminGamesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-900">
                 Status
                   </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-900">
-                <button onClick={() => setSort('online')} className="flex items-center gap-1 hover:text-primary-700">
-                  Online
-                </button>
-              </th>
+	              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-900">
+	                <button onClick={() => setSort('online')} className="flex items-center gap-1 hover:text-primary-700">
+	                  Online (Real)
+	                </button>
+	              </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-900">
                 <button onClick={() => setSort('views')} className="flex items-center gap-1 hover:text-primary-700">
                   Views
@@ -377,9 +378,16 @@ export default function AdminGamesPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900">{game.onlineCount?.toLocaleString() || 0}</div>
-                      </td>
+	                      <td className="px-6 py-4">
+	                        <div className="flex flex-col">
+	                          <div className="text-sm font-bold text-primary-600">
+	                            {game.realOnlineCount?.toLocaleString() || 0} <span className="text-[10px] font-normal text-gray-500">Real</span>
+	                          </div>
+	                          <div className="text-xs text-gray-400">
+	                            {game.onlineCount?.toLocaleString() || 0} <span className="text-[10px]">Visible</span>
+	                          </div>
+	                        </div>
+	                      </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-semibold text-gray-900">{game.views?.toLocaleString() || 0}</div>
                       </td>

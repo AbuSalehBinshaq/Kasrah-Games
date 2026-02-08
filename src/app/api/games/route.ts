@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
 
       const activeSessions = await prisma.playSession.findMany({
         where: {
-          startedAt: { gte: tenMinutesAgo },
-          OR: [{ endedAt: null }, { endedAt: { gte: tenMinutesAgo } }]
+          endedAt: null,
+          startedAt: { gte: tenMinutesAgo }
         },
         select: { gameId: true, userId: true }
       });
@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
       const activeSessions = await prisma.playSession.findMany({
         where: {
           gameId: { in: gameIds },
-          startedAt: { gte: tenMinutesAgo },
-          OR: [{ endedAt: null }, { endedAt: { gte: tenMinutesAgo } }]
+          endedAt: null,
+          startedAt: { gte: tenMinutesAgo }
         },
         select: { gameId: true, userId: true }
       });

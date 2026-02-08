@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
 
     const games = await prisma.game.findMany({
       where,
@@ -103,11 +103,8 @@ export async function GET(request: NextRequest) {
         },
         playSessions: {
           where: {
-            OR: [
-              { endedAt: null },
-              { endedAt: { gte: fiveMinutesAgo } },
-              { startedAt: { gte: fiveMinutesAgo } },
-            ],
+            endedAt: null,
+            startedAt: { gte: fifteenMinutesAgo },
           },
           select: {
             userId: true,
@@ -136,7 +133,7 @@ export async function GET(request: NextRequest) {
         const dislikes = ratings.filter(r => r && typeof r.isLike === 'boolean' && !r.isLike).length;
         const total = likes + dislikes;
         const onlineUsers = new Set(
-          (game.playSessions || []).filter(session => !session.endedAt || session.endedAt.getTime() >= fiveMinutesAgo.getTime()).map(session => session.userId)
+          (game.playSessions || []).filter(session => !session.endedAt || session.endedAt.getTime() >= fifteenMinutesAgo.getTime()).map(session => session.userId)
         );
         const realOnlineCount = onlineUsers.size;
         

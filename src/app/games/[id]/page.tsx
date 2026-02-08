@@ -142,6 +142,10 @@ export default function GameDetailPage() {
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionId, isHeartbeat: true })
+        }).then(response => {
+          if (!response.ok) {
+            console.error('Heartbeat failed with status:', response.status);
+          }
         }).catch(err => console.error('Heartbeat failed:', err));
       }, 30000); // Every 30 seconds
     }

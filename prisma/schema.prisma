@@ -127,6 +127,8 @@ model PlaySession {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
   
+  @@index([gameId, startedAt, endedAt])
+  @@index([startedAt])
   @@map("play_sessions")
 }
 

@@ -392,14 +392,7 @@ export default function AdminSettingsPage() {
                     onCheckedChange={(checked) => updateSetting('enableRatings', checked)}
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="enableComments">Enable Comments</Label>
-                  <Switch
-                    id="enableComments"
-                    checked={settings.enableComments}
-                    onCheckedChange={(checked) => updateSetting('enableComments', checked)}
-                  />
-                </div>
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="enableBookmarks">Enable Bookmarks/Favorites</Label>
                   <Switch

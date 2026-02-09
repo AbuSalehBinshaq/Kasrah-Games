@@ -99,9 +99,26 @@ export default async function RootLayout({
   const settings = await getSettings();
   const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
 
+  const primaryColor = settings.primaryColor || '#7c3aed';
+  const primaryHover = settings.primaryColorHover || '#6d28d9';
+  const bgFrom = settings.backgroundFrom || '#f8fafc';
+  const bgTo = settings.backgroundTo || '#eef2ff';
+
   return (
     <html lang="en" dir="ltr">
       <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --color-primary: ${primaryColor};
+            --color-primary-hover: ${primaryHover};
+            --color-bg-from: ${bgFrom};
+            --color-bg-to: ${bgTo};
+          }
+          body {
+            background: linear-gradient(to bottom, ${bgFrom}, ${bgTo}) !important;
+            min-height: 100vh;
+          }
+        `}} />
         {settings.enableAnalytics && settings.analyticsCode && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${settings.analyticsCode}`} />

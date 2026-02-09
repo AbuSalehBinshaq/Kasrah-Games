@@ -350,6 +350,68 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
+          {/* Features & Registration */}
+          <div className="rounded-xl bg-white p-6 shadow">
+            <div className="mb-6 flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Features & Registration</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="allowRegistration">Allow User Registration</Label>
+                  <Switch
+                    id="allowRegistration"
+                    checked={settings.allowRegistration}
+                    onCheckedChange={(checked) => updateSetting('allowRegistration', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="requireEmailVerification">Require Email Verification</Label>
+                  <Switch
+                    id="requireEmailVerification"
+                    checked={settings.requireEmailVerification}
+                    onCheckedChange={(checked) => updateSetting('requireEmailVerification', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="showStatistics">Show Public Statistics</Label>
+                  <Switch
+                    id="showStatistics"
+                    checked={settings.showStatistics}
+                    onCheckedChange={(checked) => updateSetting('showStatistics', checked)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="enableRatings">Enable Game Ratings</Label>
+                  <Switch
+                    id="enableRatings"
+                    checked={settings.enableRatings}
+                    onCheckedChange={(checked) => updateSetting('enableRatings', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="enableComments">Enable Comments</Label>
+                  <Switch
+                    id="enableComments"
+                    checked={settings.enableComments}
+                    onCheckedChange={(checked) => updateSetting('enableComments', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="enableBookmarks">Enable Bookmarks/Favorites</Label>
+                  <Switch
+                    id="enableBookmarks"
+                    checked={settings.enableBookmarks}
+                    onCheckedChange={(checked) => updateSetting('enableBookmarks', checked)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Maintenance */}
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-6">
             <div className="mb-6 flex items-center space-x-2">
@@ -358,18 +420,24 @@ export default function AdminSettingsPage() {
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Enable Maintenance Mode</Label>
+                <Label htmlFor="maintenanceMode">Enable Maintenance Mode</Label>
                 <Switch
+                  id="maintenanceMode"
                   checked={settings.maintenanceMode}
                   onCheckedChange={(checked) => updateSetting('maintenanceMode', checked)}
                 />
               </div>
               {settings.maintenanceMode && (
-                <Textarea
-                  value={settings.maintenanceMessage ?? ''}
-                  onChange={(e) => updateSetting('maintenanceMessage', e.target.value || null)}
-                  placeholder="Maintenance message..."
-                />
+                <div>
+                  <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
+                  <Textarea
+                    id="maintenanceMessage"
+                    value={settings.maintenanceMessage ?? ''}
+                    onChange={(e) => updateSetting('maintenanceMessage', e.target.value || null)}
+                    placeholder="Site is currently under maintenance. We will be back soon!"
+                    rows={3}
+                  />
+                </div>
               )}
             </div>
           </div>

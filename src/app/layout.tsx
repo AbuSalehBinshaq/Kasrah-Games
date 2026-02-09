@@ -103,7 +103,21 @@ export default async function RootLayout({
     <html lang="en" dir="ltr">
       <head>
         {settings.enableAnalytics && settings.analyticsCode && (
-          <script dangerouslySetInnerHTML={{ __html: settings.analyticsCode }} />
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${settings.analyticsCode}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${settings.analyticsCode}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
         )}
         <script
           type="application/ld+json"

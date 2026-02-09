@@ -320,6 +320,36 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
+          {/* Analytics */}
+          <div className="rounded-xl bg-white p-6 shadow">
+            <div className="mb-6 flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Analytics Settings</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enableAnalytics">Enable Google Analytics</Label>
+                <Switch
+                  id="enableAnalytics"
+                  checked={settings.enableAnalytics}
+                  onCheckedChange={(checked) => updateSetting('enableAnalytics', checked)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="analyticsCode">Google Analytics ID (G-XXXXXXXXXX)</Label>
+                <Input
+                  id="analyticsCode"
+                  placeholder="G-XXXXXXXXXX"
+                  value={settings.analyticsCode ?? ''}
+                  onChange={(e) => updateSetting('analyticsCode', e.target.value || null)}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Enter your Google Analytics 4 Measurement ID to track site traffic.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Maintenance */}
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-6">
             <div className="mb-6 flex items-center space-x-2">

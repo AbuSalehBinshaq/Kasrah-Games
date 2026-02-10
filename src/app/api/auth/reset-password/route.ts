@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, verifyToken } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth';
 import jwt from 'jsonwebtoken';
 import { sendPasswordResetConfirmationEmail } from '@/lib/brevo';
 
@@ -28,10 +28,24 @@ export async function POST(request: NextRequest) {
 
     const { token, password } = validation.data;
 
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET is not configured in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     // Verify the token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+      
+      // Additional check for token type to prevent using auth tokens for password reset
+      if (decoded.type !== 'password-reset') {
+        throw new Error('Invalid token type');
+      }
     } catch (error) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },

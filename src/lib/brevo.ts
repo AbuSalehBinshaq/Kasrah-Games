@@ -40,7 +40,7 @@ export const sendTransactionalEmail = async (
     sendSmtpEmail.params = params || {};
 
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Email sent successfully. Message ID:', data.messageId);
+    console.log('✅ Email sent successfully. Message ID:', data.body.messageId);
     return data;
   } catch (error) {
     console.error('❌ Error sending email:', error);
@@ -77,7 +77,7 @@ export const sendCustomEmail = async (
     sendSmtpEmail.htmlContent = htmlContent;
 
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Custom email sent successfully. Message ID:', data.messageId);
+    console.log('✅ Custom email sent successfully. Message ID:', data.body.messageId);
     return data;
   } catch (error) {
     console.error('❌ Error sending custom email:', error);

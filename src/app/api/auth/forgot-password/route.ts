@@ -22,6 +22,15 @@ export async function POST(request: NextRequest) {
 
     const { email } = validation.data;
 
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET is not configured in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
@@ -35,6 +44,8 @@ export async function POST(request: NextRequest) {
     // For security reasons, always return the same message
     // whether the user exists or not (prevents email enumeration)
     if (!user) {
+      // Small delay to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 500));
       return NextResponse.json({
         message: 'If an account with that email exists, a password reset link has been sent.',
       });
@@ -43,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Generate a unique reset token (valid for 1 hour)
     const resetToken = jwt.sign(
       { userId: user.id, email: user.email, type: 'password-reset' },
-      process.env.JWT_SECRET!,
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { prisma } from './prisma';
 
-const JWT_SECRET = process.env.JWT_SECRET! as jwt.Secret;
+const JWT_SECRET = (process.env.JWT_SECRET || 'fallback-secret-change-me') as jwt.Secret;
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as jwt.SignOptions['expiresIn'];
 
 export interface AuthUser {
@@ -88,7 +88,7 @@ export async function requireAdmin(): Promise<AuthUser> {
   return user;
 }
 
-export function setAuthCookie(token: string) {
+export async function setAuthCookie(token: string) {
   const cookieStore = cookies();
   cookieStore.set('token', token, {
     httpOnly: true,
@@ -99,7 +99,7 @@ export function setAuthCookie(token: string) {
   });
 }
 
-export function clearAuthCookie() {
+export async function clearAuthCookie() {
   const cookieStore = cookies();
   cookieStore.delete('token');
 }

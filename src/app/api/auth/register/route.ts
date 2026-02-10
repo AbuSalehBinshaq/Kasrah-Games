@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, generateToken } from '@/lib/auth';
 import { registerSchema } from '@/lib/validation';
-import { sendWelcomeEmail } from '@/lib/brevo';
+import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/brevo';
+import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +36,19 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
+    // Generate verification token if JWT_SECRET is available
+    let verificationToken = null;
+    let verificationExpiry = null;
+    
+    if (process.env.JWT_SECRET) {
+      verificationToken = jwt.sign(
+        { email, type: 'email-verification' },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      verificationExpiry = new Date(new Date().getTime() + 24 * 3600 * 1000);
+    }
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -42,6 +56,8 @@ export async function POST(request: NextRequest) {
         username,
         password: hashedPassword,
         name,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpiry: verificationExpiry,
       },
       select: {
         id: true,
@@ -54,7 +70,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate token
+    // Send verification email if token was generated
+    if (verificationToken) {
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://kasrah-games.onrender.com';
+        const verificationLink = `${siteUrl}/api/auth/verify-email?token=${verificationToken}`;
+        await sendVerificationEmail(user.email, user.name || user.username, verificationLink);
+        console.log(`✅ Verification email sent to ${user.email}`);
+      } catch (emailError) {
+        console.error('❌ Failed to send verification email:', emailError);
+      }
+    } else {
+      // Fallback to welcome email if no verification is set up
+      try {
+        await sendWelcomeEmail(user.email, user.name || '', user.username);
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError);
+      }
+    }
+
+    // Generate session token
     const token = generateToken({
       id: user.id,
       email: user.email,
@@ -65,20 +100,13 @@ export async function POST(request: NextRequest) {
       isVerified: user.isVerified,
     });
 
-    // Send welcome email (Background task, don't await if you want speed, but here we keep it safe)
-    try {
-      await sendWelcomeEmail(user.email, user.name || '', user.username);
-      console.log(`✅ Welcome email sent to ${user.email}`);
-    } catch (emailError) {
-      console.error('❌ Failed to send welcome email:', emailError);
-    }
-
     const response = NextResponse.json({
       user,
       token,
+      message: 'Registration successful. Please check your email to verify your account.'
     });
 
-    // Set cookie on the response object
+    // Set cookie
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

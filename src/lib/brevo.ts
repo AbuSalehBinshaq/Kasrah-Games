@@ -220,3 +220,48 @@ export const sendPasswordResetConfirmationEmail = async (
 
   return sendCustomEmail(email, 'Password Changed Successfully - Kasrah Games', htmlContent);
 };
+
+/**
+ * Send an email verification link
+ */
+export const sendVerificationEmail = async (
+  email: string,
+  name: string,
+  verificationLink: string
+) => {
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
+          .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
+          .button { display: inline-block; background: #7c3aed; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Verify Your Email</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${name || 'there'},</p>
+            <p>Thank you for joining Kasrah Games! Please verify your email address to unlock all features.</p>
+            <a href="${verificationLink}" class="button">Verify Email Address</a>
+            <p>Or copy this link to your browser:</p>
+            <p><code style="background: #e8e8e8; padding: 5px; border-radius: 3px; word-break: break-all;">${verificationLink}</code></p>
+          </div>
+          <div class="footer">
+            <p>© 2026 Kasrah Games. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendCustomEmail(email, 'Verify Your Email - Kasrah Games', htmlContent);
+};

@@ -22,6 +22,8 @@ model User {
   lastLoginAt   DateTime?
   resetPasswordToken       String?   @unique
   resetPasswordTokenExpiry DateTime?
+  emailVerificationToken   String?   @unique
+  emailVerificationExpiry  DateTime?
   
   ratings       Rating[]
   playSessions  PlaySession[]

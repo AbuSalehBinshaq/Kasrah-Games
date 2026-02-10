@@ -1,8 +1,6 @@
 import * as SibApiV3Sdk from '@getbrevo/brevo';
 
 const apiKey = process.env.BREVO_API_KEY;
-const FROM_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@kasrahgames.com';
-const FROM_NAME = process.env.BREVO_SENDER_NAME || 'Kasrah Games';
 
 if (!apiKey) {
   console.warn('⚠️ Brevo API key is not set. Email functionality will be disabled.');
@@ -55,16 +53,12 @@ export const sendTransactionalEmail = async (
  * @param to - Recipient email
  * @param subject - Email subject
  * @param htmlContent - HTML email content
- * @param fromEmail - Sender email address
- * @param fromName - Sender name
  * @returns Email send result
  */
 export const sendCustomEmail = async (
   to: string,
   subject: string,
-  htmlContent: string,
-  fromEmail: string = FROM_EMAIL,
-  fromName: string = FROM_NAME
+  htmlContent: string
 ) => {
   if (!apiKey) {
     console.warn('Cannot send email: Brevo API key is not configured');
@@ -74,7 +68,7 @@ export const sendCustomEmail = async (
   try {
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.to = [{ email: to }];
-    sendSmtpEmail.sender = { email: fromEmail, name: fromName };
+    // Note: Sender info is handled by Brevo settings when not provided here
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = htmlContent;
 
@@ -89,9 +83,6 @@ export const sendCustomEmail = async (
 
 /**
  * Send a welcome email to a new user
- * @param email - User email
- * @param name - User name
- * @param username - User username
  */
 export const sendWelcomeEmail = async (
   email: string,
@@ -108,7 +99,7 @@ export const sendWelcomeEmail = async (
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
-          .button { display: inline-block; background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          .button { display: inline-block; background: #667eea; color: white !important; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
           .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
         </style>
       </head>
@@ -126,25 +117,17 @@ export const sendWelcomeEmail = async (
           </div>
           <div class="footer">
             <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
-            <p>إذا كان لديك أي أسئلة، تواصل معنا عبر البريد الإلكتروني.</p>
           </div>
         </div>
       </body>
     </html>
   `;
 
-  return sendCustomEmail(
-    email,
-    'مرحباً بك في Kasrah Games! 🎮',
-    htmlContent
-  );
+  return sendCustomEmail(email, 'مرحباً بك في Kasrah Games! 🎮', htmlContent);
 };
 
 /**
  * Send a password reset email
- * @param email - User email
- * @param name - User name
- * @param resetLink - Password reset link
  */
 export const sendPasswordResetEmail = async (
   email: string,
@@ -161,7 +144,7 @@ export const sendPasswordResetEmail = async (
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
-          .button { display: inline-block; background: #e74c3c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
+          .button { display: inline-block; background: #e74c3c; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
           .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 5px; margin-top: 20px; color: #856404; }
           .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
         </style>
@@ -176,31 +159,24 @@ export const sendPasswordResetEmail = async (
             <p>لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. انقر على الزر أدناه لإعادة تعيينها.</p>
             <a href="${resetLink}" class="button">إعادة تعيين كلمة المرور</a>
             <div class="warning">
-              <strong>⚠️ تنبيه أمني:</strong> هذا الرابط صالح لمدة ساعة واحدة فقط. إذا لم تطلب هذا، يرجى تجاهل هذا البريد.
+              <strong>⚠️ تنبيه أمني:</strong> هذا الرابط صالح لمدة ساعة واحدة فقط.
             </div>
-            <p>أو انسخ الرابط التالي في متصفحك:</p>
+            <p>أو انسخ الرابط التالي:</p>
             <p><code style="background: #e8e8e8; padding: 5px; border-radius: 3px; word-break: break-all;">${resetLink}</code></p>
           </div>
           <div class="footer">
             <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
-            <p>لا تشارك هذا الرابط مع أحد.</p>
           </div>
         </div>
       </body>
     </html>
   `;
 
-  return sendCustomEmail(
-    email,
-    'إعادة تعيين كلمة المرور - Kasrah Games',
-    htmlContent
-  );
+  return sendCustomEmail(email, 'إعادة تعيين كلمة المرور - Kasrah Games', htmlContent);
 };
 
 /**
  * Send a password reset confirmation email
- * @param email - User email
- * @param name - User name
  */
 export const sendPasswordResetConfirmationEmail = async (
   email: string,
@@ -228,9 +204,8 @@ export const sendPasswordResetConfirmationEmail = async (
           <div class="content">
             <p>مرحباً ${name || 'صديقي'},</p>
             <div class="success">
-              <strong>✅ تم تغيير كلمة المرور بنجاح!</strong> يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.
+              <strong>✅ تم تغيير كلمة المرور بنجاح!</strong>
             </div>
-            <p>إذا لم تقم بهذا التغيير، يرجى التواصل معنا فوراً.</p>
           </div>
           <div class="footer">
             <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
@@ -240,9 +215,5 @@ export const sendPasswordResetConfirmationEmail = async (
     </html>
   `;
 
-  return sendCustomEmail(
-    email,
-    'تم تغيير كلمة المرور بنجاح - Kasrah Games',
-    htmlContent
-  );
+  return sendCustomEmail(email, 'تم تغيير كلمة المرور بنجاح - Kasrah Games', htmlContent);
 };

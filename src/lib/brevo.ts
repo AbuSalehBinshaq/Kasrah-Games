@@ -1,6 +1,8 @@
 import * as SibApiV3Sdk from '@getbrevo/brevo';
 
 const apiKey = process.env.BREVO_API_KEY;
+const FROM_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kasrah.news@gmail.com';
+const FROM_NAME = 'Kasrah Games';
 
 if (!apiKey) {
   console.warn('⚠️ Brevo API key is not set. Email functionality will be disabled.');
@@ -36,6 +38,7 @@ export const sendTransactionalEmail = async (
   try {
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.to = [{ email: to.email, name: to.name || '' }];
+    sendSmtpEmail.sender = { email: FROM_EMAIL, name: FROM_NAME };
     sendSmtpEmail.templateId = templateId;
     sendSmtpEmail.params = params || {};
 
@@ -68,7 +71,7 @@ export const sendCustomEmail = async (
   try {
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.to = [{ email: to }];
-    // Note: Sender info is handled by Brevo settings when not provided here
+    sendSmtpEmail.sender = { email: FROM_EMAIL, name: FROM_NAME };
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = htmlContent;
 
@@ -91,11 +94,11 @@ export const sendWelcomeEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html dir="rtl" lang="ar">
+    <html lang="en">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
@@ -106,24 +109,24 @@ export const sendWelcomeEmail = async (
       <body>
         <div class="container">
           <div class="header">
-            <h1>مرحباً بك في Kasrah Games! 🎮</h1>
+            <h1>Welcome to Kasrah Games! 🎮</h1>
           </div>
           <div class="content">
-            <p>مرحباً ${name || 'صديقي'},</p>
-            <p>شكراً لتسجيلك في Kasrah Games! نحن سعداء بانضمامك إلى مجتمعنا.</p>
-            <p>اسم المستخدم الخاص بك: <strong>${username}</strong></p>
-            <p>يمكنك الآن الاستمتاع بآلاف الألعاب المجانية والمشاركة في المجتمع.</p>
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL}" class="button">ابدأ اللعب الآن</a>
+            <p>Hi ${name || 'there'},</p>
+            <p>Thank you for registering at Kasrah Games! We are excited to have you in our community.</p>
+            <p>Your username: <strong>${username}</strong></p>
+            <p>You can now enjoy thousands of free games and participate in the community.</p>
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}" class="button">Start Playing Now</a>
           </div>
           <div class="footer">
-            <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
+            <p>© 2026 Kasrah Games. All rights reserved.</p>
           </div>
         </div>
       </body>
     </html>
   `;
 
-  return sendCustomEmail(email, 'مرحباً بك في Kasrah Games! 🎮', htmlContent);
+  return sendCustomEmail(email, 'Welcome to Kasrah Games! 🎮', htmlContent);
 };
 
 /**
@@ -136,11 +139,11 @@ export const sendPasswordResetEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html dir="rtl" lang="ar">
+    <html lang="en">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
@@ -152,27 +155,27 @@ export const sendPasswordResetEmail = async (
       <body>
         <div class="container">
           <div class="header">
-            <h1>إعادة تعيين كلمة المرور</h1>
+            <h1>Reset Your Password</h1>
           </div>
           <div class="content">
-            <p>مرحباً ${name || 'صديقي'},</p>
-            <p>لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. انقر على الزر أدناه لإعادة تعيينها.</p>
-            <a href="${resetLink}" class="button">إعادة تعيين كلمة المرور</a>
+            <p>Hi ${name || 'there'},</p>
+            <p>You requested to reset your password. Click the button below to reset it.</p>
+            <a href="${resetLink}" class="button">Reset Password</a>
             <div class="warning">
-              <strong>⚠️ تنبيه أمني:</strong> هذا الرابط صالح لمدة ساعة واحدة فقط.
+              <strong>⚠️ Security Note:</strong> This link is valid for 1 hour only.
             </div>
-            <p>أو انسخ الرابط التالي:</p>
+            <p>Or copy the following link:</p>
             <p><code style="background: #e8e8e8; padding: 5px; border-radius: 3px; word-break: break-all;">${resetLink}</code></p>
           </div>
           <div class="footer">
-            <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
+            <p>© 2026 Kasrah Games. All rights reserved.</p>
           </div>
         </div>
       </body>
     </html>
   `;
 
-  return sendCustomEmail(email, 'إعادة تعيين كلمة المرور - Kasrah Games', htmlContent);
+  return sendCustomEmail(email, 'Password Reset - Kasrah Games', htmlContent);
 };
 
 /**
@@ -184,11 +187,11 @@ export const sendPasswordResetConfirmationEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html dir="rtl" lang="ar">
+    <html lang="en">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
@@ -199,21 +202,21 @@ export const sendPasswordResetConfirmationEmail = async (
       <body>
         <div class="container">
           <div class="header">
-            <h1>تم تغيير كلمة المرور بنجاح ✅</h1>
+            <h1>Password Changed Successfully ✅</h1>
           </div>
           <div class="content">
-            <p>مرحباً ${name || 'صديقي'},</p>
+            <p>Hi ${name || 'there'},</p>
             <div class="success">
-              <strong>✅ تم تغيير كلمة المرور بنجاح!</strong>
+              <strong>✅ Your password has been changed successfully!</strong>
             </div>
           </div>
           <div class="footer">
-            <p>© 2026 Kasrah Games. جميع الحقوق محفوظة.</p>
+            <p>© 2026 Kasrah Games. All rights reserved.</p>
           </div>
         </div>
       </body>
     </html>
   `;
 
-  return sendCustomEmail(email, 'تم تغيير كلمة المرور بنجاح - Kasrah Games', htmlContent);
+  return sendCustomEmail(email, 'Password Changed Successfully - Kasrah Games', htmlContent);
 };

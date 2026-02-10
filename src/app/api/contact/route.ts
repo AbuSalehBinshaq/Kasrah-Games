@@ -32,12 +32,12 @@ export async function POST(request: NextRequest) {
         contactEmail,
         `Contact Form: ${subject}`,
         `
-          <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2>رسالة جديدة من نموذج الاتصال</h2>
-            <p><strong>الاسم:</strong> ${name}</p>
-            <p><strong>البريد الإلكتروني:</strong> ${email}</p>
-            <p><strong>الموضوع:</strong> ${subject}</p>
-            <p><strong>الرسالة:</strong></p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>New Contact Form Submission</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Message:</strong></p>
             <p style="background: #f4f4f4; padding: 15px; border-radius: 5px;">${message}</p>
           </div>
         `
@@ -51,16 +51,16 @@ export async function POST(request: NextRequest) {
     try {
       await sendCustomEmail(
         email,
-        'شكراً لتواصلك مع Kasrah Games',
+        'Thank you for contacting Kasrah Games',
         `
-          <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; text-align: right;">
-            <h2>شكراً لتواصلك معنا!</h2>
-            <p>عزيزي ${name}،</p>
-            <p>لقد استلمنا رسالتك وسنقوم بالرد عليك في أقرب وقت ممكن (خلال 24-48 ساعة).</p>
-            <p><strong>رسالتك:</strong></p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>Thank you for contacting us!</h2>
+            <p>Dear ${name},</p>
+            <p>We have received your message and will get back to you as soon as possible (within 24-48 hours).</p>
+            <p><strong>Your message:</strong></p>
             <p style="background: #f4f4f4; padding: 15px; border-radius: 5px;">${message}</p>
             <br/>
-            <p>مع أطيب التحيات،<br/>فريق Kasrah Games</p>
+            <p>Best regards,<br/>The Kasrah Games Team</p>
           </div>
         `
       );

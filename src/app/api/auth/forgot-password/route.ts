@@ -41,14 +41,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // For security reasons, always return the same message
-    // whether the user exists or not (prevents email enumeration)
+    // If user doesn't exist, inform them (updated per user request)
     if (!user) {
-      // Small delay to prevent timing attacks
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return NextResponse.json({
-        message: 'If an account with that email exists, a password reset link has been sent.',
-      });
+      return NextResponse.json(
+        { error: 'No account found with this email address' },
+        { status: 404 }
+      );
     }
 
     // Generate a unique reset token (valid for 1 hour)
@@ -70,19 +68,30 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate reset link
-    const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password?token=${resetToken}`;
+    // Ensure SITE_URL doesn't have a trailing slash before appending path
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://kasrah-games.onrender.com';
+    const resetLink = `${siteUrl}/auth/reset-password?token=${resetToken}`;
+
+    console.log(`🔗 Generated reset link for ${user.email}: ${resetLink}`);
 
     // Send password reset email
     try {
-      await sendPasswordResetEmail(user.email, user.name || '', resetLink);
-      console.log(`✅ Password reset email sent to ${user.email}`);
-    } catch (emailError) {
+      const result = await sendPasswordResetEmail(user.email, user.name || '', resetLink);
+      if (result) {
+        console.log(`✅ Password reset email sent to ${user.email}. Result:`, JSON.stringify(result));
+      } else {
+        console.warn(`⚠️ sendPasswordResetEmail returned null for ${user.email} (Check BREVO_API_KEY)`);
+      }
+    } catch (emailError: any) {
       console.error('❌ Failed to send password reset email:', emailError);
-      // Still return success to the user to prevent information leakage
+      return NextResponse.json(
+        { error: 'Failed to send email. Please try again later.', details: emailError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
-      message: 'If an account with that email exists, a password reset link has been sent.',
+      message: 'A password reset link has been sent to your email address.',
     });
   } catch (error) {
     console.error('Forgot password error:', error);

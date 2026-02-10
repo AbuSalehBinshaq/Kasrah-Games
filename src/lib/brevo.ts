@@ -1,6 +1,8 @@
 import * as SibApiV3Sdk from '@getbrevo/brevo';
 
 const apiKey = process.env.BREVO_API_KEY;
+const FROM_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@kasrahgames.com';
+const FROM_NAME = process.env.BREVO_SENDER_NAME || 'Kasrah Games';
 
 if (!apiKey) {
   console.warn('⚠️ Brevo API key is not set. Email functionality will be disabled.');
@@ -61,8 +63,8 @@ export const sendCustomEmail = async (
   to: string,
   subject: string,
   htmlContent: string,
-  fromEmail: string = 'noreply@kasrahgames.example',
-  fromName: string = 'Kasrah Games'
+  fromEmail: string = FROM_EMAIL,
+  fromName: string = FROM_NAME
 ) => {
   if (!apiKey) {
     console.warn('Cannot send email: Brevo API key is not configured');
@@ -98,11 +100,11 @@ export const sendWelcomeEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
@@ -151,11 +153,11 @@ export const sendPasswordResetEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }
@@ -206,11 +208,11 @@ export const sendPasswordResetConfirmationEmail = async (
 ) => {
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: right; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px; text-align: center; }
           .content { padding: 20px; background: #f9f9f9; margin-top: 20px; border-radius: 5px; }

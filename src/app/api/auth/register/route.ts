@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth';
 import { registerSchema } from '@/lib/validation';
+import { sendWelcomeEmail } from '@/lib/brevo';
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,12 +69,21 @@ export async function POST(request: NextRequest) {
     // Set cookie
     setAuthCookie(token);
 
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(user.email, user.name || '', user.username);
+      console.log(`✅ Welcome email sent to ${user.email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send welcome email:', emailError);
+      // Don't fail the registration if email sending fails
+    }
+
     return NextResponse.json({
       user,
       token,
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

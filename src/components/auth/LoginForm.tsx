@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -69,9 +70,14 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-2 block font-medium text-gray-700">
-          Password
-        </label>
+        <div className="mb-2 flex items-center justify-between">
+          <label htmlFor="password" className="block font-medium text-gray-700">
+            Password
+          </label>
+          <Link href="/auth/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+            Forgot?
+          </Link>
+        </div>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           <input

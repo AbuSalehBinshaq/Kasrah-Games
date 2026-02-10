@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Resend } from 'resend';
+import { sendCustomEmail } from '@/lib/brevo';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -8,10 +8,6 @@ const contactSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
-
-// Initialize Resend if API key is available
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,54 +22,51 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, subject, message } = validation.data;
-
-    // Save to database (optional)
-    // For now, we'll just log it and send email if configured
+    const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kasrah.news@gmail.com';
 
     console.log('Contact form submission:', { name, email, subject, message });
 
-    // Send email if Resend is configured
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: 'Kasrah Games <noreply@kasrahgames.example>',
-          to: process.env.CONTACT_EMAIL || 'info@kasrahgames.example',
-          subject: `Contact Form: ${subject}`,
-          html: `
-            <h2>New Contact Form Submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <p><strong>Message:</strong></p>
-            <p>${message}</p>
-          `,
-        });
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
-        // Continue anyway - we don't want form submission to fail because of email
-      }
+    // Send email to admin using Brevo
+    try {
+      await sendCustomEmail(
+        contactEmail,
+        `Contact Form: ${subject}`,
+        `
+          <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>رسالة جديدة من نموذج الاتصال</h2>
+            <p><strong>الاسم:</strong> ${name}</p>
+            <p><strong>البريد الإلكتروني:</strong> ${email}</p>
+            <p><strong>الموضوع:</strong> ${subject}</p>
+            <p><strong>الرسالة:</strong></p>
+            <p style="background: #f4f4f4; padding: 15px; border-radius: 5px;">${message}</p>
+          </div>
+        `
+      );
+      console.log(`✅ Contact email sent to admin: ${contactEmail}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send contact email to admin:', emailError);
     }
 
-    // Send auto-reply if configured
-    if (resend && email) {
-      try {
-        await resend.emails.send({
-          from: 'Kasrah Games <noreply@kasrahgames.example>',
-          to: email,
-          subject: 'Thank you for contacting Kasrah Games',
-          html: `
-            <h2>Thank you for contacting us!</h2>
-            <p>Dear ${name},</p>
-            <p>We have received your message and will get back to you within 24-48 hours.</p>
-            <p><strong>Your message:</strong></p>
-            <p>${message}</p>
+    // Send auto-reply to user using Brevo
+    try {
+      await sendCustomEmail(
+        email,
+        'شكراً لتواصلك مع Kasrah Games',
+        `
+          <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; text-align: right;">
+            <h2>شكراً لتواصلك معنا!</h2>
+            <p>عزيزي ${name}،</p>
+            <p>لقد استلمنا رسالتك وسنقوم بالرد عليك في أقرب وقت ممكن (خلال 24-48 ساعة).</p>
+            <p><strong>رسالتك:</strong></p>
+            <p style="background: #f4f4f4; padding: 15px; border-radius: 5px;">${message}</p>
             <br/>
-            <p>Best regards,<br/>The Kasrah Games Team</p>
-          `,
-        });
-      } catch (replyError) {
-        console.error('Failed to send auto-reply:', replyError);
-      }
+            <p>مع أطيب التحيات،<br/>فريق Kasrah Games</p>
+          </div>
+        `
+      );
+      console.log(`✅ Auto-reply sent to user: ${email}`);
+    } catch (replyError) {
+      console.error('❌ Failed to send auto-reply to user:', replyError);
     }
 
     return NextResponse.json({

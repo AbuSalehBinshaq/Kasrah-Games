@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { sendWelcomeEmail } from '@/lib/brevo';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Find user and update verification status
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { email: decoded.email },
     });
 
     if (!user || user.emailVerificationToken !== token) {
@@ -49,7 +50,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Redirect to a success page or login
+    // Send welcome email after successful verification
+    try {
+      await sendWelcomeEmail(user.email, user.name || '', user.username);
+      console.log(`✅ Welcome email sent to ${user.email} after verification`);
+    } catch (emailError) {
+      console.error('❌ Failed to send welcome email after verification:', emailError);
+    }
+
+    // Redirect to login page with verified status
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://kasrah-games.onrender.com';
     return NextResponse.redirect(`${siteUrl}/auth/login?verified=true`);
   } catch (error) {

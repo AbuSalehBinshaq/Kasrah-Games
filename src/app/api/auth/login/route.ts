@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { verifyPassword, generateToken, setAuthCookie } from '@/lib/auth';
+import { verifyPassword, generateToken } from '@/lib/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -43,6 +43,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if email is verified
+    if (!user.isVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Please verify your email before logging in.',
+          requiresVerification: true 
+        },
+        { status: 403 }
+      );
+    }
+
     // Update last login
     await prisma.user.update({
       where: { id: user.id },
@@ -60,10 +71,7 @@ export async function POST(request: NextRequest) {
       isVerified: user.isVerified,
     });
 
-    // Set cookie
-    setAuthCookie(token);
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
@@ -75,6 +83,17 @@ export async function POST(request: NextRequest) {
       },
       token,
     });
+
+    // Set cookie
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

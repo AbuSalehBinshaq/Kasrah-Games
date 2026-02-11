@@ -14,7 +14,7 @@ export default function HomePage() {
     <main className="space-y-6 pb-24">
       <SEO 
         title="Kasrah Games - Play Free Online Games"
-        description="Play the best HTML5 and WebGL games online for free. Discover a wide variety of action, puzzle, strategy, and arcade games at Kasrah Games."
+        description="العب أفضل الألعاب أونلاين مجاناً على كسرة جيمز. نقدّم لك مجموعة واسعة من ألعاب الأكشن، الألغاز، والاستراتيجية بجودة HTML5 وWebGL. Play the best free online games at Kasrah Games. Discover action, puzzle, and strategy games ready for instant play."
         canonicalUrl="https://kasrah-games.onrender.com"
       />
       

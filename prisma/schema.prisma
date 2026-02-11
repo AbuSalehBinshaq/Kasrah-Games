@@ -155,7 +155,7 @@ model Bookmark {
 model Settings {
   id                      String   @id @default("site-settings")
   siteName                String   @default("Kasrah Games")
-  siteDescription         String   @default("Play the best HTML5 and WebGL games online")
+  siteDescription         String   @default("العب أفضل ألعاب المتصفح مجاناً على كسرة جيمز - Play the best free browser games on Kasrah Games")
   siteLogo                String?
   siteFavicon             String?
   siteUrl                 String?

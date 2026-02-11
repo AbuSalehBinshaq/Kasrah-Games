@@ -8,7 +8,7 @@ export default function AboutPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <SEO 
         title="About Us | Kasrah Games"
-        description="Learn more about Kasrah Games, the premier platform for HTML5 and WebGL gaming experiences. Our mission is to provide instant access to high-quality browser games."
+        description="تعرف على كسرة جيمز، المنصة الرائدة لألعاب المتصفح. مهمتنا توفير وصول فوري لألعاب عالية الجودة بدون تحميل. Learn more about Kasrah Games, the premier platform for browser gaming. Our mission is to provide instant access to high-quality games."
         canonicalUrl="https://kasrah-games.onrender.com/about"
       />
       <div className="mb-12 text-center">

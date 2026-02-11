@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
   const siteName = settings.siteName || 'Kasrah Games';
-  const description = settings.seoMetaDescription || settings.siteDescription || 'A web games platform hosting playable HTML5 and WebGL games with categories, ratings, and user playlists.';
+  const description = settings.seoMetaDescription || settings.siteDescription || 'كسرة جيمز هي منصتك المثالية لأفضل ألعاب المتصفح المجانية. استمتع بتجربة لعب فورية لمئات الألعاب من فئات الأكشن، الألغاز، والمغامرات بجودة عالية وبدون تحميل. Kasrah Games is your ultimate destination for the best free browser games. Enjoy instant play for hundreds of HTML5 and WebGL games across action, puzzle, and adventure categories.' ;
   const keywords = settings.seoMetaKeywords?.split(',').map(k => k.trim()) || ['online games', 'HTML5 games', 'WebGL games', 'free games', 'browser games'];
 
   return {

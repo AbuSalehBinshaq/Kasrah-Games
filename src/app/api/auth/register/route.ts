@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, generateToken } from '@/lib/auth';
 import { registerSchema } from '@/lib/validation';
-import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/brevo';
+import { sendVerificationEmail } from '@/lib/brevo';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send verification email if token was generated
+    // Send verification email
     if (verificationToken) {
       try {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://kasrah-games.onrender.com';
@@ -79,13 +79,6 @@ export async function POST(request: NextRequest) {
         console.log(`✅ Verification email sent to ${user.email}`);
       } catch (emailError) {
         console.error('❌ Failed to send verification email:', emailError);
-      }
-    } else {
-      // Fallback to welcome email if no verification is set up
-      try {
-        await sendWelcomeEmail(user.email, user.name || '', user.username);
-      } catch (emailError) {
-        console.error('❌ Failed to send welcome email:', emailError);
       }
     }
 
@@ -103,7 +96,8 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       user,
       token,
-      message: 'Registration successful. Please check your email to verify your account.'
+      message: 'Registration successful. Redirecting to verification notice...',
+      redirectTo: '/auth/verify-notice'
     });
 
     // Set cookie

@@ -265,3 +265,24 @@ export const sendVerificationEmail = async (
 
   return sendCustomEmail(email, 'Verify Your Email - Kasrah Games', htmlContent);
 };
+
+/**
+ * Sends an OTP email for sensitive operations (like account deletion)
+ */
+export const sendOTPEmail = async (email: string, name: string, otpCode: string) => {
+  const htmlContent = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+      <h2 style="color: #1a1a1a; text-align: center;">Security Verification</h2>
+      <p>Hello ${name || 'there'},</p>
+      <p>You have requested a sensitive operation on your account. Please use the following One-Time Password (OTP) to proceed:</p>
+      <div style="background-color: #f4f4f4; padding: 20px; text-align: center; border-radius: 5px; margin: 20px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #7c3aed;">${otpCode}</span>
+      </div>
+      <p style="color: #dc2626; font-weight: bold;">Warning: This code will expire in 10 minutes. If you did not request this, please secure your account immediately.</p>
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+      <p style="font-size: 12px; color: #666; text-align: center;">&copy; ${new Date().getFullYear()} Kasrah Games. All rights reserved.</p>
+    </div>
+  `;
+
+  return sendCustomEmail(email, 'Your Security Verification Code - Kasrah Games', htmlContent);
+};

@@ -11,7 +11,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+    }
+
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
     if (!user) {
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Send email
     await sendOTPEmail(user.email, user.name || user.username, otpCode);
 
-    return NextResponse.json({ message: 'OTP sent successfully' });
+    return NextResponse.json({ message: 'Verification code sent to your email' });
   } catch (error) {
     console.error('OTP request error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

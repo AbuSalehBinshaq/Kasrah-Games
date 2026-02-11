@@ -15,11 +15,15 @@ import {
   Edit,
   LogOut,
   Save,
-  X
+  X,
+  Shield,
+  Trash2,
+  Lock,
+  MailWarning
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { formatDate, timeAgo } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 
 interface UserProfile {
   id: string;
@@ -35,25 +39,6 @@ interface UserProfile {
     averageRating: number;
     bookmarksCount: number;
   };
-  recentGames: Array<{
-    id: string;
-    slug: string;
-    title: string;
-    thumbnail: string;
-    lastPlayed: string;
-    playCount: number;
-  }>;
-  bookmarks: Array<{
-    id: string;
-    game: {
-      id: string;
-      slug: string;
-      title: string;
-      thumbnail: string;
-      avgRating: number;
-    };
-    createdAt: string;
-  }>;
 }
 
 export default function ProfilePage() {
@@ -63,349 +48,259 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({
-    name: '',
-    bio: '',
-  });
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [editData, setEditData] = useState({ name: '', bio: '' });
+  
+  // Security States
+  const [securityModal, setSecurityModal] = useState<{type: 'password' | 'email' | 'delete' | null}>({type: null});
+  const [otp, setOtp] = useState('');
+  const [newValue, setNewValue] = useState('');
+  const [securityStep, setSecurityStep] = useState(1); // 1: request, 2: verify
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [securityError, setSecurityError] = useState('');
 
   useEffect(() => {
-    // Wait for auth check to complete
-    if (authLoading) {
-      return;
-    }
-    
-    // If auth check is done and no user, redirect to login
+    if (authLoading) return;
     if (!user) {
-      console.log('No user found, redirecting to login...');
-      // Use window.location for reliable redirect
       window.location.href = '/auth/login';
       return;
     }
-    
-    // User is authenticated, fetch profile
-    console.log('User authenticated:', user);
     fetchProfile();
   }, [user, authLoading]);
 
   async function fetchProfile() {
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/profile', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Not authenticated, redirect to login
-          window.location.href = '/auth/login';
-          return;
-        }
-        throw new Error('Failed to fetch profile');
-      }
-
-      const profileData: UserProfile = await response.json();
+      const response = await fetch('/api/auth/profile', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch profile');
+      const profileData = await response.json();
       setProfile(profileData);
-      setEditData({
-        name: profileData.name || '',
-        bio: profileData.bio || '',
-      });
+      setEditData({ name: profileData.name || '', bio: profileData.bio || '' });
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      // Show error message to user
-      alert('فشل تحميل بيانات البروفايل. يرجى المحاولة مرة أخرى.');
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleSaveProfile() {
+  const handleSecurityAction = async () => {
+    setSecurityLoading(true);
+    setSecurityError('');
     try {
-      const response = await fetch('/api/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(editData),
-      });
+      if (securityStep === 1) {
+        const res = await fetch('/api/auth/otp/request', { method: 'POST' });
+        if (res.ok) setSecurityStep(2);
+        else setSecurityError((await res.json()).error || 'Failed to send code');
+      } else {
+        const endpoint = securityModal.type === 'delete' ? '/api/auth/account/delete' : '/api/auth/profile/security';
+        const body = securityModal.type === 'delete' ? { otp } : { type: securityModal.type, otp, newValue };
+        
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
+        if (res.ok) {
+          if (securityModal.type === 'delete') {
+            window.location.href = '/';
+          } else {
+            setSecurityModal({type: null});
+            setSecurityStep(1);
+            setOtp('');
+            setNewValue('');
+            fetchProfile();
+            alert('Updated successfully!');
+          }
+        } else {
+          setSecurityError((await res.json()).error || 'Operation failed');
+        }
       }
-
-      setIsEditing(false);
-      // Refresh profile data
-      await fetchProfile();
-    } catch (error) {
-      console.error('Failed to save profile:', error);
-      alert('فشل حفظ التغييرات. يرجى المحاولة مرة أخرى.');
+    } catch (err) {
+      setSecurityError('Something went wrong');
+    } finally {
+      setSecurityLoading(false);
     }
-  }
+  };
 
-  async function handleLogout() {
-    await logout();
-    router.push('/');
-  }
-
-  // Show loading while checking auth or fetching profile
   if (authLoading || loading || !profile) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+    return <div className="flex min-h-[60vh] items-center justify-center"><LoadingSpinner /></div>;
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-4 space-y-8">
       {/* Profile Header */}
-      <div className="mb-8 rounded-2xl bg-gradient-to-r from-primary-600 to-secondary-600 p-8 text-white">
-        <div className="flex flex-col items-center md:flex-row md:items-start">
-          <div className="mb-6 md:mb-0 md:mr-8">
-            <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white">
-              {profile.avatar ? (
-                <Image
-                  src={profile.avatar}
-                  alt={profile.username}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary-700">
-                  <User className="h-16 w-16" />
-                </div>
-              )}
+      <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-8 text-white shadow-xl">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
+            {profile.avatar ? (
+              <Image src={profile.avatar} alt={profile.username} fill className="object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-purple-700"><User className="h-16 w-16" /></div>
+            )}
+          </div>
+          <div className="flex-1 text-center md:text-left space-y-2">
+            <h1 className="text-3xl font-bold">{profile.name || profile.username}</h1>
+            <p className="text-purple-100">@{profile.username}</p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+              <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{profile.email}</span></div>
+              <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>Joined {formatDate(profile.createdAt)}</span></div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setIsEditing(!isEditing)} className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"><Edit className="h-5 w-5" /></button>
+            <button onClick={logout} className="p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"><LogOut className="h-5 w-5" /></button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl shadow border border-gray-100 text-center">
+              <Gamepad2 className="h-6 w-6 mx-auto mb-2 text-purple-600" />
+              <p className="text-xs text-gray-500 uppercase">Games</p>
+              <p className="text-xl font-bold">{profile.stats.totalGamesPlayed}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow border border-gray-100 text-center">
+              <Clock className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+              <p className="text-xs text-gray-500 uppercase">Minutes</p>
+              <p className="text-xl font-bold">{profile.stats.totalPlayTime}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow border border-gray-100 text-center">
+              <Star className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+              <p className="text-xs text-gray-500 uppercase">Rating</p>
+              <p className="text-xl font-bold">{profile.stats.averageRating.toFixed(1)}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow border border-gray-100 text-center">
+              <Star className="h-6 w-6 mx-auto mb-2 text-green-500" />
+              <p className="text-xs text-gray-500 uppercase">Saved</p>
+              <p className="text-xl font-bold">{profile.stats.bookmarksCount}</p>
             </div>
           </div>
 
-          <div className="flex-1 text-center md:text-left">
-            <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between">
-              <div>
-                <h1 className="text-3xl font-bold">{profile.name || profile.username}</h1>
-                <p className="text-xl text-primary-100">@{profile.username}</p>
+          {/* Edit Form */}
+          {isEditing && (
+            <div className="bg-white p-6 rounded-xl shadow border border-gray-100 space-y-4">
+              <h2 className="text-lg font-bold flex items-center gap-2"><Edit className="h-5 w-5" /> Edit Basic Info</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input 
+                  type="text" 
+                  value={editData.name} 
+                  onChange={e => setEditData({...editData, name: e.target.value})}
+                  placeholder="Full Name"
+                  className="p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                />
               </div>
+              <textarea 
+                value={editData.bio} 
+                onChange={e => setEditData({...editData, bio: e.target.value})}
+                placeholder="Short bio..."
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none h-24"
+              />
+              <button onClick={async () => {
+                await fetch('/api/auth/profile', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(editData)
+                });
+                setIsEditing(false);
+                fetchProfile();
+              }} className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">Save Changes</button>
+            </div>
+          )}
+        </div>
 
-              <div className="mt-4 flex space-x-4 md:mt-0">
-                {!isEditing ? (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 hover:bg-white/30"
-                  >
-                    <Edit className="h-4 w-4" />
-                    <span>Edit Profile</span>
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleSaveProfile}
-                      className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 text-primary-600 hover:bg-gray-100"
-                    >
-                      <Save className="h-4 w-4" />
-                      <span>Save</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditing(false);
-                        setEditData({
-                          name: profile.name || '',
-                          bio: profile.bio || '',
-                        });
-                      }}
-                      className="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 hover:bg-white/30"
-                    >
-                      <X className="h-4 w-4" />
-                      <span>Cancel</span>
-                    </button>
-                  </>
-                )}
-
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 rounded-lg bg-red-500 px-4 py-2 hover:bg-red-600"
+        {/* Sidebar / Security */}
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-xl shadow border border-gray-100">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800"><Shield className="h-5 w-5 text-purple-600" /> Account Security</h2>
+            <div className="space-y-3">
+              <button 
+                onClick={() => {setSecurityModal({type: 'password'}); setSecurityStep(1); setSecurityError('');}}
+                className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3"><Lock className="h-4 w-4 text-gray-400" /> <span>Change Password</span></div>
+                <Edit className="h-4 w-4 text-gray-300" />
+              </button>
+              <button 
+                onClick={() => {setSecurityModal({type: 'email'}); setSecurityStep(1); setSecurityError('');}}
+                className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3"><MailWarning className="h-4 w-4 text-gray-400" /> <span>Change Email</span></div>
+                <Edit className="h-4 w-4 text-gray-300" />
+              </button>
+              <div className="pt-4 mt-4 border-t border-gray-100">
+                <button 
+                  onClick={() => {setSecurityModal({type: 'delete'}); setSecurityStep(1); setSecurityError('');}}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <Trash2 className="h-4 w-4" /> <span>Delete Account</span>
                 </button>
               </div>
             </div>
-
-            {isEditing ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm">Full Name</label>
-                  <input
-                    type="text"
-                    value={editData.name}
-                    onChange={(e) => setEditData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full rounded-lg bg-white/20 px-4 py-2 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm">Bio</label>
-                  <textarea
-                    value={editData.bio}
-                    onChange={(e) => setEditData(prev => ({ ...prev, bio: e.target.value }))}
-                    rows={3}
-                    className="w-full rounded-lg bg-white/20 px-4 py-2 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white"
-                    placeholder="Tell us about yourself"
-                  />
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="mb-6 text-lg">{profile.bio}</p>
-                <div className="flex flex-wrap gap-6">
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-5 w-5" />
-                    <span>{profile.email}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5" />
-                    <span>Joined {formatDate(profile.createdAt)}</span>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-primary-100 p-3">
-              <Gamepad2 className="h-6 w-6 text-primary-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Games Played</p>
-              <p className="text-2xl font-bold text-gray-900">{profile.stats.totalGamesPlayed}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-secondary-100 p-3">
-              <Clock className="h-6 w-6 text-secondary-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Play Time</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {profile.stats.totalPlayTime.toLocaleString()} minutes
+      {/* Security Modals */}
+      {securityModal.type && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold capitalize">
+                {securityModal.type === 'delete' ? 'Delete Account' : `Update ${securityModal.type}`}
+              </h2>
+              <p className="text-gray-500 mt-2">
+                {securityStep === 1 
+                  ? "For your security, we'll send a verification code to your email." 
+                  : "Enter the 6-digit code sent to your email."}
               </p>
             </div>
-          </div>
-        </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-yellow-100 p-3">
-              <Star className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Avg. Rating</p>
-              <p className="text-2xl font-bold text-gray-900">{profile.stats.averageRating.toFixed(1)}</p>
-            </div>
-          </div>
-        </div>
+            {securityError && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">{securityError}</div>}
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="flex items-center space-x-4">
-            <div className="rounded-lg bg-green-100 p-3">
-              <Star className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Favorites</p>
-              <p className="text-2xl font-bold text-gray-900">{profile.stats.bookmarksCount}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            {securityStep === 2 && (
+              <div className="space-y-4">
+                {securityModal.type !== 'delete' && (
+                  <input 
+                    type={securityModal.type === 'password' ? 'password' : 'email'}
+                    placeholder={`New ${securityModal.type}`}
+                    value={newValue}
+                    onChange={e => setNewValue(e.target.value)}
+                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                  />
+                )}
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  placeholder="Verification Code"
+                  value={otp}
+                  onChange={e => setOtp(e.target.value)}
+                  className="w-full p-3 border rounded-xl text-center text-2xl tracking-widest font-mono focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+              </div>
+            )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Recent Games */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Recent Games</h2>
-          <div className="space-y-4">
-            {profile.recentGames.map((game) => (
-              <a
-                key={game.id}
-                href={`/games/${game.slug}`}
-                className="flex items-center space-x-4 rounded-lg p-3 hover:bg-gray-50"
+            <div className="flex gap-3 pt-2">
+              <button 
+                onClick={() => setSecurityModal({type: null})}
+                className="flex-1 py-3 text-gray-600 font-medium hover:bg-gray-50 rounded-xl transition-colors"
               >
-                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                  {imageErrors.has(`recent-${game.id}`) ? (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100">
-                      <Gamepad2 className="h-8 w-8 text-gray-400" />
-                    </div>
-                  ) : (
-                    <Image
-                      src={game.thumbnail || '/images/placeholder-game.svg'}
-                      alt={game.title}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                      onError={() => setImageErrors(prev => new Set(prev).add(`recent-${game.id}`))}
-                    />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{game.title}</h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>{game.playCount} plays</span>
-                    <span>•</span>
-                    <span>Last played: {timeAgo(game.lastPlayed)}</span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Favorites */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Favorites</h2>
-          <div className="space-y-4">
-            {profile.bookmarks.map((bookmark) => (
-              <a
-                key={bookmark.id}
-                href={`/games/${bookmark.game.slug}`}
-                className="flex items-center space-x-4 rounded-lg p-3 hover:bg-gray-50"
+                Cancel
+              </button>
+              <button 
+                onClick={handleSecurityAction}
+                disabled={securityLoading || (securityStep === 2 && otp.length !== 6)}
+                className={`flex-1 py-3 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 ${securityModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'}`}
               >
-                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                  {imageErrors.has(`bookmark-${bookmark.id}`) ? (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100">
-                      <Star className="h-8 w-8 text-gray-400" />
-                    </div>
-                  ) : (
-                    <Image
-                      src={bookmark.game.thumbnail || '/images/placeholder-game.svg'}
-                      alt={bookmark.game.title}
-                      fill
-                      className="object-cover"
-                      quality={90}
-                      sizes="64px"
-                      onError={() => setImageErrors(prev => new Set(prev).add(`bookmark-${bookmark.id}`))}
-                    />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{bookmark.game.title}</h3>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span>{bookmark.game.avgRating.toFixed(1)}</span>
-                    <span>•</span>
-                    <span>Favorited {timeAgo(bookmark.createdAt)}</span>
-                  </div>
-                </div>
-              </a>
-            ))}
+                {securityLoading ? 'Processing...' : securityStep === 1 ? 'Send Code' : 'Confirm'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

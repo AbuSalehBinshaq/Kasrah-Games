@@ -238,9 +238,9 @@ export default function GameForm({ gameId, initialData }: GameFormProps) {
         <Label htmlFor="description">Full Game Description & Instructions</Label>
         <Textarea 
           id="description" 
-          rows={10} 
+          rows={25} 
           {...register('description')} 
-          placeholder="Enter the full game description, how to play, and any other details here."
+          placeholder="Enter the full game description, how to play, and any other details here. Now supports up to 50,000 characters!"
         />
         <p className="text-xs text-gray-500">
           Tip: You can write paragraphs and instructions here. It will be shown on the game page.

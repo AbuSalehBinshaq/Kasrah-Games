@@ -25,7 +25,7 @@ export const loginSchema = z.object({
 export const gameSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers, and hyphens'),
-  description: z.string().min(10, 'Description must be at least 10 characters').max(2000, 'Description is too long'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(50000, 'Description is too long (max 50,000 characters)'),
   shortDescription: z.string().min(10, 'Short description must be at least 10 characters').max(200, 'Short description is too long'),
   developer: z.string().min(1, 'Developer is required'),
   publisher: z.string().optional(),

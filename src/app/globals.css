@@ -7,10 +7,8 @@
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 255, 255, 255;
     --background-end-rgb: 255, 255, 255;
-    --color-primary: #7c3aed;
-    --color-primary-hover: #6d28d9;
-    --color-bg-from: #f8fafc;
-    --color-bg-to: #eef2ff;
+    /* We don't set default colors here to avoid flashing the default theme */
+    /* They will be injected by the server in layout.tsx */
   }
 
   @media (prefers-color-scheme: dark) {
@@ -33,7 +31,8 @@
 
   body {
     color: rgb(var(--foreground-rgb));
-    background: linear-gradient(to bottom, var(--color-bg-from), var(--color-bg-to));
+    /* Use the variables injected in layout.tsx */
+    background: linear-gradient(to bottom, var(--color-bg-from, #f8fafc), var(--color-bg-to, #eef2ff));
     min-height: 100vh;
   }
 }
@@ -73,7 +72,7 @@
     height: 0 !important;
   }
 
-  /* Runtime theming overrides */
+  /* Runtime theming overrides using CSS variables */
   .bg-primary-600 { background-color: var(--color-primary) !important; }
   .hover\:bg-primary-700:hover { background-color: var(--color-primary-hover) !important; }
   .text-primary-600 { color: var(--color-primary) !important; }

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import SEO from '@/components/common/SEO';
 import { getSettings } from '@/lib/settings';
 import nextDynamic from 'next/dynamic';
 
@@ -12,19 +11,11 @@ const MobileNav = nextDynamic(() => import('@/components/common/MobileNav'), {
   ssr: false,
 });
 
-const Header = nextDynamic(() => import('@/components/common/Header'), {
-  ssr: false,
-});
-
-const Footer = nextDynamic(() => import('@/components/common/Footer'), {
+const ThemeProvider = nextDynamic(() => import('@/components/common/ThemeProvider'), {
   ssr: false,
 });
 
 const MaintenanceWrapper = nextDynamic(() => import('@/components/common/MaintenanceWrapper'), {
-  ssr: false,
-});
-
-const ThemeProvider = nextDynamic(() => import('@/components/common/ThemeProvider'), {
   ssr: false,
 });
 
@@ -38,8 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
   const siteName = settings.siteName || 'Kasrah Games';
-  const description = settings.seoMetaDescription || settings.siteDescription || 'كسرة جيمز هي منصتك المثالية لأفضل ألعاب المتصفح المجانية. استمتع بتجربة لعب فورية لمئات الألعاب من فئات الأكشن، الألغاز، والمغامرات بجودة عالية وبدون تحميل. Kasrah Games is your ultimate destination for the best free browser games. Enjoy instant play for hundreds of HTML5 and WebGL games across action, puzzle, and adventure categories.' ;
-  const keywords = settings.seoMetaKeywords?.split(',').map(k => k.trim()) || ['online games', 'HTML5 games', 'WebGL games', 'free games', 'browser games'];
+  const description = settings.seoMetaDescription || settings.siteDescription || 'كسرة جيمز هي منصتك المثالية لأفضل ألعاب المتصفح المجانية. استمتع بتجربة لعب فورية لمئات الألعاب من فئات الأكشن، الألغاز، والمغامرات بجودة عالية وبدون تحميل.';
+  const keywords = settings.seoMetaKeywords?.split(',').map(k => k.trim()) || ['online games', 'HTML5 games', 'free games'];
 
   return {
     metadataBase: new URL(siteUrl),
@@ -49,39 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description,
     keywords,
-    authors: [{ name: siteName }],
-    creator: siteName,
-    publisher: siteName,
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'en_US',
-      url: siteUrl,
-      title: settings.seoMetaTitle || `${siteName} - Play Free Online Games`,
-      description,
-      siteName,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: settings.seoMetaTitle || `${siteName} - Play Free Online Games`,
-      description,
-    },
     icons: {
       icon: settings.siteFavicon || '/favicon.ico',
-      shortcut: '/favicon-16x16.png',
-      apple: '/apple-touch-icon.png',
     },
-    manifest: '/site.webmanifest',
   };
 }
 
@@ -107,7 +68,7 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr">
       <head>
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style id="theme-vars" dangerouslySetInnerHTML={{ __html: `
           :root {
             --color-primary: ${primaryColor};
             --color-primary-hover: ${primaryHover};
@@ -116,7 +77,6 @@ export default async function RootLayout({
           }
           body {
             background: linear-gradient(to bottom, ${bgFrom}, ${bgTo}) !important;
-            min-height: 100vh;
           }
         `}} />
         {settings.enableAnalytics && settings.analyticsCode && (
@@ -128,41 +88,19 @@ export default async function RootLayout({
                   window.dataLayer = window.dataLayer || [];
                   function gtag(){dataLayer.push(arguments);}
                   gtag('js', new Date());
-                  gtag('config', '${settings.analyticsCode}', {
-                    page_path: window.location.pathname,
-                  });
+                  gtag('config', '${settings.analyticsCode}');
                 `,
               }}
             />
           </>
         )}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: settings.siteName,
-              url: siteUrl,
-              description: settings.siteDescription,
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: `${siteUrl}/games?search={search_term_string}`,
-                'query-input': 'required name=search_term_string',
-              },
-            }),
-          }}
-        />
       </head>
       <body className={`${inter.className} min-h-screen`}>
         <ThemeProvider>
           <MaintenanceWrapper>
             <div className="pb-24">{children}</div>
           </MaintenanceWrapper>
-
           <MobileNav />
-          
-          {/* Popup Ads */}
           <AdDisplay position="POPUP" />
         </ThemeProvider>
       </body>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
+import { logEvent } from '@/lib/audit';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -9,6 +10,9 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  
   try {
     const body = await request.json();
     const validation = loginSchema.safeParse(body);
@@ -28,6 +32,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      // Log failed attempt (user not found)
+      await logEvent({
+        event: 'AUTH_LOGIN_FAILURE',
+        status: 'FAILURE',
+        actorEmail: email,
+        ipAddress: ip,
+        userAgent: userAgent,
+        details: { reason: 'User not found' }
+      });
+
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -37,6 +51,17 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValidPassword = await verifyPassword(password, user.password);
     if (!isValidPassword) {
+      // Log failed attempt (wrong password)
+      await logEvent({
+        event: 'AUTH_LOGIN_FAILURE',
+        status: 'FAILURE',
+        actorId: user.id,
+        actorEmail: user.email,
+        ipAddress: ip,
+        userAgent: userAgent,
+        details: { reason: 'Invalid password' }
+      });
+
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -58,6 +83,17 @@ export async function POST(request: NextRequest) {
     await prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
+    });
+
+    // Log successful login
+    await logEvent({
+      event: 'AUTH_LOGIN_SUCCESS',
+      status: 'SUCCESS',
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRole: user.role,
+      ipAddress: ip,
+      userAgent: userAgent
     });
 
     // Generate token

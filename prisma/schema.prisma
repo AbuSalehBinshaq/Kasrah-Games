@@ -238,3 +238,30 @@ enum AdSize {
   FULL_WIDTH  // 100% width
   CUSTOM      // Custom dimensions
 }
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  timestamp    DateTime @default(now())
+  
+  // Actor details
+  actorId      String?
+  actorEmail   String?
+  actorRole    String?
+  
+  // Event details
+  event        String   // e.g., AUTH_LOGIN_FAILURE, ADMIN_GAME_DELETE
+  status       String   // SUCCESS or FAILURE
+  
+  // Resource details
+  resource     String?  // e.g., Game, User, Ad
+  resourceId   String?
+  
+  // Additional info
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+  
+  @@index([timestamp])
+  @@index([event])
+  @@map("audit_logs")
+}

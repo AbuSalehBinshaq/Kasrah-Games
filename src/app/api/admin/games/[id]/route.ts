@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
+import { logEvent } from '@/lib/audit';
 
 const gameUpdateSchema = z.object({
   title: z.string().min(1).optional(),
@@ -62,8 +63,11 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     const body = await request.json();
     const validation = gameUpdateSchema.partial().safeParse(body);
@@ -78,19 +82,16 @@ export async function PUT(
     const { categoryIds, tags, ...updateData } = validation.data;
     const mutableUpdate: any = { ...updateData };
 
-    // Normalize slug if provided
     if (mutableUpdate.slug) {
       mutableUpdate.slug = mutableUpdate.slug.toLowerCase().trim();
     }
 
-    // Set releaseDate automatically if game is being published and doesn't have a release date
     if (mutableUpdate.isPublished === true) {
       const existingGame = await prisma.game.findUnique({
         where: { id: params.id },
         select: { releaseDate: true },
       });
 
-      // Only set releaseDate if it doesn't exist yet
       if (!existingGame?.releaseDate) {
         mutableUpdate.releaseDate = new Date();
       }
@@ -119,6 +120,20 @@ export async function PUT(
       },
     });
 
+    // Log the update event
+    await logEvent({
+      event: 'ADMIN_GAME_UPDATE',
+      status: 'SUCCESS',
+      actorId: admin.id,
+      actorEmail: admin.email,
+      actorRole: admin.role,
+      resource: 'Game',
+      resourceId: game.id,
+      ipAddress: ip,
+      userAgent: userAgent,
+      details: { title: game.title, updatedFields: Object.keys(mutableUpdate) }
+    });
+
     return NextResponse.json(game);
   } catch (error) {
     console.error('Game update error:', error);
@@ -133,11 +148,28 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
-    await prisma.game.delete({
+    const game = await prisma.game.delete({
       where: { id: params.id },
+    });
+
+    // Log the delete event
+    await logEvent({
+      event: 'ADMIN_GAME_DELETE',
+      status: 'SUCCESS',
+      actorId: admin.id,
+      actorEmail: admin.email,
+      actorRole: admin.role,
+      resource: 'Game',
+      resourceId: params.id,
+      ipAddress: ip,
+      userAgent: userAgent,
+      details: { title: game.title }
     });
 
     return NextResponse.json({ success: true, message: 'Game deleted successfully' });
@@ -149,4 +181,3 @@ export async function DELETE(
     );
   }
 }
-

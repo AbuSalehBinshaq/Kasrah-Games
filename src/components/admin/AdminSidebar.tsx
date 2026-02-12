@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Megaphone,
+  ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -25,6 +26,7 @@ export default function AdminSidebar() {
     { href: '/admin/categories', label: 'Categories', icon: Tag },
     { href: '/admin/featured', label: 'Featured', icon: Star },
     { href: '/admin/ads', label: 'Ads', icon: Megaphone },
+    { href: '/admin/logs', label: 'Activity Logs', icon: ShieldAlert },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 

@@ -25,8 +25,8 @@ import {
   X,
   Lock,
   Trash2,
-  MailWarning,
-  CheckCircle2
+  CheckCircle2,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -72,7 +72,7 @@ export default function ProfilePage() {
   const [securityModal, setSecurityModal] = useState<{type: 'password' | 'email' | 'delete' | null}>({type: null});
   const [otp, setOtp] = useState('');
   const [newValue, setNewValue] = useState('');
-  const [securityStep, setSecurityStep] = useState(1);
+  const [securityStep, setSecurityStep] = useState(1); // 1: Request, 2: OTP, 3: New Value (if not delete)
   const [securityLoading, setSecurityLoading] = useState(false);
   const [securityError, setSecurityError] = useState('');
   const [securitySuccess, setSecuritySuccess] = useState(false);
@@ -122,33 +122,57 @@ export default function ProfilePage() {
     setSecurityError('');
     try {
       if (securityStep === 1) {
+        // Step 1: Request OTP
         const res = await fetch('/api/auth/otp/request', { method: 'POST' });
-        if (res.ok) setSecurityStep(2);
-        else setSecurityError((await res.json()).error || 'Failed to send code');
-      } else {
-        const endpoint = securityModal.type === 'delete' ? '/api/auth/account/delete' : '/api/auth/profile/security';
-        const body = securityModal.type === 'delete' ? { otp } : { type: securityModal.type, otp, newValue };
-        
-        const res = await fetch(endpoint, {
+        if (res.ok) {
+          setSecurityStep(2);
+        } else {
+          setSecurityError((await res.json()).error || 'Failed to send code');
+        }
+      } else if (securityStep === 2) {
+        // Step 2: Verify OTP and move to Step 3 (or delete)
+        if (otp.length !== 6) {
+          setSecurityError('Please enter a valid 6-digit code');
+          setSecurityLoading(false);
+          return;
+        }
+
+        if (securityModal.type === 'delete') {
+          // Direct action for delete
+          const res = await fetch('/api/auth/account/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp }),
+          });
+          if (res.ok) {
+            window.location.href = '/';
+          } else {
+            setSecurityError((await res.json()).error || 'Operation failed');
+          }
+        } else {
+          // For password/email, just move to next step to enter new value
+          setSecurityStep(3);
+        }
+      } else if (securityStep === 3) {
+        // Step 3: Submit new value with OTP
+        if (!newValue) {
+          setSecurityError(`Please enter your new ${securityModal.type}`);
+          setSecurityLoading(false);
+          return;
+        }
+
+        const res = await fetch('/api/auth/profile/security', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ type: securityModal.type, otp, newValue }),
         });
 
         if (res.ok) {
-          if (securityModal.type === 'delete') {
-            window.location.href = '/';
-          } else {
-            setSecuritySuccess(true);
-            setTimeout(() => {
-              setSecurityModal({type: null});
-              setSecurityStep(1);
-              setOtp('');
-              setNewValue('');
-              setSecuritySuccess(false);
-              fetchProfile();
-            }, 2000);
-          }
+          setSecuritySuccess(true);
+          setTimeout(() => {
+            closeSecurityModal();
+            fetchProfile();
+          }, 2000);
         } else {
           setSecurityError((await res.json()).error || 'Operation failed');
         }
@@ -158,6 +182,15 @@ export default function ProfilePage() {
     } finally {
       setSecurityLoading(false);
     }
+  };
+
+  const closeSecurityModal = () => {
+    setSecurityModal({type: null});
+    setSecurityStep(1);
+    setOtp('');
+    setNewValue('');
+    setSecurityError('');
+    setSecuritySuccess(false);
   };
 
   if (authLoading || loading || !profile) {
@@ -441,23 +474,16 @@ export default function ProfilePage() {
                   <p className="text-gray-500 mt-3 font-medium text-sm">
                     {securityStep === 1 
                       ? "We'll send a verification code to your email for security." 
-                      : "Enter the 6-digit code sent to your inbox."}
+                      : securityStep === 2 
+                        ? "Enter the 6-digit code sent to your inbox."
+                        : `Enter your new ${securityModal.type} below.`}
                   </p>
                 </div>
 
                 {securityError && <div className="bg-red-50 text-red-500 p-4 rounded-xl text-xs text-center font-bold border border-red-100">{securityError}</div>}
 
-                {securityStep === 2 && (
-                  <div className="space-y-4">
-                    {securityModal.type !== 'delete' && (
-                      <input 
-                        type={securityModal.type === 'password' ? 'password' : 'email'}
-                        placeholder={securityModal.type === 'password' ? 'New Password' : 'New Email Address'}
-                        value={newValue}
-                        onChange={e => setNewValue(e.target.value)}
-                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-bold"
-                      />
-                    )}
+                <div className="space-y-4">
+                  {securityStep === 2 && (
                     <input 
                       type="text" 
                       maxLength={6}
@@ -466,22 +492,40 @@ export default function ProfilePage() {
                       onChange={e => setOtp(e.target.value)}
                       className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl text-center text-3xl tracking-[0.3em] font-black focus:ring-2 focus:ring-primary-500 outline-none"
                     />
-                  </div>
-                )}
+                  )}
+                  
+                  {securityStep === 3 && securityModal.type !== 'delete' && (
+                    <div className="animate-in slide-in-from-bottom-4 duration-300">
+                      <input 
+                        type={securityModal.type === 'password' ? 'password' : 'email'}
+                        placeholder={securityModal.type === 'password' ? 'New Password' : 'New Email Address'}
+                        value={newValue}
+                        onChange={e => setNewValue(e.target.value)}
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-bold"
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <button 
-                    onClick={() => setSecurityModal({type: null})}
+                    onClick={closeSecurityModal}
                     className="flex-1 py-4 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={handleSecurityAction}
-                    disabled={securityLoading || (securityStep === 2 && otp.length !== 6)}
-                    className={`flex-1 py-4 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 ${securityModal.type === 'delete' ? 'bg-red-500 hover:bg-red-600 shadow-red-100' : 'bg-primary-600 hover:bg-primary-700 shadow-primary-100'}`}
+                    disabled={securityLoading || (securityStep === 2 && otp.length !== 6) || (securityStep === 3 && !newValue)}
+                    className={`flex-1 py-4 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${securityModal.type === 'delete' ? 'bg-red-500 hover:bg-red-600 shadow-red-100' : 'bg-primary-600 hover:bg-primary-700 shadow-primary-100'}`}
                   >
-                    {securityLoading ? '...' : securityStep === 1 ? 'Send Code' : 'Confirm'}
+                    {securityLoading ? '...' : (
+                      <>
+                        <span>{securityStep === 1 ? 'Send Code' : securityStep === 2 ? 'Verify' : 'Confirm'}</span>
+                        {securityStep < 3 && securityModal.type !== 'delete' && <ArrowRight className="h-4 w-4" />}
+                      </>
+                    )}
                   </button>
                 </div>
               </>

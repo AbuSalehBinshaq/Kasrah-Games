@@ -26,6 +26,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cookie": "^0.6.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.3.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.309.0",

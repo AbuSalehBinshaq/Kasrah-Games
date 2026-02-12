@@ -22,13 +22,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        otpCode: true,
+        otpExpiry: true,
+      }
+    });
+
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Trim and normalize OTP for comparison
+    const submittedOtp = otp.toString().trim();
+    const storedOtp = user.otpCode?.toString().trim();
+
     // Verify OTP
-    if (!user.otpCode || user.otpCode !== otp) {
+    if (!storedOtp || storedOtp !== submittedOtp) {
+      console.log(`OTP Mismatch: Stored[${storedOtp}] vs Submitted[${submittedOtp}]`);
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
     }
 

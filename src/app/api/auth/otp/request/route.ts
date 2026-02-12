@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendOTPEmail } from '@/lib/brevo';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value;
-    if (!token || !process.env.JWT_SECRET) {
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify user
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
+    // Verify user using the centralized auth utility
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -38,7 +36,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Send email
-    await sendOTPEmail(user.email, user.name || user.username, otpCode);
+    try {
+      await sendOTPEmail(user.email, user.name || user.username, otpCode);
+    } catch (emailError) {
+      console.error('Failed to send OTP email:', emailError);
+      // We still return success if the DB was updated, but warn in logs
+      // Or we could return an error if email is critical
+      return NextResponse.json({ error: 'Failed to send verification email. Please try again later.' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: 'Verification code sent to your email' });
   } catch (error) {

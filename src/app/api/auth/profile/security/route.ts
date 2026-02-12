@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword } from '@/lib/auth';
-import jwt from 'jsonwebtoken';
+import { hashPassword, verifyToken } from '@/lib/auth';
 
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value;
-    if (!token || !process.env.JWT_SECRET) {
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -17,21 +16,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify session
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
+    // Verify session using centralized auth utility
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Verify OTP
-    if (user.otpCode !== otp) {
+    if (!user.otpCode || user.otpCode !== otp) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
     }
 

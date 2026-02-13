@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const rating = total > 0 ? Math.round((likes / total) * 100) : 0;
 
     const gameUrl = `${baseUrl}/games/${game.slug || id}`;
-    const imageUrl = game.coverImage || game.thumbnail || `${baseUrl}/images/placeholder-game.svg`;
+    const imageUrl = game.coverImage || game.thumbnail || `${baseUrl}/images/IMG_6824.jpeg`;
     const description = game.shortDescription || game.description.substring(0, 160);
     
     // Ensure imageUrl is absolute

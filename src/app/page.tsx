@@ -9,13 +9,18 @@ export const dynamic = 'force-dynamic';
 
 import SEO from '@/components/common/SEO';
 
-export default function HomePage() {
+import { getSettings } from '@/lib/settings';
+
+export default async function HomePage() {
+  const settings = await getSettings();
+  const siteUrl = settings.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://kasrah-games.onrender.com';
+
   return (
     <main className="space-y-6 pb-24">
       <SEO 
-        title="Kasrah Games - Play Free Online Games"
-        description="العب أفضل الألعاب أونلاين مجاناً على كسرة جيمز. نقدّم لك مجموعة واسعة من ألعاب الأكشن، الألغاز، والاستراتيجية بجودة HTML5 وWebGL. Play the best free online games at Kasrah Games. Discover action, puzzle, and strategy games ready for instant play."
-        canonicalUrl="https://kasrah-games.onrender.com"
+        title={settings.seoMetaTitle || "Kasrah Games - Play Free Online Games"}
+        description={settings.seoMetaDescription || settings.siteDescription || "العب أفضل الألعاب أونلاين مجاناً على كسرة جيمز."}
+        canonicalUrl={siteUrl}
       />
       
       {/* Visually hidden H1 for SEO - following Poki/CrazyGames best practices */}

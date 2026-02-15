@@ -1,1 +1,273 @@
-'use client';\n\nimport { useEffect, useState } from 'react';\nimport { useRouter, useSearchParams } from 'next/navigation';\nimport { useAuth } from '@/hooks/useAuth';\nimport AdminSidebar from '@/components/admin/AdminSidebar';\nimport { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';\nimport { TrendingUp, Users, Play, DollarSign } from 'lucide-react';\n\ninterface AnalyticsData {\n  game: {\n    id: string;\n    gameId: string;\n    title: string;\n    playCount: number;\n    views: number;\n    totalRevenue: number;\n  };\n  period: string;\n  stats: {\n    totalSessions: number;\n    totalAdImpressions: number;\n    completedAds: number;\n    totalRevenue: number;\n    avgSessionDuration: number;\n    ctr: number;\n    totalEvents: number;\n    uniqueUsers: number;\n  };\n}\n\nconst COLORS = ['#7c3aed', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];\n\nexport default function AnalyticsPage() {\n  const { user, isLoading } = useAuth();\n  const router = useRouter();\n  const searchParams = useSearchParams();\n  const gameId = searchParams.get('gameId');\n\n  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);\n  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);\n  const [period, setPeriod] = useState('day');\n  const [games, setGames] = useState<any[]>([]);\n\n  useEffect(() => {\n    if (!isLoading && (!user || user.role !== 'ADMIN')) {\n      router.push('/');\n    }\n  }, [user, isLoading, router]);\n\n  useEffect(() => {\n    if (user?.role === 'ADMIN') {\n      fetchGames();\n    }\n  }, [user]);\n\n  useEffect(() => {\n    if (gameId) {\n      fetchAnalytics();\n    }\n  }, [gameId, period]);\n\n  async function fetchGames() {\n    try {\n      const response = await fetch('/api/admin/games');\n      const data = await response.json();\n      setGames(data);\n    } catch (error) {\n      console.error('Failed to fetch games:', error);\n    }\n  }\n\n  async function fetchAnalytics() {\n    try {\n      setIsLoadingAnalytics(true);\n      const response = await fetch(`/api/sdk/analytics/stats?gameId=${gameId}&period=${period}`);\n      const data = await response.json();\n      setAnalytics(data);\n    } catch (error) {\n      console.error('Failed to fetch analytics:', error);\n    } finally {\n      setIsLoadingAnalytics(false);\n    }\n  }\n\n  if (isLoading || isLoadingAnalytics) {\n    return (\n      <div className=\"flex min-h-screen\">\n        <AdminSidebar />\n        <div className=\"flex-1 p-8\">\n          <div className=\"animate-pulse space-y-4\">\n            <div className=\"h-8 w-48 bg-gray-200 rounded\"></div>\n            <div className=\"h-96 bg-gray-200 rounded\"></div>\n          </div>\n        </div>\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"flex min-h-screen\">\n      <AdminSidebar />\n      <div className=\"flex-1 p-8\">\n        <div className=\"mb-8\">\n          <h1 className=\"text-3xl font-bold text-gray-900\">التحليلات والإحصائيات</h1>\n          <p className=\"text-gray-600\">تحليلات شاملة لأداء الألعاب والإعلانات</p>\n        </div>\n\n        {/* اختيار اللعبة والفترة */}\n        <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4 mb-8\">\n          <div className=\"bg-white rounded-lg shadow p-6\">\n            <label className=\"block text-sm font-medium text-gray-900 mb-2\">\n              اختر اللعبة\n            </label>\n            <select\n              value={gameId || ''}\n              onChange={(e) => router.push(`/admin/sdk/analytics?gameId=${e.target.value}`)}\n              className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500\"\n            >\n              <option value=\"\">-- اختر لعبة --</option>\n              {games.map(game => (\n                <option key={game.id} value={game.id}>\n                  {game.title}\n                </option>\n              ))}\n            </select>\n          </div>\n\n          <div className=\"bg-white rounded-lg shadow p-6\">\n            <label className=\"block text-sm font-medium text-gray-900 mb-2\">\n              الفترة الزمنية\n            </label>\n            <select\n              value={period}\n              onChange={(e) => setPeriod(e.target.value)}\n              className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500\"\n            >\n              <option value=\"day\">اليوم</option>\n              <option value=\"week\">هذا الأسبوع</option>\n              <option value=\"month\">هذا الشهر</option>\n              <option value=\"year\">هذا العام</option>\n            </select>\n          </div>\n        </div>\n\n        {analytics && (\n          <>\n            {/* بطاقات الإحصائيات */}\n            <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8\">\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <div className=\"flex items-center justify-between\">\n                  <div>\n                    <p className=\"text-gray-600 text-sm\">إجمالي الجلسات</p>\n                    <p className=\"text-2xl font-bold text-gray-900\">{analytics.stats.totalSessions}</p>\n                  </div>\n                  <Play className=\"h-8 w-8 text-blue-500\" />\n                </div>\n              </div>\n\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <div className=\"flex items-center justify-between\">\n                  <div>\n                    <p className=\"text-gray-600 text-sm\">المستخدمون الفريدون</p>\n                    <p className=\"text-2xl font-bold text-gray-900\">{analytics.stats.uniqueUsers}</p>\n                  </div>\n                  <Users className=\"h-8 w-8 text-green-500\" />\n                </div>\n              </div>\n\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <div className=\"flex items-center justify-between\">\n                  <div>\n                    <p className=\"text-gray-600 text-sm\">الإيرادات</p>\n                    <p className=\"text-2xl font-bold text-gray-900\">${analytics.stats.totalRevenue.toFixed(2)}</p>\n                  </div>\n                  <DollarSign className=\"h-8 w-8 text-yellow-500\" />\n                </div>\n              </div>\n\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <div className=\"flex items-center justify-between\">\n                  <div>\n                    <p className=\"text-gray-600 text-sm\">معدل النقر (CTR)</p>\n                    <p className=\"text-2xl font-bold text-gray-900\">{analytics.stats.ctr.toFixed(2)}%</p>\n                  </div>\n                  <TrendingUp className=\"h-8 w-8 text-purple-500\" />\n                </div>\n              </div>\n            </div>\n\n            {/* الرسوم البيانية */}\n            <div className=\"grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8\">\n              {/* رسم بياني للإعلانات */}\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <h3 className=\"text-lg font-semibold text-gray-900 mb-4\">الإعلانات</h3>\n                <ResponsiveContainer width=\"100%\" height={300}>\n                  <BarChart data={[\n                    {\n                      name: 'الإعلانات',\n                      'الانطباعات': analytics.stats.totalAdImpressions,\n                      'المكتملة': analytics.stats.completedAds,\n                    },\n                  ]}\n                  >\n                    <CartesianGrid strokeDasharray=\"3 3\" />\n                    <XAxis dataKey=\"name\" />\n                    <YAxis />\n                    <Tooltip />\n                    <Legend />\n                    <Bar dataKey=\"الانطباعات\" fill=\"#7c3aed\" />\n                    <Bar dataKey=\"المكتملة\" fill=\"#10b981\" />\n                  </BarChart>\n                </ResponsiveContainer>\n              </div>\n\n              {/* رسم بياني للإيرادات */}\n              <div className=\"bg-white rounded-lg shadow p-6\">\n                <h3 className=\"text-lg font-semibold text-gray-900 mb-4\">الإيرادات</h3>\n                <ResponsiveContainer width=\"100%\" height={300}>\n                  <PieChart>\n                    <Pie\n                      data={[\n                        { name: 'الإيرادات', value: analytics.stats.totalRevenue },\n                      ]}\n                      cx=\"50%\"\n                      cy=\"50%\"\n                      labelLine={false}\n                      label={({ name, value }) => `${name}: $${value.toFixed(2)}`}\n                      outerRadius={100}\n                      fill=\"#8884d8\"\n                      dataKey=\"value\"\n                    >\n                      {COLORS.map((color, index) => (\n                        <Cell key={`cell-${index}`} fill={color} />\n                      ))}\n                    </Pie>\n                    <Tooltip />\n                  </PieChart>\n                </ResponsiveContainer>\n              </div>\n            </div>\n\n            {/* معلومات إضافية */}\n            <div className=\"bg-white rounded-lg shadow p-6\">\n              <h3 className=\"text-lg font-semibold text-gray-900 mb-4\">معلومات إضافية</h3>\n              <div className=\"grid grid-cols-2 md:grid-cols-3 gap-4\">\n                <div>\n                  <p className=\"text-gray-600 text-sm\">متوسط مدة الجلسة</p>\n                  <p className=\"text-xl font-bold text-gray-900\">{analytics.stats.avgSessionDuration}s</p>\n                </div>\n                <div>\n                  <p className=\"text-gray-600 text-sm\">إجمالي الأحداث</p>\n                  <p className=\"text-xl font-bold text-gray-900\">{analytics.stats.totalEvents}</p>\n                </div>\n                <div>\n                  <p className=\"text-gray-600 text-sm\">إجمالي الانطباعات</p>\n                  <p className=\"text-xl font-bold text-gray-900\">{analytics.stats.totalAdImpressions}</p>\n                </div>\n              </div>\n            </div>\n          </>\n        )}\n\n        {!gameId && (\n          <div className=\"bg-blue-50 border border-blue-200 rounded-lg p-6 text-center\">\n            <p className=\"text-blue-900\">اختر لعبة لعرض التحليلات</p>\n          </div>\n        )}\n      </div>\n    </div>\n  );\n}\n"
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, Users, Play, DollarSign } from 'lucide-react';
+
+interface AnalyticsData {
+  game: {
+    id: string;
+    gameId: string;
+    title: string;
+    playCount: number;
+    views: number;
+    totalRevenue: number;
+  };
+  period: string;
+  stats: {
+    totalSessions: number;
+    totalAdImpressions: number;
+    completedAds: number;
+    totalRevenue: number;
+    avgSessionDuration: number;
+    ctr: number;
+    totalEvents: number;
+    uniqueUsers: number;
+  };
+}
+
+const COLORS = ['#7c3aed', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+
+export default function AnalyticsPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const gameId = searchParams.get('gameId');
+
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+  const [period, setPeriod] = useState('day');
+  const [games, setGames] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== 'ADMIN')) {
+      router.push('/');
+    }
+  }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      fetchGames();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (gameId) {
+      fetchAnalytics();
+    }
+  }, [gameId, period]);
+
+  async function fetchGames() {
+    try {
+      const response = await fetch('/api/admin/games');
+      const data = await response.json();
+      setGames(data);
+    } catch (error) {
+      console.error('Failed to fetch games:', error);
+    }
+  }
+
+  async function fetchAnalytics() {
+    try {
+      setIsLoadingAnalytics(true);
+      const response = await fetch(`/api/sdk/analytics/stats?gameId=${gameId}&period=${period}`);
+      const data = await response.json();
+      setAnalytics(data);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  }
+
+  if (isLoading || isLoadingAnalytics) {
+    return (
+      <div className="flex min-h-screen">
+        <AdminSidebar />
+        <div className="flex-1 p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 bg-gray-200 rounded"></div>
+            <div className="h-96 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <AdminSidebar />
+      <div className="flex-1 p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">التحليلات والإحصائيات</h1>
+          <p className="text-gray-600">تحليلات شاملة لأداء الألعاب والإعلانات</p>
+        </div>
+
+        {/* اختيار اللعبة والفترة */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              اختر اللعبة
+            </label>
+            <select
+              value={gameId || ''}
+              onChange={(e) => router.push(`/admin/sdk/analytics?gameId=${e.target.value}`)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">-- اختر لعبة --</option>
+              {games.map(game => (
+                <option key={game.id} value={game.id}>
+                  {game.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              الفترة الزمنية
+            </label>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="day">اليوم</option>
+              <option value="week">هذا الأسبوع</option>
+              <option value="month">هذا الشهر</option>
+              <option value="year">هذا العام</option>
+            </select>
+          </div>
+        </div>
+
+        {analytics && (
+          <>
+            {/* بطاقات الإحصائيات */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">إجمالي الجلسات</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.stats.totalSessions}</p>
+                  </div>
+                  <Play className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">المستخدمون الفريدون</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.stats.uniqueUsers}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-green-500" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">الإيرادات</p>
+                    <p className="text-2xl font-bold text-gray-900">${analytics.stats.totalRevenue.toFixed(2)}</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-yellow-500" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">معدل النقر (CTR)</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.stats.ctr.toFixed(2)}%</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-purple-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* الرسوم البيانية */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* رسم بياني للإعلانات */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">الإعلانات</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={[
+                    {
+                      name: 'الإعلانات',
+                      'الانطباعات': analytics.stats.totalAdImpressions,
+                      'المكتملة': analytics.stats.completedAds,
+                    },
+                  ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="الانطباعات" fill="#7c3aed" />
+                    <Bar dataKey="المكتملة" fill="#10b981" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* رسم بياني للإيرادات */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">الإيرادات</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'الإيرادات', value: analytics.stats.totalRevenue },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {COLORS.map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* معلومات إضافية */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">معلومات إضافية</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-gray-600 text-sm">متوسط مدة الجلسة</p>
+                  <p className="text-xl font-bold text-gray-900">{analytics.stats.avgSessionDuration}s</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">إجمالي الأحداث</p>
+                  <p className="text-xl font-bold text-gray-900">{analytics.stats.totalEvents}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">إجمالي الانطباعات</p>
+                  <p className="text-xl font-bold text-gray-900">{analytics.stats.totalAdImpressions}</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {!gameId && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+            <p className="text-blue-900">اختر لعبة لعرض التحليلات</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+"

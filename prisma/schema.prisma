@@ -265,3 +265,97 @@ model AuditLog {
   @@index([event])
   @@map("audit_logs")
 }
+
+// SDK Models
+model SDKGameData {
+  id          String   @id @default(cuid())
+  userId      String
+  gameId      String
+  key         String
+  value       Json
+  size        Int      // Size in bytes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, gameId, key])
+  @@index([userId, gameId])
+  @@map("sdk_game_data")
+}
+
+model SDKAdImpression {
+  id          String   @id @default(cuid())
+  gameId      String
+  adType      String   // video, rewarded, banner
+  adId        String?
+  userId      String?
+  duration    Int?     // Duration in seconds
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  @@index([gameId, createdAt])
+  @@index([userId])
+  @@map("sdk_ad_impressions")
+}
+
+model SDKAnalyticsEvent {
+  id          String   @id @default(cuid())
+  gameId      String
+  sessionId   String
+  eventName   String
+  eventData   Json?
+  userId      String?
+  timestamp   DateTime @default(now())
+  
+  @@index([gameId, timestamp])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("sdk_analytics_events")
+}
+
+model SDKSession {
+  id          String   @id @default(cuid())
+  gameId      String
+  userId      String?
+  sessionId   String   @unique
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  duration    Int?     // Duration in seconds
+  adCount     Int      @default(0)
+  adRevenue   Float    @default(0)
+  events      Int      @default(0)
+  
+  @@index([gameId, startedAt])
+  @@index([userId])
+  @@map("sdk_sessions")
+}
+
+model SDKError {
+  id          String   @id @default(cuid())
+  gameId      String
+  sessionId   String?
+  errorType   String
+  errorMessage String
+  stackTrace  String?
+  userId      String?
+  timestamp   DateTime @default(now())
+  
+  @@index([gameId, timestamp])
+  @@index([errorType])
+  @@map("sdk_errors")
+}
+
+model SDKConfig {
+  id          String   @id @default(cuid())
+  gameId      String   @unique
+  apiKey      String   @unique
+  isActive    Boolean  @default(true)
+  adFrequency Int      @default(3)
+  autoPlayDelay Int    @default(5000)
+  maxDataSize Int      @default(2097152)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("sdk_configs")
+}

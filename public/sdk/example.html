@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasrah Games SDK - Example Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .game-area {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .level-display {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #38a169;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #e53e3e;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+    }
+
+    .btn-full {
+      grid-column: 1 / -1;
+    }
+
+    .stats {
+      background: #f7fafc;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .log {
+      background: #1a202c;
+      color: #48bb78;
+      border-radius: 10px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 5px 0;
+      border-bottom: 1px solid #2d3748;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: #a0aec0;
+      margin-right: 10px;
+    }
+
+    .log-info {
+      color: #63b3ed;
+    }
+
+    .log-success {
+      color: #48bb78;
+    }
+
+    .log-error {
+      color: #fc8181;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: #f0fff4;
+      border-left: 4px solid #48bb78;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #48bb78;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .user-info {
+      background: #edf2f7;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .user-info-label {
+      color: #666;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .user-info-value {
+      color: #333;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Kasrah Games SDK</h1>
+    <p class="subtitle">Example Game - Test the SDK Features</p>
+
+    <div class="status">
+      <div class="status-dot"></div>
+      <span>SDK Status: <strong id="sdk-status">Initializing...</strong></span>
+    </div>
+
+    <div class="user-info" id="user-info" style="display: none;">
+      <div class="user-info-label">👤 Logged In As:</div>
+      <div class="user-info-value" id="user-name">-</div>
+    </div>
+
+    <div class="game-area">
+      <div class="score-display" id="score">0</div>
+      <div class="level-display">Level: <span id="level">1</span></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Score:</span>
+        <span class="stat-value" id="stat-score">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Current Level:</span>
+        <span class="stat-value" id="stat-level">1</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Ads Shown:</span>
+        <span class="stat-value" id="stat-ads">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Session Duration:</span>
+        <span class="stat-value" id="stat-duration">0s</span>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="addScore(100)">➕ Add 100</button>
+      <button class="btn-primary" onclick="addScore(500)">➕ Add 500</button>
+      <button class="btn-secondary" onclick="showAd()">📺 Show Ad</button>
+      <button class="btn-secondary" onclick="nextLevel()">⬆️ Next Level</button>
+      <button class="btn-primary btn-full" onclick="saveGame()">💾 Save Game</button>
+      <button class="btn-primary btn-full" onclick="loadGame()">📂 Load Game</button>
+      <button class="btn-danger btn-full" onclick="resetGame()">🔄 Reset</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="button-group">
+      <button class="btn-secondary" onclick="loginUser()">🔐 Login</button>
+      <button class="btn-danger" onclick="logoutUser()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- Kasrah SDK -->
+  <script src="kasrah-sdk.js"></script>
+
+  <script>
+    // Game state
+    let gameState = {
+      score: 0,
+      level: 1,
+      adsShown: 0,
+      startTime: Date.now()
+    };
+
+    // Log function
+    function addLog(message, type = 'info') {
+      const log = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Initialize SDK
+    function initSDK() {
+      KasrahSDK.init({
+        gameId: 'example-game',
+        debugMode: true,
+        enableAnalytics: true,
+        adFrequency: 2
+      });
+
+      addLog('SDK Initialized', 'success');
+      document.getElementById('sdk-status').textContent = 'Ready';
+
+      // Listen to SDK events
+      KasrahSDK.on('initialized', () => {
+        addLog('SDK Event: initialized', 'info');
+      });
+
+      KasrahSDK.on('adStarted', () => {
+        addLog('SDK Event: adStarted - Game Paused', 'info');
+      });
+
+      KasrahSDK.on('adFinished', () => {
+        addLog('SDK Event: adFinished - Game Resumed', 'success');
+        gameState.adsShown++;
+        updateStats();
+      });
+
+      KasrahSDK.on('adError', (data) => {
+        addLog(`SDK Event: adError - ${data.error}`, 'error');
+      });
+
+      KasrahSDK.on('dataSaved', (data) => {
+        addLog(`SDK Event: dataSaved - ${data.key}`, 'success');
+      });
+
+      KasrahSDK.on('userSet', (user) => {
+        addLog(`SDK Event: userSet - ${user.username}`, 'success');
+        showUserInfo(user);
+      });
+
+      KasrahSDK.on('userCleared', () => {
+        addLog('SDK Event: userCleared', 'info');
+        hideUserInfo();
+      });
+
+      // Track game start
+      KasrahSDK.trackEvent('gameStart', {
+        timestamp: new Date().toISOString()
+      });
+
+      // Update stats every second
+      setInterval(updateStats, 1000);
+    }
+
+    // Add score
+    function addScore(amount) {
+      gameState.score += amount;
+      document.getElementById('score').textContent = gameState.score;
+      document.getElementById('stat-score').textContent = gameState.score;
+      
+      addLog(`Score added: +${amount}`, 'success');
+      
+      KasrahSDK.trackEvent('scoreAdded', {
+        amount,
+        totalScore: gameState.score
+      });
+    }
+
+    // Next level
+    function nextLevel() {
+      gameState.level++;
+      document.getElementById('level').textContent = gameState.level;
+      document.getElementById('stat-level').textContent = gameState.level;
+      
+      addLog(`Level up! Now level ${gameState.level}`, 'success');
+      
+      KasrahSDK.trackEvent('levelUp', {
+        level: gameState.level,
+        score: gameState.score
+      });
+    }
+
+    // Show ad
+    async function showAd() {
+      addLog('Requesting ad...', 'info');
+      const success = await KasrahSDK.showVideoAd();
+      if (!success) {
+        addLog('No ads available', 'error');
+      }
+    }
+
+    // Save game
+    async function saveGame() {
+      try {
+        await KasrahSDK.saveData('gameState', gameState);
+        addLog('Game saved successfully', 'success');
+      } catch (error) {
+        addLog(`Save failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Load game
+    async function loadGame() {
+      try {
+        const saved = await KasrahSDK.loadData('gameState');
+        if (saved) {
+          gameState = saved;
+          document.getElementById('score').textContent = gameState.score;
+          document.getElementById('level').textContent = gameState.level;
+          updateStats();
+          addLog('Game loaded successfully', 'success');
+        } else {
+          addLog('No saved game found', 'info');
+        }
+      } catch (error) {
+        addLog(`Load failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Reset game
+    function resetGame() {
+      gameState = {
+        score: 0,
+        level: 1,
+        adsShown: 0,
+        startTime: Date.now()
+      };
+      document.getElementById('score').textContent = '0';
+      document.getElementById('level').textContent = '1';
+      updateStats();
+      addLog('Game reset', 'info');
+    }
+
+    // Login user
+    function loginUser() {
+      KasrahSDK.setUser({
+        id: 'user-123',
+        username: 'DemoPlayer',
+        email: 'demo@kasrah-games.com'
+      });
+      addLog('User logged in', 'success');
+    }
+
+    // Logout user
+    function logoutUser() {
+      KasrahSDK.clearUser();
+      addLog('User logged out', 'info');
+    }
+
+    // Show user info
+    function showUserInfo(user) {
+      const userInfo = document.getElementById('user-info');
+      document.getElementById('user-name').textContent = user.username;
+      userInfo.style.display = 'block';
+    }
+
+    // Hide user info
+    function hideUserInfo() {
+      document.getElementById('user-info').style.display = 'none';
+    }
+
+    // Update stats
+    function updateStats() {
+      document.getElementById('stat-score').textContent = gameState.score;
+      document.getElementById('stat-level').textContent = gameState.level;
+      document.getElementById('stat-ads').textContent = gameState.adsShown;
+      
+      const duration = Math.floor((Date.now() - gameState.startTime) / 1000);
+      document.getElementById('stat-duration').textContent = duration + 's';
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', initSDK);
+  </script>
+</body>
+</html>

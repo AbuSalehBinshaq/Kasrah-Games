@@ -41,6 +41,7 @@ enum Role {
 
 model Game {
   id            String         @id @default(cuid())
+  gameId        String         @unique @default(cuid())  // Game ID فريد للـ SDK
   slug          String         @unique
   title         String
   description   String
@@ -60,6 +61,7 @@ model Game {
   isPublished   Boolean        @default(true)
   views         Int            @default(0)
   playCount     Int            @default(0)
+  totalRevenue  Float          @default(0)  // إجمالي الأرباح
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
@@ -67,6 +69,12 @@ model Game {
   ratings       Rating[]
   playSessions  PlaySession[]
   bookmarks     Bookmark[]
+  sdkAds        SDKAd[]
+  sdkImpressions SDKAdImpression[]
+  sdkEvents     SDKAnalyticsEvent[]
+  sdkSessions   SDKSession[]
+  sdkErrors     SDKError[]
+  sdkConfig     SDKConfig?
   
   @@map("games")
 }
@@ -349,6 +357,7 @@ model SDKError {
 model SDKConfig {
   id          String   @id @default(cuid())
   gameId      String   @unique
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
   apiKey      String   @unique
   isActive    Boolean  @default(true)
   adFrequency Int      @default(3)
@@ -358,4 +367,65 @@ model SDKConfig {
   updatedAt   DateTime @updatedAt
   
   @@map("sdk_configs")
+}
+
+// نموذج الإعلانات المتقدم للـ SDK
+model SDKAd {
+  id            String   @id @default(cuid())
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  adType        String   // video, rewarded, banner, interstitial
+  title         String
+  description   String?
+  imageUrl      String?
+  videoUrl      String?
+  clickUrl      String?
+  cpm           Float    @default(0)  // Cost Per Mille
+  impressions   Int      @default(0)
+  clicks        Int      @default(0)
+  revenue       Float    @default(0)
+  isActive      Boolean  @default(true)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([gameId, isActive])
+  @@map("sdk_ads")
+}
+
+// نموذج إحصائيات اللعبة اليومية
+model SDKGameStats {
+  id            String   @id @default(cuid())
+  gameId        String
+  date          DateTime
+  totalPlays    Int      @default(0)
+  totalUsers    Int      @default(0)
+  totalSessions Int      @default(0)
+  totalAdImpressions Int @default(0)
+  totalAdClicks Int      @default(0)
+  totalRevenue  Float    @default(0)
+  avgSessionDuration Int @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([gameId, date])
+  @@index([gameId, date])
+  @@map("sdk_game_stats")
+}
+
+// نموذج الإحصائيات الشاملة
+model SDKPlatformStats {
+  id            String   @id @default("platform-stats")
+  totalGames    Int      @default(0)
+  totalUsers    Int      @default(0)
+  totalPlays    Int      @default(0)
+  totalRevenue  Float    @default(0)
+  totalAdImpressions Int @default(0)
+  totalAdClicks Int      @default(0)
+  avgCTR        Float    @default(0)  // Click Through Rate
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("sdk_platform_stats")
 }

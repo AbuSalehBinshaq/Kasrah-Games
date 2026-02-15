@@ -42,7 +42,7 @@ enum Role {
 
 model Game {
   id            String         @id @default(cuid())
-  gameId        String?        @unique @default(cuid())  // Game ID فريد للـ SDK (جعلناه اختيارياً مؤقتاً للسماح بالتحديث)
+  gameId        String         @unique @default(cuid())  // Game ID فريد للـ SDK
   slug          String         @unique
   title         String
   description   String

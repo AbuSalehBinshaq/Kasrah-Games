@@ -126,8 +126,7 @@ export default function AdminLogsPage() {
       JSON.stringify(log.details || {}),
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('
-');
+    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

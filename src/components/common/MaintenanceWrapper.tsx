@@ -81,4 +81,3 @@ export default function MaintenanceWrapper({ children }: MaintenanceWrapperProps
     </div>
   );
 }
-

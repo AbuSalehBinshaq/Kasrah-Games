@@ -1,1 +1,163 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { prisma } from '@/lib/prisma';\nimport { verifyAuth } from '@/lib/auth';\n\n// GET - الحصول على الإعلانات لعبة معينة\nexport async function GET(request: NextRequest) {\n  try {\n    const { searchParams } = new URL(request.url);\n    const gameId = searchParams.get('gameId');\n    const isActive = searchParams.get('isActive') === 'true';\n\n    if (!gameId) {\n      return NextResponse.json(\n        { error: 'Game ID is required' },\n        { status: 400 }\n      );\n    }\n\n    const ads = await prisma.sDKAd.findMany({\n      where: {\n        gameId,\n        ...(isActive && { isActive: true }),\n      },\n      orderBy: { createdAt: 'desc' },\n    });\n\n    return NextResponse.json(ads);\n  } catch (error) {\n    console.error('Error fetching ads:', error);\n    return NextResponse.json(\n      { error: 'Failed to fetch ads' },\n      { status: 500 }\n    );\n  }\n}\n\n// POST - إضافة إعلان جديد\nexport async function POST(request: NextRequest) {\n  try {\n    const user = await verifyAuth(request);\n    if (!user || user.role !== 'ADMIN') {\n      return NextResponse.json(\n        { error: 'Unauthorized' },\n        { status: 401 }\n      );\n    }\n\n    const body = await request.json();\n    const { gameId, adType, title, description, imageUrl, videoUrl, clickUrl, cpm, startDate, endDate } = body;\n\n    if (!gameId || !adType || !title) {\n      return NextResponse.json(\n        { error: 'Missing required fields' },\n        { status: 400 }\n      );\n    }\n\n    // التحقق من وجود اللعبة\n    const game = await prisma.game.findUnique({ where: { id: gameId } });\n    if (!game) {\n      return NextResponse.json(\n        { error: 'Game not found' },\n        { status: 404 }\n      );\n    }\n\n    const ad = await prisma.sDKAd.create({\n      data: {\n        gameId,\n        adType,\n        title,\n        description,\n        imageUrl,\n        videoUrl,\n        clickUrl,\n        cpm: cpm || 0,\n        startDate: startDate ? new Date(startDate) : undefined,\n        endDate: endDate ? new Date(endDate) : undefined,\n      },\n    });\n\n    return NextResponse.json(ad, { status: 201 });\n  } catch (error) {\n    console.error('Error creating ad:', error);\n    return NextResponse.json(\n      { error: 'Failed to create ad' },\n      { status: 500 }\n    );\n  }\n}\n\n// PUT - تحديث إعلان\nexport async function PUT(request: NextRequest) {\n  try {\n    const user = await verifyAuth(request);\n    if (!user || user.role !== 'ADMIN') {\n      return NextResponse.json(\n        { error: 'Unauthorized' },\n        { status: 401 }\n      );\n    }\n\n    const body = await request.json();\n    const { id, ...updateData } = body;\n\n    if (!id) {\n      return NextResponse.json(\n        { error: 'Ad ID is required' },\n        { status: 400 }\n      );\n    }\n\n    const ad = await prisma.sDKAd.update({\n      where: { id },\n      data: {\n        ...updateData,\n        startDate: updateData.startDate ? new Date(updateData.startDate) : undefined,\n        endDate: updateData.endDate ? new Date(updateData.endDate) : undefined,\n      },\n    });\n\n    return NextResponse.json(ad);\n  } catch (error) {\n    console.error('Error updating ad:', error);\n    return NextResponse.json(\n      { error: 'Failed to update ad' },\n      { status: 500 }\n    );\n  }\n}\n\n// DELETE - حذف إعلان\nexport async function DELETE(request: NextRequest) {\n  try {\n    const user = await verifyAuth(request);\n    if (!user || user.role !== 'ADMIN') {\n      return NextResponse.json(\n        { error: 'Unauthorized' },\n        { status: 401 }\n      );\n    }\n\n    const { searchParams } = new URL(request.url);\n    const id = searchParams.get('id');\n\n    if (!id) {\n      return NextResponse.json(\n        { error: 'Ad ID is required' },\n        { status: 400 }\n      );\n    }\n\n    await prisma.sDKAd.delete({ where: { id } });\n\n    return NextResponse.json({ message: 'Ad deleted successfully' });\n  } catch (error) {\n    console.error('Error deleting ad:', error);\n    return NextResponse.json(\n      { error: 'Failed to delete ad' },\n      { status: 500 }\n    );\n  }\n}\n"
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { verifyAuth } from '@/lib/auth';
+
+// GET - الحصول على الإعلانات لعبة معينة
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const gameId = searchParams.get('gameId');
+    const isActive = searchParams.get('isActive') === 'true';
+
+    if (!gameId) {
+      return NextResponse.json(
+        { error: 'Game ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const ads = await prisma.sDKAd.findMany({
+      where: {
+        gameId,
+        ...(isActive && { isActive: true }),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json(ads);
+  } catch (error) {
+    console.error('Error fetching ads:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch ads' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - إضافة إعلان جديد
+export async function POST(request: NextRequest) {
+  try {
+    const user = await verifyAuth(request);
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { gameId, adType, title, description, imageUrl, videoUrl, clickUrl, cpm, startDate, endDate } = body;
+
+    if (!gameId || !adType || !title) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // التحقق من وجود اللعبة
+    const game = await prisma.game.findUnique({ where: { id: gameId } });
+    if (!game) {
+      return NextResponse.json(
+        { error: 'Game not found' },
+        { status: 404 }
+      );
+    }
+
+    const ad = await prisma.sDKAd.create({
+      data: {
+        gameId,
+        adType,
+        title,
+        description,
+        imageUrl,
+        videoUrl,
+        clickUrl,
+        cpm: cpm || 0,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+      },
+    });
+
+    return NextResponse.json(ad, { status: 201 });
+  } catch (error) {
+    console.error('Error creating ad:', error);
+    return NextResponse.json(
+      { error: 'Failed to create ad' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - تحديث إعلان
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await verifyAuth(request);
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Ad ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const ad = await prisma.sDKAd.update({
+      where: { id },
+      data: {
+        ...updateData,
+        startDate: updateData.startDate ? new Date(updateData.startDate) : undefined,
+        endDate: updateData.endDate ? new Date(updateData.endDate) : undefined,
+      },
+    });
+
+    return NextResponse.json(ad);
+  } catch (error) {
+    console.error('Error updating ad:', error);
+    return NextResponse.json(
+      { error: 'Failed to update ad' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - حذف إعلان
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await verifyAuth(request);
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Ad ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.sDKAd.delete({ where: { id } });
+
+    return NextResponse.json({ message: 'Ad deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting ad:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete ad' },
+      { status: 500 }
+    );
+  }
+}

@@ -31,7 +31,8 @@ export default function GameDetails({ game }: GameDetailsProps) {
 
   const formatRequirements = (req: string | undefined) => {
     if (!req) return 'Not specified';
-    return req.split('\n').map((line, i) => (
+    return req.split('
+').map((line, i) => (
       <p key={i} className="mb-1">{line}</p>
     ));
   };

@@ -30,6 +30,7 @@ model User {
   ratings       Rating[]
   playSessions  PlaySession[]
   bookmarks     Bookmark[]
+  sdkGameData   SDKGameData[]
   
   @@map("users")
 }
@@ -302,6 +303,8 @@ model SDKAdImpression {
   completed   Boolean  @default(false)
   createdAt   DateTime @default(now())
   
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
   @@index([gameId, createdAt])
   @@index([userId])
   @@map("sdk_ad_impressions")
@@ -315,6 +318,8 @@ model SDKAnalyticsEvent {
   eventData   Json?
   userId      String?
   timestamp   DateTime @default(now())
+  
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
   
   @@index([gameId, timestamp])
   @@index([sessionId])
@@ -334,6 +339,8 @@ model SDKSession {
   adRevenue   Float    @default(0)
   events      Int      @default(0)
   
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
   @@index([gameId, startedAt])
   @@index([userId])
   @@map("sdk_sessions")
@@ -348,6 +355,8 @@ model SDKError {
   stackTrace  String?
   userId      String?
   timestamp   DateTime @default(now())
+  
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
   
   @@index([gameId, timestamp])
   @@index([errorType])

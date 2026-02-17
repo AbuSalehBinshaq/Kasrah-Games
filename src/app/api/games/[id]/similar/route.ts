@@ -74,3 +74,4 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ games: [], error: 'Failed to load similar games' }, { status: 500 });
   }
 }
+

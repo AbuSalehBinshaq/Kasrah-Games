@@ -26,3 +26,4 @@ export function clearCache(key?: string) {
     store.clear();
   }
 }
+

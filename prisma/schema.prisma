@@ -30,7 +30,6 @@ model User {
   ratings       Rating[]
   playSessions  PlaySession[]
   bookmarks     Bookmark[]
-  sdkGameData   SDKGameData[]
   
   @@map("users")
 }
@@ -42,7 +41,6 @@ enum Role {
 
 model Game {
   id            String         @id @default(cuid())
-  gameId        String         @unique @default(cuid())  // Game ID فريد للـ SDK
   slug          String         @unique
   title         String
   description   String
@@ -62,7 +60,6 @@ model Game {
   isPublished   Boolean        @default(true)
   views         Int            @default(0)
   playCount     Int            @default(0)
-  totalRevenue  Float          @default(0)  // إجمالي الأرباح
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
@@ -70,12 +67,6 @@ model Game {
   ratings       Rating[]
   playSessions  PlaySession[]
   bookmarks     Bookmark[]
-  sdkAds        SDKAd[]
-  sdkImpressions SDKAdImpression[]
-  sdkEvents     SDKAnalyticsEvent[]
-  sdkSessions   SDKSession[]
-  sdkErrors     SDKError[]
-  sdkConfig     SDKConfig?
   
   @@map("games")
 }
@@ -273,168 +264,4 @@ model AuditLog {
   @@index([timestamp])
   @@index([event])
   @@map("audit_logs")
-}
-
-// SDK Models
-model SDKGameData {
-  id          String   @id @default(cuid())
-  userId      String
-  gameId      String
-  key         String
-  value       Json
-  size        Int      // Size in bytes
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, gameId, key])
-  @@index([userId, gameId])
-  @@map("sdk_game_data")
-}
-
-model SDKAdImpression {
-  id          String   @id @default(cuid())
-  gameId      String
-  adType      String   // video, rewarded, banner
-  adId        String?
-  userId      String?
-  duration    Int?     // Duration in seconds
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  
-  @@index([gameId, createdAt])
-  @@index([userId])
-  @@map("sdk_ad_impressions")
-}
-
-model SDKAnalyticsEvent {
-  id          String   @id @default(cuid())
-  gameId      String
-  sessionId   String
-  eventName   String
-  eventData   Json?
-  userId      String?
-  timestamp   DateTime @default(now())
-  
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  
-  @@index([gameId, timestamp])
-  @@index([sessionId])
-  @@index([userId])
-  @@map("sdk_analytics_events")
-}
-
-model SDKSession {
-  id          String   @id @default(cuid())
-  gameId      String
-  userId      String?
-  sessionId   String   @unique
-  startedAt   DateTime @default(now())
-  endedAt     DateTime?
-  duration    Int?     // Duration in seconds
-  adCount     Int      @default(0)
-  adRevenue   Float    @default(0)
-  events      Int      @default(0)
-  
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  
-  @@index([gameId, startedAt])
-  @@index([userId])
-  @@map("sdk_sessions")
-}
-
-model SDKError {
-  id          String   @id @default(cuid())
-  gameId      String
-  sessionId   String?
-  errorType   String
-  errorMessage String
-  stackTrace  String?
-  userId      String?
-  timestamp   DateTime @default(now())
-  
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  
-  @@index([gameId, timestamp])
-  @@index([errorType])
-  @@map("sdk_errors")
-}
-
-model SDKConfig {
-  id          String   @id @default(cuid())
-  gameId      String   @unique
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  apiKey      String   @unique
-  isActive    Boolean  @default(true)
-  adFrequency Int      @default(3)
-  autoPlayDelay Int    @default(5000)
-  maxDataSize Int      @default(2097152)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("sdk_configs")
-}
-
-// نموذج الإعلانات المتقدم للـ SDK
-model SDKAd {
-  id            String   @id @default(cuid())
-  gameId        String
-  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  adType        String   // video, rewarded, banner, interstitial
-  title         String
-  description   String?
-  imageUrl      String?
-  videoUrl      String?
-  clickUrl      String?
-  cpm           Float    @default(0)  // Cost Per Mille
-  impressions   Int      @default(0)
-  clicks        Int      @default(0)
-  revenue       Float    @default(0)
-  isActive      Boolean  @default(true)
-  startDate     DateTime?
-  endDate       DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([gameId, isActive])
-  @@map("sdk_ads")
-}
-
-// نموذج إحصائيات اللعبة اليومية
-model SDKGameStats {
-  id            String   @id @default(cuid())
-  gameId        String
-  date          DateTime
-  totalPlays    Int      @default(0)
-  totalUsers    Int      @default(0)
-  totalSessions Int      @default(0)
-  totalAdImpressions Int @default(0)
-  totalAdClicks Int      @default(0)
-  totalRevenue  Float    @default(0)
-  avgSessionDuration Int @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@unique([gameId, date])
-  @@index([gameId, date])
-  @@map("sdk_game_stats")
-}
-
-// نموذج الإحصائيات الشاملة
-model SDKPlatformStats {
-  id            String   @id @default("platform-stats")
-  totalGames    Int      @default(0)
-  totalUsers    Int      @default(0)
-  totalPlays    Int      @default(0)
-  totalRevenue  Float    @default(0)
-  totalAdImpressions Int @default(0)
-  totalAdClicks Int      @default(0)
-  avgCTR        Float    @default(0)  // Click Through Rate
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@map("sdk_platform_stats")
 }

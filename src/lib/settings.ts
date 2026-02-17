@@ -108,3 +108,4 @@ export async function getSettings(): Promise<SiteSettings> {
     return defaultSettings;
   }
 }
+

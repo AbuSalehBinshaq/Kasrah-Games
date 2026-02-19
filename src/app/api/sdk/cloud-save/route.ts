@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 /**
  * Cloud Save API for External SDK
- * Uses existing AuditLog table to store player data as JSON
- * No schema changes required
+ * Uses the new CloudSave table to store player data
  */
 
 export async function POST(req: NextRequest) {
@@ -19,26 +18,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing gameId or data' }, { status: 400 });
     }
 
-    // Store the data in the existing AuditLog table
-    // This table has a 'details' field of type Json which is perfect for Cloud Save
-    await prisma.auditLog.create({
-      data: {
-        event: 'SDK_CLOUD_SAVE',
-        status: 'SUCCESS',
-        resource: 'Game',
-        resourceId: gameId,
-        details: {
-          gameId,
-          data,
-          userId: userId || 'anonymous',
-          savedAt: new Date().toISOString()
-        }
+    // Save or update data in the new CloudSave table
+    // We'll use upsert if we had a unique constraint, but for now we'll just create a new entry
+    // or we can find the existing one and update it.
+    
+    const existingSave = await prisma.cloudSave.findFirst({
+      where: {
+        gameId,
+        userId: userId || 'anonymous'
       }
     });
 
+    if (existingSave) {
+      await prisma.cloudSave.update({
+        where: { id: existingSave.id },
+        data: {
+          data,
+          updatedAt: new Date()
+        }
+      });
+    } else {
+      await prisma.cloudSave.create({
+        data: {
+          gameId,
+          userId: userId || 'anonymous',
+          data
+        }
+      });
+    }
+
     return NextResponse.json({ 
       success: true, 
-      message: 'Data saved successfully to cloud (Prisma)' 
+      message: 'Data saved successfully to CloudSave table' 
     });
   } catch (error: any) {
     console.error('Cloud Save Error:', error);
@@ -56,35 +67,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing gameId' }, { status: 400 });
     }
 
-    // Retrieve the latest save from AuditLog for this game
-    const latestSave = await prisma.auditLog.findFirst({
+    // Retrieve the latest save from CloudSave table
+    const latestSave = await prisma.cloudSave.findFirst({
       where: {
-        event: 'SDK_CLOUD_SAVE',
-        resourceId: gameId,
-        // If userId is provided, we can filter in the application logic 
-        // to avoid complex JSON path queries that might not be supported by all DBs
+        gameId,
+        userId: userId || 'anonymous'
       },
       orderBy: {
-        timestamp: 'desc'
+        updatedAt: 'desc'
       }
     });
 
-    if (!latestSave || !latestSave.details) {
-      return NextResponse.json({ success: true, data: {} });
-    }
-
-    const details = latestSave.details as any;
-    
-    // If userId was specified, ensure we return the data for that user
-    if (userId && details.userId !== userId) {
-      // In a real scenario, we'd query for the specific user's latest save
-      // For now, we'll return the latest available data
-    }
-
     return NextResponse.json({ 
       success: true, 
-      data: details.data || {},
-      lastUpdated: latestSave.timestamp
+      data: latestSave?.data || {},
+      lastUpdated: latestSave?.updatedAt
     });
   } catch (error: any) {
     console.error('Cloud Load Error:', error);

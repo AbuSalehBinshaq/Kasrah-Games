@@ -265,3 +265,15 @@ model AuditLog {
   @@index([event])
   @@map("audit_logs")
 }
+
+model CloudSave {
+  id          String   @id @default(cuid())
+  gameId      String
+  userId      String?  @default("anonymous")
+  data        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([gameId, userId])
+  @@map("cloud_saves")
+}

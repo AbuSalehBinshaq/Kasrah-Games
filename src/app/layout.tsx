@@ -68,6 +68,25 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr">
       <head>
+        {/* Kasrah SDK Integration */}
+        <script src="https://kasrah-sdk.onrender.com/sdk/kasrah-sdk.js" async></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.addEventListener('load', async () => {
+              if (window.KasrahSDK) {
+                try {
+                  await window.KasrahSDK.init({
+                    gameId: 'kasrah-main-website',
+                    apiUrl: 'https://kasrah-sdk.onrender.com/api/trpc'
+                  });
+                  console.log('Kasrah SDK initialized successfully');
+                } catch (error) {
+                  console.error('Failed to initialize Kasrah SDK:', error);
+                }
+              }
+            });
+          `
+        }} />
         <style id="theme-vars" dangerouslySetInnerHTML={{ __html: `
           :root {
             --color-primary: ${primaryColor};
@@ -79,6 +98,23 @@ export default async function RootLayout({
             background: linear-gradient(to bottom, ${bgFrom}, ${bgTo}) !important;
           }
         `}} />
+        {/* Display Banner Ads from Kasrah SDK */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.addEventListener('load', async () => {
+              if (window.KasrahSDK) {
+                try {
+                  await window.KasrahSDK.showBannerAd('banner-top', {
+                    size: '728x90',
+                    position: 'top'
+                  });
+                } catch (error) {
+                  console.log('Banner ad not available');
+                }
+              }
+            });
+          `
+        }} />
         {settings.enableAnalytics && settings.analyticsCode && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${settings.analyticsCode}`} />
